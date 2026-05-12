@@ -39,6 +39,12 @@ public class AuthController {
             BindingResult bindingResult,
             Model model
     ) {
+        if ("admin".equalsIgnoreCase(registerRequest.getRole())) {
+            String email = registerRequest.getEmail() == null ? "" : registerRequest.getEmail().trim();
+            String name = registerRequest.getDisplayName() == null ? "" : registerRequest.getDisplayName().trim();
+            String phone = registerRequest.getPhone() == null ? "" : registerRequest.getPhone().trim();
+            return "redirect:/admin/setup?email=" + email + "&displayName=" + name + "&phone=" + phone;
+        }
         if (bindingResult.hasErrors()) {
             return "register";
         }
@@ -115,5 +121,44 @@ public class AuthController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    @GetMapping("/admin/setup")
+    public String adminSetupForm(
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "displayName", required = false) String displayName,
+            @RequestParam(name = "phone", required = false) String phone,
+            Model model
+    ) {
+        RegisterRequest request = new RegisterRequest();
+        if (email != null) {
+            request.setEmail(email);
+        }
+        if (displayName != null) {
+            request.setDisplayName(displayName);
+        }
+        if (phone != null) {
+            request.setPhone(phone);
+        }
+        model.addAttribute("registerRequest", request);
+        return "admin-setup";
+    }
+
+    @PostMapping("/admin/setup")
+    public String createAdmin(
+            @Valid RegisterRequest registerRequest,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "admin-setup";
+        }
+        try {
+            authService.registerAsAdmin(registerRequest);
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "admin-setup";
+        }
+        return "redirect:/login?registered=1";
     }
 }

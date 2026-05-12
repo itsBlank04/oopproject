@@ -103,6 +103,28 @@ public class AuthService {
         return false;
     }
 
+    @Transactional
+    public User registerAsAdmin(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail().toLowerCase(Locale.ROOT))) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
+        User user = new User();
+        user.setEmail(request.getEmail().toLowerCase(Locale.ROOT));
+        user.setDisplayName(request.getDisplayName().trim());
+        user.setPhone(request.getPhone());
+        user.setPasswordHash(passwordService.hash(request.getPassword()));
+        user = userRepository.save(user);
+
+        Role role = findOrCreateRole(ROLE_ADMIN);
+        UserRole userRole = new UserRole();
+        userRole.setUserId(user.getId());
+        userRole.setRoleId(role.getId());
+        userRoleRepository.save(userRole);
+
+        return user;
+    }
+
     private Role findOrCreateRole(String rawRole) {
         String roleName = rawRole.trim().toUpperCase(Locale.ROOT);
         if (!roleName.equals(ROLE_CUSTOMER)

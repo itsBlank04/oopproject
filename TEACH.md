@@ -29,12 +29,7 @@
 - **Chat:** `conversations`, `conversation_members`, `messages`
 - **Notifications:** `notifications`, `notification_subscriptions`
 
-### Expected Questions:
-> **Q: Why use relational database instead of NoSQL?**
-> A: We have structured data with clear relationships (users → orders → products). Relational DB ensures data integrity with foreign keys.
 
-> **Q: Why MariaDB instead of MySQL?**
-> A: MariaDB is the open-source fork of MySQL, compatible with XAMPP, more lightweight and free.
 
 ---
 
@@ -57,8 +52,7 @@
 > **Q: How is password security handled?**
 > A: BCrypt is used for password hashing. It's a one-way hash — even if the database is leaked, passwords cannot be reversed.
 
-> **Q: What is the difference between authentication and authorization?**
-> A: Authentication = verifying who you are (login). Authorization = checking what you can access (role-based dashboard routing).
+
 
 > **Q: How do you differentiate between user roles?**
 > A: Users have roles stored in `user_roles` table. On login, the role is stored in session and used to route to the correct dashboard.
@@ -72,9 +66,7 @@
 - Separate dashboards for each role: Customer, Vendor, Technician, Admin
 - Clean navigation with register/login/logout flow
 
-### Expected Questions:
-> **Q: Why use Thymeleaf instead of React/Angular?**
-> A: Thymeleaf is a server-side template engine that works seamlessly with Spring Boot. For this project scale, it avoids the complexity of a separate frontend build system.
+
 
 > **Q: What is the difference between @Controller and @RestController?**
 > A: `@Controller` returns view templates (HTML). `@RestController` returns raw data (JSON) for API endpoints.
