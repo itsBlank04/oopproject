@@ -1,0 +1,24 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# Spring Boot
+.spring_boot_cache/
