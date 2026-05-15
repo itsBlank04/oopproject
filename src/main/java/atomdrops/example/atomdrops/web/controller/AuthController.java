@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping
@@ -37,6 +38,7 @@ public class AuthController {
     public String register(
             @Valid RegisterRequest registerRequest,
             BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
             Model model
     ) {
         if ("admin".equalsIgnoreCase(registerRequest.getRole())) {
@@ -47,6 +49,12 @@ public class AuthController {
         }
         if (bindingResult.hasErrors()) {
             return "register";
+        }
+
+        if ("admin".equalsIgnoreCase(registerRequest.getRole())) {
+            redirectAttributes.addFlashAttribute("registerRequest", registerRequest);
+            redirectAttributes.addAttribute("role", "admin");
+            return "redirect:/admin/setup";
         }
 
         try {
@@ -82,7 +90,6 @@ public class AuthController {
 
         User user = userOpt.get();
         session.setAttribute(SESSION_USER_ID, user.getId());
-
         session.setAttribute(SESSION_ROLE, authService.resolveUserRole(user.getId()));
 
         return "redirect:/dashboard";

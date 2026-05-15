@@ -76,7 +76,7 @@
         <h1>Welcome back</h1>
         <div class="success" th:if="${registered}">Account created. Please sign in.</div>
         <div class="error" th:if="${error}" th:text="${error}"></div>
-        <form method="post" action="/login" th:object="${loginRequest}">
+        <form method="post" th:action="@{/login}" th:object="${loginRequest}">
             <label>Email</label>
             <input type="email" th:field="*{email}" required>
 

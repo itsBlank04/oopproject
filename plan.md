@@ -249,7 +249,7 @@ Both vendors and customers can access this module.
     → Technician reviews and responds with quote & plan
       → Customer accepts quote and books
         → Repair is performed
-          → Payment released from escrow upon completion
+          → Payment is completed
 
 ----------------------------------------------------------------
   Feature 1 — Service Listings
@@ -284,15 +284,7 @@ and respond with quotes and repair plans.
   - A scheduled date is confirmed for the repair
 
 ----------------------------------------------------------------
-  Feature 4 — Escrow Payment System
-----------------------------------------------------------------
-
-  - Customer's payment is held securely upon booking
-  - Funds are only released after service completion is confirmed
-  - Protects both parties from non-payment and non-completion
-
-----------------------------------------------------------------
-  Feature 5 — Pickup & Delivery
+  Feature 4 — Pickup & Delivery
 ----------------------------------------------------------------
 
   - Available for large or heavy items (furniture, appliances)
