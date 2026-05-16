@@ -28,6 +28,7 @@ public class RepairMedia {
     private MediaType mediaType;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public RepairMedia() {

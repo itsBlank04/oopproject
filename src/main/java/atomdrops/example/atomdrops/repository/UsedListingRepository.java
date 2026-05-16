@@ -9,4 +9,6 @@ public interface UsedListingRepository extends JpaRepository<UsedListing, Long> 
     List<UsedListing> findBySeller_Id(Long sellerId);
     List<UsedListing> findByCategory_Id(Long categoryId);
     List<UsedListing> findByStatus(UsedListingStatus status);
+    List<UsedListing> findByCategory_IdAndStatus(Long categoryId, UsedListingStatus status);
+    long countBySeller_IdAndStatus(Long sellerId, UsedListingStatus status);
 }

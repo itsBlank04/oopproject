@@ -38,6 +38,7 @@ public class Technician {
     private BigDecimal completionRate = new BigDecimal("0.00");
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public Technician() {

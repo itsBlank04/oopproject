@@ -24,6 +24,7 @@ public class TechnicianSkill {
     private String skill;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public TechnicianSkill() {

@@ -28,6 +28,7 @@ public class ServiceCompletion {
     private String notes;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public ServiceCompletion() {

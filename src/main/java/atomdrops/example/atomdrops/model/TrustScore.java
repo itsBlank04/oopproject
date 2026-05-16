@@ -9,11 +9,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "trust_scores")
 public class TrustScore {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @MapsId
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false, precision = 5, scale = 2)

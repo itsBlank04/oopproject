@@ -46,10 +46,11 @@ public class UsedListing {
     private UsedListingStatus status = UsedListingStatus.ACTIVE;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public UsedListing() {

@@ -9,6 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("landing");
+        registry.addViewController("/").setViewName("forward:/index.html");
+        registry.addViewController("/{spring:[a-zA-Z][a-zA-Z0-9-_/]*}")
+            .setViewName("forward:/index.html");
     }
 }

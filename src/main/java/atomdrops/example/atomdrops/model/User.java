@@ -1,5 +1,6 @@
 package atomdrops.example.atomdrops.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 import atomdrops.example.atomdrops.model.enums.UserStatus;
@@ -16,6 +17,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 191)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 

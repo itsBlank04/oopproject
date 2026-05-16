@@ -37,6 +37,7 @@ public class ServiceListing {
     private ServiceStatus status = ServiceStatus.ACTIVE;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public ServiceListing() {

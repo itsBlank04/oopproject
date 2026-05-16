@@ -1,6 +1,9 @@
 # Build output
 target/
 
+# SPA build output (Vite → resources/static)
+src/main/resources/static/
+
 # IDE
 .idea/
 *.iml
@@ -22,3 +25,7 @@ Thumbs.db
 
 # Spring Boot
 .spring_boot_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/

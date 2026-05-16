@@ -48,6 +48,10 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered");
         }
 
+        if (request.getRole() != null && request.getRole().equalsIgnoreCase(ROLE_ADMIN)) {
+            throw new IllegalArgumentException("Cannot register as admin");
+        }
+
         User user = new User();
         user.setEmail(request.getEmail().toLowerCase(Locale.ROOT));
         user.setDisplayName(request.getDisplayName().trim());
@@ -121,26 +125,9 @@ public class AuthService {
         return roles.stream().anyMatch(r -> r.getName().equalsIgnoreCase(normalized));
     }
 
-    @Transactional
-    public User registerAsAdmin(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail().toLowerCase(Locale.ROOT))) {
-            throw new IllegalArgumentException("Email already registered");
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail().toLowerCase(Locale.ROOT));
-        user.setDisplayName(request.getDisplayName().trim());
-        user.setPhone(request.getPhone());
-        user.setPasswordHash(passwordService.hash(request.getPassword()));
-        user = userRepository.save(user);
-
-        Role role = findOrCreateRole(ROLE_ADMIN);
-        UserRole userRole = new UserRole();
-        userRole.setUser(user);
-        userRole.setRole(role);
-        userRoleRepository.save(userRole);
-
-        return user;
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 
     @Transactional
@@ -158,8 +145,8 @@ public class AuthService {
 
         Role role = findOrCreateRole(ROLE_ADMIN);
         UserRole userRole = new UserRole();
-        userRole.setUserId(user.getId());
-        userRole.setRoleId(role.getId());
+        userRole.setUser(user);
+        userRole.setRole(role);
         userRoleRepository.save(userRole);
 
         return user;

@@ -32,6 +32,7 @@ public class RepairBooking {
     private BookingStatus status = BookingStatus.CONFIRMED;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public RepairBooking() {

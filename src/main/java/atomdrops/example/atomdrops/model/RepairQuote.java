@@ -35,6 +35,7 @@ public class RepairQuote {
     private QuoteStatus status = QuoteStatus.SENT;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public RepairQuote() {

@@ -9,15 +9,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "bidder_reputation")
 public class BidderReputation {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @MapsId
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "win_rate", nullable = false, precision = 5, scale = 2)
     private BigDecimal winRate = new BigDecimal("0.00");
+
+    @Column(name = "total_bids", nullable = false)
+    private Integer totalBids = 0;
+
+    @Column(name = "total_wins", nullable = false)
+    private Integer totalWins = 0;
 
     @Column(name = "payment_success_rate", nullable = false, precision = 5, scale = 2)
     private BigDecimal paymentSuccessRate = new BigDecimal("0.00");
@@ -37,6 +44,10 @@ public class BidderReputation {
     public void setUser(User user) { this.user = user; }
     public BigDecimal getWinRate() { return winRate; }
     public void setWinRate(BigDecimal winRate) { this.winRate = winRate; }
+    public Integer getTotalBids() { return totalBids; }
+    public void setTotalBids(Integer totalBids) { this.totalBids = totalBids; }
+    public Integer getTotalWins() { return totalWins; }
+    public void setTotalWins(Integer totalWins) { this.totalWins = totalWins; }
     public BigDecimal getPaymentSuccessRate() { return paymentSuccessRate; }
     public void setPaymentSuccessRate(BigDecimal paymentSuccessRate) { this.paymentSuccessRate = paymentSuccessRate; }
     public BigDecimal getCancellationRate() { return cancellationRate; }

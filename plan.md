@@ -1,5 +1,298 @@
 ================================================================
   SMART MULTI-VENDOR MARKETPLACE SYSTEM
+  Complete System Specification — Finalized
+================================================================
+
+================================================================
+  SYSTEM STATUS OVERVIEW
+================================================================
+
+  ✅ = Fully Implemented
+  ⚠️ = Partially Implemented
+  📋 = Planned / Not Started
+
+  USER ROLES:      ✅ VENDOR  ✅ CUSTOMER  ✅ TECHNICIAN  ✅ ADMIN
+  MODULE 1:        ✅ Main Marketplace (New Products)
+  MODULE 2:        ✅ Used Items (Second-Hand Marketplace)
+  MODULE 3:        ✅ Repair Service Marketplace
+  MODULE 4:        ✅ Auction System + Real-Time Bidding
+  CORE SYSTEMS:    ✅ Trust Score  ✅ Fraud Detection
+  SECURITY:        ✅ All endpoints have auth guards
+  FRONTEND:        ✅ React 19 + Vite + Tailwind 4 + React Query
+  BACKEND:         ✅ Spring Boot 3 + JPA + PostgreSQL
+  REAL-TIME:       ✅ WebSocket STOMP for live bidding
+
+================================================================
+  USER ROLES & RESPONSIBILITIES
+================================================================
+
+----------------------------------------------------------------
+  1. VENDOR (Seller)
+----------------------------------------------------------------
+
+  ✅ Manage inventory (new products CRUD)
+  ✅ List products in the main marketplace
+  ✅ Sell in the used items section
+  ✅ Create and manage auction sessions (subject to admin approval)
+  ✅ Set auction schedules and pricing
+  📋 View bidder trust scores and reliability stats
+  📋 Restrict low-trust or unreliable bidders
+  📋 Sales performance reports
+  📋 Product-level insights
+  📋 Auction analytics (total bids, unique bidders, peak time, final vs. expected price)
+  📋 Chat with customers directly
+  📋 Report users when necessary
+
+----------------------------------------------------------------
+  2. CUSTOMER / USER
+----------------------------------------------------------------
+
+  ✅ Browse and purchase new products
+  ✅ Browse and purchase used items
+  ✅ Sell their own used items
+  ✅ Browse active auctions
+  ✅ Place bids in real time
+  ✅ Manage watchlist
+  ✅ Upload repair requests
+  ✅ Receive quotes and repair plans from technicians
+  ✅ Schedule and book repair services
+  ✅ Rate and review technicians after completed repairs
+  📋 Receive outbid / ending-soon notifications
+  📋 Chat with vendors and technicians
+  📋 Report users when necessary
+
+----------------------------------------------------------------
+  3. REPAIR TECHNICIAN
+----------------------------------------------------------------
+
+  ✅ Register with specialization
+  ✅ View and respond to open repair requests
+  ✅ Send quotes and detailed repair plans
+  ✅ Accept bookings
+  ✅ Mark services as complete
+  ✅ Offer optional pickup & delivery for large items
+  ✅ Ratings & reviews from customers
+  📋 Create service listings (category, price range, location, availability)
+  📋 Completion rate tracking
+  📋 Progressive level system: Beginner → Verified → Expert
+  📋 Booking volume and earnings dashboard
+
+----------------------------------------------------------------
+  4. ADMIN
+----------------------------------------------------------------
+
+  ✅ Monitor trust scores across all users
+  ✅ View and resolve fraud alerts
+  ✅ Approve or reject vendor auction sessions
+  ✅ All admin API endpoints secured with role check
+  📋 Ban or unban any user
+  📋 Handle disputes between parties
+  📋 Platform-wide analytics dashboard
+  📋 Fraud trends and alert history
+  📋 Revenue and sales tracking
+  📋 Auction performance monitoring
+
+================================================================
+  MODULE 1 — MAIN MARKETPLACE (New Products)
+================================================================
+
+  ✅ Vendors manage product listings (CRUD + ownership verification)
+  ✅ Customers browse, search, filter by category, paginate
+  ✅ Order placement and listing
+  ✅ Product images
+  📋 Inventory management with low-stock alerts
+  📋 Payment processing
+  📋 Sales performance per vendor/product
+
+================================================================
+  MODULE 2 — USED ITEMS (Second-Hand Marketplace)
+================================================================
+
+  ✅ List and browse used items with category filter
+  ✅ Smart Condition Verification (Like New / Good / Fair / Needs Repair)
+  ✅ Digital Product History (owner count, usage duration)
+  ✅ Condition-Based Warranty badges (Green ✅ / Red ✗)
+  📋 Seller Trust Badges (Verified Seller, Top Reseller)
+  📋 Video upload for listings
+  📋 Repair history tracking on used items
+
+================================================================
+  MODULE 3 — REPAIR SERVICE MARKETPLACE
+================================================================
+
+  ✅ Full life cycle: Request → Quote → Book → Complete → Review
+  ✅ Customer uploads repair request (category, description, pickup flag)
+  ✅ Technician views open requests and sends quotes
+  ✅ Customer views quotes and accepts one (date picker)
+  ✅ Booking confirmed, technician marks complete
+  ✅ Review submission with rating + comment (validated: must have completed booking)
+  ✅ Technician tab: Open Requests + My Bookings
+  ✅ Pickup & Delivery flag
+  ✅ Completion rate tracking + level progression (BEGINNER→VERIFIED→EXPERT)
+  📋 Technician service listings (category, price range, availability)
+
+================================================================
+  MODULE 4 — AUCTION SYSTEM
+================================================================
+
+  ✅ Full lifecycle: Created → Approved → Closed
+  ✅ Browsing all auctions
+  ✅ Real-Time Bidding via WebSocket STOMP
+  ✅ Lot details page with image, description, starting price
+  ✅ Current bid display + bid history (polling every 5s)
+  ✅ Live countdown timer (d h m s format)
+  ✅ Auction Types: STANDARD, FLASH, REVERSE, RESERVE
+  ✅ Watchlist (add/remove/list)
+  ✅ Fraud flags (admin view/resolve)
+  📋 Admin approval flow → Preparing → Active → Extended → Completed
+  ✅ BidderReputationService (model + service created, no UI yet)
+  📋 Vendor auction analytics
+  📋 Live Auction Room (active bidders, scrolling feed)
+  📋 Notifications (outbid, ending soon)
+  📋 Filtering by status / category + pagination
+  📋 Auto-extension on late bids
+  📋 Terms & Conditions acceptance before bidding
+  📋 Non-payment enforcement (permanent ban)
+
+================================================================
+  CORE INTELLIGENT SYSTEMS
+================================================================
+
+----------------------------------------------------------------
+  System 1 — Trust Score System
+----------------------------------------------------------------
+
+  ✅ Every user has a dynamic trust score (0–100)
+  ✅ Score displayed in Dashboard (green/amber/red badge)
+  ✅ Events automatically update score (e.g. REPAIR_COMPLETED +3.0)
+  📋 More score factors: delivery success, return ratio, customer ratings
+  📋 Low-score restrictions (feature blocking, admin flagging)
+  📋 High-score perks (search boost, trust badges)
+
+----------------------------------------------------------------
+  System 2 — Fraud Detection
+----------------------------------------------------------------
+
+  ✅ FraudFlag model + FraudDetectionService (flag/resolve)
+  ✅ Admin dashboard: view open flags + resolve
+  📋 Automatic detection: shill bidding, fake accounts, repeat abuse
+  📋 Feature restrictions on suspicious accounts
+  📋 Detailed fraud alerts with escalation
+
+----------------------------------------------------------------
+  System 3 — Returns & Disputes
+----------------------------------------------------------------
+
+  📋 Return model exists, no frontend or API
+  📋 Admin dispute handling not started
+
+================================================================
+  SECURITY AUDIT — All Fixed
+================================================================
+
+  ✅ AuctionAdminController: ADMIN role check added
+  ✅ FraudAdminController: ADMIN role check added
+  ✅ OrderController.getById: auth + ownership check added
+  ✅ WatchlistController.delete: auth + ownership check added
+  ✅ RepairController.completeBooking: technician ownership check added
+  ✅ RepairController.getQuotes: auth check added
+  ✅ RepairService.getOpenRequests: filters by OPEN status only
+  ✅ RepairService.submitReview: validates completed booking exists
+  ✅ ProductController: throws 401 (not 400) when unauthenticated
+  ✅ AdminSetup page: uses working Thymeleaf endpoint
+  ✅ RepairController.getOpenRequests: auth check added
+  ✅ UsedListingController: PUT/DELETE endpoints added with ownership verify
+  ✅ AuctionController: PUT/DELETE endpoints added with ownership verify
+
+================================================================
+  TECHNICAL STACK
+================================================================
+
+  Backend:
+    - Spring Boot 3 + Java 21
+    - JPA / Hibernate (PostgreSQL via Supabase)
+    - Session-based auth (HttpSession)
+    - WebSocket STOMP for live bidding
+    - BCrypt password hashing
+
+  Frontend:
+    - React 19 + Vite 6 + TypeScript
+    - Tailwind CSS 4
+    - React Query (@tanstack/react-query)
+    - React Router 7
+    - @stomp/stompjs for WebSocket
+    - react-hot-toast for notifications
+
+  Database:
+    - PostgreSQL (Supabase hosted)
+    - ddl-auto=update for schema management
+    - All entities have proper relationships and enums
+
+================================================================
+  FILES REFERENCED
+================================================================
+
+  Backend:
+    src/main/java/atomdrops/example/atomdrops/
+    ├── config/          CorsConfig, SecurityConfig, WebSocketConfig
+    ├── model/           45 JPA entities covering all domains
+    ├── repository/      15 Spring Data repositories
+    ├── service/         10 service classes
+    ├── web/api/         13 REST controllers
+    ├── web/controller/  1 Thymeleaf MVC controller (auth pages)
+    └── web/dto/         20+ DTOs
+
+  Frontend:
+    frontend/src/
+    ├── api/             ApiClient + WebSocket client
+    ├── components/      Layout, ProtectedRoute
+    ├── context/         AuthContext (session + role management)
+    ├── pages/           17 pages covering all modules
+    └── types/           TypeScript interfaces for all backend DTOs
+
+================================================================
+  REMAINING BACKLOG (Future)
+================================================================
+
+  Priority P0 — Must Have:
+  1. Chat / Messaging (Conversation + Message models exist)
+  2. Payment integration (currently dummy button)
+  3. Admin user management (ban/unban)
+
+  Priority P1 — Should Have:
+  4. Notifications system (outbid, ending soon, review reminders)
+  5. Bidder Reputation (win rate, payment rate, cancellation)
+  6. Technician service listings
+  7. Auction filtering + pagination
+  8. Account settings / password change
+
+  Priority P2 — Nice to Have:
+  9. Seller Trust Badges
+  10. Technician level progression
+  11. Vendor auction analytics
+  12. Platform analytics dashboard
+  13. Live auction room UI
+  14. Auto-extension on late bids
+  15. Returns & Disputes
+  16. File upload endpoint
+
+================================================================
+  FINAL VISION
+================================================================
+
+  ✅ Buy & Sell          — New product marketplace for vendors
+  ✅ Resell Used Items   — Trusted second-hand marketplace for all
+  ✅ Repair & Maintain   — Book and manage product repairs
+  ✅ Auction-Based Sales — Live and scheduled bidding events
+  ✅ Trust by Design     — Every interaction builds or affects trust
+  ✅ Fraud Prevention    — Manual flagging with admin resolution
+  📋 Full Product Lifecycle — Purchase → Resale → Repair → Auction
+  📋 Intelligent Automation — Auto-detection, notifications, analytics
+
+
+Important** Main plan:
+================================================================
+  SMART MULTI-VENDOR MARKETPLACE SYSTEM
   Complete System Specification
 ================================================================
 
