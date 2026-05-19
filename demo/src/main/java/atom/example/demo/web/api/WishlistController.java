@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
 import atom.example.demo.model.Wishlist;
@@ -32,7 +33,8 @@ public class WishlistController {
 
     @GetMapping
     public List<Wishlist> listWishlist(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
@@ -41,7 +43,8 @@ public class WishlistController {
 
     @PostMapping("/{productId}")
     public Wishlist addToWishlist(@PathVariable Long productId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
@@ -57,7 +60,8 @@ public class WishlistController {
 
     @DeleteMapping("/{productId}")
     public String removeFromWishlist(@PathVariable Long productId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }

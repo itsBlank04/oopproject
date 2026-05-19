@@ -1,10 +1,23 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import apiClient from '../lib/apiClient'
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (!user) { setUnreadCount(0); return }
+    apiClient.get('/api/notifications')
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setUnreadCount(res.data.filter((n: any) => !n.read).length)
+        }
+      })
+      .catch(() => {})
+  }, [user])
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8] bg-white/90 backdrop-blur-md">
@@ -31,10 +44,21 @@ export default function Navbar() {
                     <Link to="/vendor/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Sell</Link>
                   </>
                 )}
-                <Link to="/cart" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Cart</Link>
-                <Link to="/account/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
-                <Link to="/wishlist" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">♡</Link>
-                <Link to="/notifications" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">🔔</Link>
+                {hasRole('CUSTOMER') && (
+                  <>
+                    <Link to="/cart" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Cart</Link>
+                    <Link to="/account/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
+                    <Link to="/wishlist" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">♡</Link>
+                  </>
+                )}
+                <Link to="/notifications" className="relative text-sm text-[#6c5b4f] hover:text-[#221b16]">
+                  🔔
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
               </div>
               <div className="relative">
                 <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
@@ -43,10 +67,16 @@ export default function Navbar() {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-10 w-48 rounded-xl border border-[#e4d6c8] bg-white p-2 shadow-lg">
-                    <Link to="/profile" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Profile</Link>
+                    {hasRole('CUSTOMER') && (
+                      <Link to="/profile" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Profile</Link>
+                    )}
                     <Link to="/addresses" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Addresses</Link>
                     <Link to="/messages" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Messages</Link>
-                    <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
+                    {hasRole('CUSTOMER') && (
+                      <>
+                        <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
+                      </>
+                    )}
                     {hasRole('VENDOR') && (
                       <Link to="/vendor/auctions" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Auctions</Link>
                     )}

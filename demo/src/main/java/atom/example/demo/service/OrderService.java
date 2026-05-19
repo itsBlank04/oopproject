@@ -5,16 +5,20 @@ import atom.example.demo.model.Cart;
 import atom.example.demo.model.CartItem;
 import atom.example.demo.model.Coupon;
 import atom.example.demo.model.Inventory;
+import atom.example.demo.model.Notification;
 import atom.example.demo.model.Order;
 import atom.example.demo.model.OrderItem;
 import atom.example.demo.model.User;
+import atom.example.demo.model.VendorCommission;
 import atom.example.demo.repository.AddressRepository;
 import atom.example.demo.repository.CartItemRepository;
 import atom.example.demo.repository.CouponRepository;
 import atom.example.demo.repository.InventoryRepository;
+import atom.example.demo.repository.NotificationRepository;
 import atom.example.demo.repository.OrderItemRepository;
 import atom.example.demo.repository.OrderRepository;
 import atom.example.demo.repository.UserRepository;
+import atom.example.demo.repository.VendorCommissionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +38,10 @@ public class OrderService {
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final VendorCommissionRepository vendorCommissionRepository;
+    private final NotificationRepository notificationRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository, VendorCommissionRepository vendorCommissionRepository, NotificationRepository notificationRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
@@ -44,6 +50,8 @@ public class OrderService {
         this.inventoryRepository = inventoryRepository;
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
+        this.vendorCommissionRepository = vendorCommissionRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @Transactional
@@ -143,6 +151,30 @@ public class OrderService {
                     }
                     inv.setStockQty(newQty);
                     inventoryRepository.save(inv);
+                }
+
+                // Create vendor commission
+                User vendor = cartItem.getProduct().getVendor();
+                if (vendor != null) {
+                    VendorCommission commission = new VendorCommission();
+                    commission.setOrderItem(orderItem);
+                    commission.setVendor(vendor);
+                    commission.setSaleAmountBdt(unitPrice.multiply(BigDecimal.valueOf(cartItem.getQty())));
+                    commission.setCommissionRate(new BigDecimal("10.00"));
+                    commission.setCommissionBdt(commission.getSaleAmountBdt().multiply(commission.getCommissionRate()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                    commission.setNetPayoutBdt(commission.getSaleAmountBdt().subtract(commission.getCommissionBdt()));
+                    commission.setStatus("PENDING");
+                    vendorCommissionRepository.save(commission);
+
+                    // Notify vendor
+                    Notification notification = new Notification();
+                    notification.setUser(vendor);
+                    notification.setType("NEW_ORDER");
+                    notification.setTitle("New order received");
+                    notification.setBody("You have a new order for " + cartItem.getProduct().getName() + " (x" + cartItem.getQty() + ")");
+                    notification.setEntityType("ORDER");
+                    notification.setEntityId(savedOrder.getId());
+                    notificationRepository.save(notification);
                 }
             }
         }

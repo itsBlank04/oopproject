@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Review;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.ReviewRepository;
@@ -29,7 +30,8 @@ public class ReviewController {
 
     @PostMapping("/reviews")
     public Review createReview(@RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }

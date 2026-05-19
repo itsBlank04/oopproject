@@ -13,7 +13,6 @@ export default function UsedListingDetailPage() {
   const [offerMsg, setOfferMsg] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
-  const [showVideo, setShowVideo] = useState(false)
 
   useEffect(() => {
     apiClient.get(`/api/used-listings/${id}`)

@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Notification;
 import atom.example.demo.repository.NotificationRepository;
 import jakarta.servlet.http.HttpSession;
@@ -24,14 +25,14 @@ public class NotificationController {
 
     @GetMapping
     public List<Notification> list(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
     @PutMapping("/{id}/read")
     public Notification markRead(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Notification notification = notificationRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Notification not found"));
         if (!notification.getUser().getId().equals(userId)) throw new IllegalArgumentException("Not your notification");
@@ -41,7 +42,7 @@ public class NotificationController {
 
     @PutMapping("/read-all")
     public Map<String, String> markAllRead(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         List<Notification> unread = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
         for (Notification n : unread) {
@@ -53,7 +54,7 @@ public class NotificationController {
 
     @DeleteMapping("/{id}")
     public Map<String, String> delete(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Notification notification = notificationRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Notification not found"));
         if (!notification.getUser().getId().equals(userId)) throw new IllegalArgumentException("Not your notification");

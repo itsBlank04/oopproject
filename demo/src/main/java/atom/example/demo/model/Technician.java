@@ -54,6 +54,9 @@ public class Technician {
     @Column(name = "completion_rate", nullable = false)
     private BigDecimal completionRate = BigDecimal.ZERO;
 
+    @Column(nullable = false)
+    private String status = "active";
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -93,6 +96,8 @@ public class Technician {
     public void setRatingAvg(BigDecimal ratingAvg) { this.ratingAvg = ratingAvg; }
     public BigDecimal getCompletionRate() { return completionRate; }
     public void setCompletionRate(BigDecimal completionRate) { this.completionRate = completionRate; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

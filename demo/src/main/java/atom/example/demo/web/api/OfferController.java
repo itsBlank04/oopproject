@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.UsedListing;
 import atom.example.demo.model.UsedListingOffer;
 import atom.example.demo.model.UsedListingOfferMessage;
@@ -42,7 +43,8 @@ public class OfferController {
 
     @PostMapping("/used-listings/{id}/offers")
     public UsedListingOffer createOffer(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         User buyer = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         UsedListing listing = usedListingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Listing not found"));
@@ -56,7 +58,8 @@ public class OfferController {
 
     @GetMapping("/used-listings/{id}/offers")
     public List<UsedListingOffer> getOffersForListing(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         UsedListing listing = usedListingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Listing not found"));
         if (!listing.getSeller().getId().equals(userId)) throw new IllegalArgumentException("Not your listing");
@@ -65,7 +68,8 @@ public class OfferController {
 
     @PutMapping("/offers/{id}/accept")
     public UsedListingOffer acceptOffer(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         UsedListingOffer offer = usedListingOfferRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Offer not found"));
         if (!offer.getListing().getSeller().getId().equals(userId)) throw new IllegalArgumentException("Not your listing");
@@ -75,7 +79,8 @@ public class OfferController {
 
     @PutMapping("/offers/{id}/reject")
     public UsedListingOffer rejectOffer(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         UsedListingOffer offer = usedListingOfferRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Offer not found"));
         if (!offer.getListing().getSeller().getId().equals(userId)) throw new IllegalArgumentException("Not your listing");
@@ -85,7 +90,8 @@ public class OfferController {
 
     @PutMapping("/offers/{id}/withdraw")
     public UsedListingOffer withdrawOffer(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         UsedListingOffer offer = usedListingOfferRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Offer not found"));
         if (!offer.getBuyer().getId().equals(userId)) throw new IllegalArgumentException("Not your offer");
@@ -95,14 +101,16 @@ public class OfferController {
 
     @GetMapping("/offers/sent")
     public List<UsedListingOffer> getSentOffers(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         return usedListingOfferRepository.findByBuyerId(userId);
     }
 
     @PostMapping("/offers/{id}/messages")
     public UsedListingOfferMessage sendMessage(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         User sender = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         UsedListingOffer offer = usedListingOfferRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Offer not found"));

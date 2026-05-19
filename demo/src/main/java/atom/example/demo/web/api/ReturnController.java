@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Return;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.ReturnRepository;
@@ -28,7 +29,8 @@ public class ReturnController {
 
     @PostMapping
     public Return create(@RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         User customer = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         Return returnRequest = new Return();
@@ -39,14 +41,16 @@ public class ReturnController {
 
     @GetMapping("/mine")
     public List<Return> getMine(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         return returnRepository.findByCustomerId(userId);
     }
 
     @GetMapping("/{id}")
     public Return getOne(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Return returnRequest = returnRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Return not found"));
         if (!returnRequest.getCustomer().getId().equals(userId)) throw new IllegalArgumentException("Not your return");

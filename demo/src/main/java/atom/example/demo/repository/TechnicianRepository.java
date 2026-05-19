@@ -7,4 +7,5 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long> {
     Optional<Technician> findByUserId(Long userId);
     List<Technician> findBySpecialization(String specialization);
     List<Technician> findByLevel(String level);
+    List<Technician> findByStatus(String status);
 }

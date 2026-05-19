@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.AuctionLot;
 import atom.example.demo.model.AuctionWatchlist;
 import atom.example.demo.model.User;
@@ -33,14 +34,16 @@ public class WatchlistController {
 
     @GetMapping
     public List<AuctionWatchlist> list(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         return auctionWatchlistRepository.findByUserId(userId);
     }
 
     @PostMapping("/{lotId}")
     public AuctionWatchlist add(@PathVariable Long lotId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         AuctionLot lot = auctionLotRepository.findById(lotId).orElseThrow(() -> new IllegalArgumentException("Lot not found"));
@@ -52,7 +55,8 @@ public class WatchlistController {
 
     @DeleteMapping("/{lotId}")
     public Map<String, String> remove(@PathVariable Long lotId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         auctionWatchlistRepository.deleteByUserIdAndLotId(userId, lotId);
         return Map.of("message", "Removed");

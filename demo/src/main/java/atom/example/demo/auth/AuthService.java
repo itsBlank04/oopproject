@@ -41,20 +41,15 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Always include CUSTOMER role
+        // Assign only the single selected role (no auto-CUSTOMER)
         Set<Role> roles = new HashSet<>();
-        Role customerRole = roleRepository.findByName(Role.ROLE_CUSTOMER)
-            .orElseGet(() -> roleRepository.save(new Role(Role.ROLE_CUSTOMER)));
-        roles.add(customerRole);
-
-        // Add additional requested roles (VENDOR, TECHNICIAN — never ADMIN via registration)
-        if (requestedRoles != null) {
-            for (String roleName : requestedRoles) {
-                String normalized = roleName.toUpperCase().trim();
-                if ("ADMIN".equals(normalized)) continue; // Cannot self-assign ADMIN
-                roleRepository.findByName(normalized).ifPresent(roles::add);
-            }
-        }
+        String selectedRole = (requestedRoles != null && !requestedRoles.isEmpty())
+            ? requestedRoles.get(0).toUpperCase().trim() : Role.ROLE_CUSTOMER;
+        if ("ADMIN".equals(selectedRole)) selectedRole = Role.ROLE_CUSTOMER;
+        String finalRole = selectedRole;
+        Role role = roleRepository.findByName(finalRole)
+            .orElseGet(() -> roleRepository.save(new Role(finalRole)));
+        roles.add(role);
 
         User user = new User();
         user.setEmail(email);

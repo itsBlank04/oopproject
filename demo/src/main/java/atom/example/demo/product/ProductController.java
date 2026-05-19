@@ -1,5 +1,6 @@
 package atom.example.demo.product;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.UserRepository;
@@ -49,9 +50,12 @@ public class ProductController {
 
     @PostMapping
     public Product createProduct(@RequestBody Product product, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
+        }
+        if (!SecurityConfig.hasRole("VENDOR")) {
+            throw new SecurityException("Vendor access required");
         }
         User vendor = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -61,12 +65,22 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public Product updateProduct(@PathVariable Long id, @RequestBody Product product, HttpSession session) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Product existing = productService.getProduct(id);
+        if (!existing.getVendor().getId().equals(userId)) throw new SecurityException("Not your product");
         return productService.updateProduct(id, product);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
+    public String deleteProduct(@PathVariable Long id, HttpSession session) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Product existing = productService.getProduct(id);
+        if (!existing.getVendor().getId().equals(userId)) throw new SecurityException("Not your product");
         productService.softDeleteProduct(id);
         return "ok";
     }

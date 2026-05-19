@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Order;
 import atom.example.demo.model.Payment;
 import atom.example.demo.repository.OrderRepository;
@@ -27,6 +28,7 @@ public class PaymentController {
 
     @PostMapping("/order/{orderId}")
     public Payment createPayment(@PathVariable Long orderId, @RequestBody Map<String, Object> body) {
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         Payment payment = new Payment();

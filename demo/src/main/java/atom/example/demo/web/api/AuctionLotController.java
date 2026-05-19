@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.AuctionImage;
 import atom.example.demo.model.AuctionLot;
 import atom.example.demo.model.Bid;
@@ -48,7 +49,10 @@ public class AuctionLotController {
     }
 
     @PostMapping("/auction-lots/{id}/images")
-    public AuctionImage addImage(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public AuctionImage addImage(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         AuctionLot lot = auctionLotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Lot not found"));
         AuctionImage image = new AuctionImage();
         image.setLot(lot);
@@ -59,8 +63,9 @@ public class AuctionLotController {
 
     @PostMapping("/auction-lots/{id}/bids")
     public Bid placeBid(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         User bidder = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         AuctionLot lot = auctionLotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Lot not found"));
         Bid bid = new Bid();

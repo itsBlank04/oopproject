@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Cart;
 import atom.example.demo.model.CartItem;
 import atom.example.demo.model.Product;
@@ -39,19 +40,21 @@ public class CartController {
 
     @GetMapping
     public Cart getCart(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         return cartRepository.findByUserId(userId).orElse(null);
     }
 
     @PostMapping("/items")
     public CartItem addItem(@RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
@@ -86,10 +89,11 @@ public class CartController {
 
     @DeleteMapping
     public String clearCart(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         cartRepository.findByUserId(userId).ifPresent(cart -> {
             cartItemRepository.deleteByCartId(cart.getId());
         });

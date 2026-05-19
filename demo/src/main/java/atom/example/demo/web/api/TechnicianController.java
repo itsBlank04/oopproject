@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Technician;
 import atom.example.demo.model.TechnicianAvailability;
 import atom.example.demo.model.TechnicianEarning;
@@ -35,9 +36,10 @@ public class TechnicianController {
 
     @GetMapping("/technicians")
     public List<Technician> list(@RequestParam(required = false) String specialization,
-            @RequestParam(required = false) String level) {
+            @RequestParam(required = false) String level, @RequestParam(required = false) String status) {
         if (specialization != null) return technicianRepository.findBySpecialization(specialization);
         if (level != null) return technicianRepository.findByLevel(level);
+        if (status != null) return technicianRepository.findByStatus(status);
         return technicianRepository.findAll();
     }
 
@@ -48,7 +50,8 @@ public class TechnicianController {
 
     @PutMapping("/technician/profile")
     public Technician updateProfile(@RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("TECHNICIAN")) throw new SecurityException("Technician access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Technician tech = technicianRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
         if (body.containsKey("bio")) tech.setBio((String) body.get("bio"));
@@ -57,12 +60,14 @@ public class TechnicianController {
         if (body.containsKey("serviceArea")) tech.setServiceArea((String) body.get("serviceArea"));
         if (body.containsKey("websiteUrl")) tech.setWebsiteUrl((String) body.get("websiteUrl"));
         if (body.containsKey("socialLinks")) tech.setSocialLinks((String) body.get("socialLinks"));
+        if (body.containsKey("status")) tech.setStatus((String) body.get("status"));
         return technicianRepository.save(tech);
     }
 
     @GetMapping("/technician/availability")
     public List<TechnicianAvailability> getAvailability(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("TECHNICIAN")) throw new SecurityException("Technician access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Technician tech = technicianRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
         return technicianAvailabilityRepository.findByTechnicianId(tech.getId());
@@ -70,7 +75,8 @@ public class TechnicianController {
 
     @PutMapping("/technician/availability")
     public List<TechnicianAvailability> updateAvailability(@RequestBody List<Map<String, Object>> entries, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("TECHNICIAN")) throw new SecurityException("Technician access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Technician tech = technicianRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
         List<TechnicianAvailability> existing = technicianAvailabilityRepository.findByTechnicianId(tech.getId());
@@ -89,7 +95,8 @@ public class TechnicianController {
 
     @GetMapping("/technician/earnings")
     public List<TechnicianEarning> getEarnings(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("TECHNICIAN")) throw new SecurityException("Technician access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Technician tech = technicianRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
         return technicianEarningRepository.findByTechnicianId(tech.getId());
@@ -97,7 +104,8 @@ public class TechnicianController {
 
     @GetMapping("/technician/dashboard")
     public Map<String, Object> dashboard(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        if (!SecurityConfig.hasRole("TECHNICIAN")) throw new SecurityException("Technician access required");
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Technician tech = technicianRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
         List<TechnicianEarning> earnings = technicianEarningRepository.findByTechnicianId(tech.getId());
@@ -105,7 +113,7 @@ public class TechnicianController {
         int pendingPayouts = (int) earnings.stream().filter(e -> "PENDING".equals(e.getStatus())).count();
         double totalEarned = earnings.stream().filter(e -> "PAID".equals(e.getStatus())).mapToDouble(e -> e.getNetAmountBdt().doubleValue()).sum();
         return Map.of("technicianId", tech.getId(), "level", tech.getLevel(), "ratingAvg", tech.getRatingAvg(),
-                "completionRate", tech.getCompletionRate(), "totalJobs", totalJobs,
+                "completionRate", tech.getCompletionRate(), "status", tech.getStatus(), "totalJobs", totalJobs,
                 "pendingPayouts", pendingPayouts, "totalEarned", totalEarned);
     }
 }
