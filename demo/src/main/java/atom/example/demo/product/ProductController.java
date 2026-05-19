@@ -6,6 +6,7 @@ import atom.example.demo.model.User;
 import atom.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -83,5 +84,15 @@ public class ProductController {
         if (!existing.getVendor().getId().equals(userId)) throw new SecurityException("Not your product");
         productService.softDeleteProduct(id);
         return "ok";
+    }
+
+    @PostMapping("/{id}/images")
+    public Product addProductImage(@PathVariable Long id, @RequestBody Map<String, String> body, HttpSession session) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Product existing = productService.getProduct(id);
+        if (!existing.getVendor().getId().equals(userId)) throw new SecurityException("Not your product");
+        return productService.addProductImage(id, body.get("imageUrl"));
     }
 }

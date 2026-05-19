@@ -1,6 +1,7 @@
 package atom.example.demo.product;
 
 import atom.example.demo.model.Product;
+import atom.example.demo.model.ProductImage;
 import atom.example.demo.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -52,5 +53,16 @@ public class ProductService {
         Product product = getProduct(id);
         product.setDeletedAt(Instant.now());
         productRepository.save(product);
+    }
+
+    @Transactional
+    public Product addProductImage(Long productId, String imageUrl) {
+        Product product = getProduct(productId);
+        ProductImage img = new ProductImage();
+        img.setProduct(product);
+        img.setImageUrl(imageUrl);
+        img.setSortOrder(product.getImages().size());
+        product.getImages().add(img);
+        return productRepository.save(product);
     }
 }
