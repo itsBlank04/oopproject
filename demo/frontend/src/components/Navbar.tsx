@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import apiClient from '../lib/apiClient'
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!user) { setUnreadCount(0); return }
@@ -18,6 +19,17 @@ export default function Navbar() {
       })
       .catch(() => {})
   }, [user])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8] bg-white/90 backdrop-blur-md">
@@ -60,7 +72,7 @@ export default function Navbar() {
                   )}
                 </Link>
               </div>
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#221b16] text-xs font-bold text-[#f9f5f0]">{user.displayName?.[0]}</span>
                   {user.displayName}
