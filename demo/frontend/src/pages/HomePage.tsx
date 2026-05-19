@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import apiClient from '../lib/apiClient'
 
@@ -22,8 +22,34 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
-  const [priceRange, setPriceRange] = useState(200000)
+  const [minPrice, setMinPrice] = useState(0)
+  const [maxPrice, setMaxPrice] = useState(200000)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [dragging, setDragging] = useState<'min' | 'max' | null>(null)
+
+  const sliderRef = useRef<HTMLDivElement>(null)
+
+  const getPriceFromPosition = (clientX: number) => {
+    if (!sliderRef.current) return 0
+    const rect = sliderRef.current.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    return Math.round((pct * 200000) / 1000) * 1000
+  }
+
+  const handlePointerDown = (thumb: 'min' | 'max') => (e: React.PointerEvent) => {
+    setDragging(thumb)
+    const el = e.currentTarget as HTMLElement
+    el.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging) return
+    const val = getPriceFromPosition(e.clientX)
+    if (dragging === 'min' && val <= maxPrice - 1000) setMinPrice(val)
+    if (dragging === 'max' && val >= minPrice + 1000) setMaxPrice(val)
+  }
+
+  const handlePointerUp = () => setDragging(null)
 
   useEffect(() => {
     apiClient.get('/api/categories').then(r => {
@@ -44,7 +70,7 @@ export default function HomePage() {
       .finally(() => setLoading(false))
   }, [selectedCategory])
 
-  const filtered = products.filter(p => p.priceBdt <= priceRange)
+  const filtered = products.filter(p => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] py-6 px-4 sm:px-6">
@@ -63,7 +89,85 @@ export default function HomePage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="mb-8 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Price Range</h3>
+              <button onClick={() => { setMinPrice(0); setMaxPrice(200000) }} className="text-[10px] text-gray-400 hover:text-gray-900 transition-colors">Reset</button>
+            </div>
+            
+            {/* Histogram */}
+            <div className="flex items-end gap-[3px] h-12 mb-6 px-0.5">
+              {[
+                { h: 8 }, { h: 12 }, { h: 18 }, { h: 25 },
+                { h: 35 }, { h: 50 }, { h: 65 }, { h: 75 },
+                { h: 85 }, { h: 70 }, { h: 55 }, { h: 40 },
+                { h: 28 }, { h: 18 }, { h: 10 },
+              ].map((bar, i) => {
+                const barStart = (i / 15) * 200000
+                const barEnd = ((i + 1) / 15) * 200000
+                const inRange = barEnd >= minPrice && barStart <= maxPrice
+                return (
+                  <div key={i} className="flex-1 relative"
+                    style={{ height: `${(bar.h / 85) * 100}%` }}
+                  >
+                    <div className="absolute bottom-0 inset-x-0 overflow-hidden h-full rounded-t-[2px]">
+                      <div className="absolute inset-0 bg-gray-100 rounded-t-[2px]" />
+                      <div
+                        className="absolute bottom-0 inset-x-0 rounded-t-[2px] transition-all duration-500 ease-out"
+                        style={{
+                          height: inRange ? '100%' : '6%',
+                          background: `linear-gradient(to top, #6366f1, #8b5cf6)`,
+                          opacity: inRange ? 1 : 0.08,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {/* Dual range slider */}
+            <div
+              ref={sliderRef}
+              className="relative pt-1 pb-1 select-none touch-none"
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              style={{ touchAction: 'none' }}
+            >
+              {/* Track */}
+              <div className="w-full h-1 bg-gray-200 rounded-full relative overflow-hidden">
+                {/* Filled range */}
+                <div
+                  className="absolute inset-y-0 rounded-full pointer-events-none transition-all duration-100"
+                  style={{
+                    left: `${(minPrice / 200000) * 100}%`,
+                    width: `${((maxPrice - minPrice) / 200000) * 100}%`,
+                    background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
+                  }}
+                />
+              </div>
+              {/* Min thumb */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-indigo-500 rounded-full shadow-sm cursor-pointer hover:shadow-md active:shadow-sm transition-shadow"
+                style={{ left: `calc(${(minPrice / 200000) * 100}% - 7px)` }}
+                onPointerDown={handlePointerDown('min')}
+              />
+              {/* Max thumb */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-indigo-500 rounded-full shadow-sm cursor-pointer hover:shadow-md active:shadow-sm transition-shadow"
+                style={{ left: `calc(${(maxPrice / 200000) * 100}% - 7px)` }}
+                onPointerDown={handlePointerDown('max')}
+              />
+            </div>
+            {/* Price pills */}
+            <div className="flex items-center justify-between mt-3">
+              <span className="px-2.5 py-1 bg-gray-900 text-white text-[10px] font-semibold rounded-full leading-none">৳{minPrice.toLocaleString('en-BD')}</span>
+              <span className="px-2.5 py-1 bg-gray-900 text-white text-[10px] font-semibold rounded-full leading-none">৳{maxPrice.toLocaleString('en-BD')}</span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Category</h3>
             <select
               value={selectedCategory ?? ''}
@@ -80,93 +184,6 @@ export default function HomePage() {
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Price Range</h3>
-              <button onClick={() => setPriceRange(200000)} className="text-[10px] text-gray-400 hover:text-gray-900 transition-colors">Reset</button>
-            </div>
-            
-            {/* Histogram with gradient bars */}
-            <div className="flex items-end gap-[2px] h-14 mb-5 px-0.5">
-              {[
-                { h: 8, t: '' },
-                { h: 12, t: '' },
-                { h: 18, t: '' },
-                { h: 25, t: '' },
-                { h: 35, t: '' },
-                { h: 50, t: '' },
-                { h: 65, t: '' },
-                { h: 75, t: '' },
-                { h: 85, t: '' },
-                { h: 70, t: '' },
-                { h: 55, t: '' },
-                { h: 40, t: '' },
-                { h: 28, t: '' },
-                { h: 18, t: '' },
-                { h: 10, t: '' },
-              ].map((bar, i) => {
-                return (
-                  <div key={i} className="flex-1 relative group"
-                    style={{ height: `${(bar.h / 85) * 100}%` }}
-                  >
-                    <div className="absolute bottom-0 inset-x-0 rounded-t-[3px] overflow-hidden"
-                      style={{ height: '100%' }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-indigo-50 to-indigo-100/60 rounded-t-[3px]" />
-                      <div
-                        className="absolute bottom-0 inset-x-0 rounded-t-[3px] transition-all duration-500 ease-out"
-                        style={{
-                          height: `${Math.min(100, (priceRange / 200000) * 100 * 1.2)}%`,
-                          background: `linear-gradient(to top, #6366f1, #8b5cf6)`,
-                          opacity: i <= Math.floor((priceRange / 200000) * 15) ? 0.85 : 0.15,
-                        }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            
-            {/* Custom range slider */}
-            <div className="relative pt-1 pb-2">
-              <div className="relative h-7 flex items-center">
-                <input
-                  type="range"
-                  min="0"
-                  max="200000"
-                  step="1000"
-                  value={priceRange}
-                  onChange={e => setPriceRange(Number(e.target.value))}
-                  className="absolute inset-0 w-full opacity-0 cursor-pointer z-20 h-7"
-                />
-                {/* Track background */}
-                <div className="w-full h-1.5 bg-gradient-to-r from-indigo-100 via-indigo-100 to-gray-200 rounded-full absolute overflow-hidden">
-                  <div
-                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-150"
-                    style={{
-                      width: `${(priceRange / 200000) * 100}%`,
-                      background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
-                    }}
-                  />
-                </div>
-                {/* Thumb */}
-                <div
-                  className="absolute w-5 h-5 bg-white border-2 border-indigo-500 rounded-full shadow-lg pointer-events-none z-10 transition-none flex items-center justify-center"
-                  style={{ left: `calc(${(priceRange / 200000) * 100}% - 10px)` }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                </div>
-              </div>
-              {/* Price labels */}
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">৳0</span>
-                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full shadow-sm border border-indigo-100">
-                  ৳{priceRange.toLocaleString('en-BD')}
-                </span>
-              </div>
-            </div>
           </div>
         </aside>
 
