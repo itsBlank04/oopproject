@@ -18,6 +18,7 @@ type AuthContextType = {
   register: (email: string, password: string, displayName: string, roles?: string[]) => Promise<void>
   logout: () => Promise<void>
   hasRole: (role: string) => boolean
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -58,8 +59,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user?.roles?.includes(role) ?? false
   }, [user])
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await apiClient.get('/api/auth/me')
+      if (res.data && res.data.id) {
+        setUser(res.data)
+      } else {
+        setUser(null)
+      }
+    } catch {
+      setUser(null)
+    }
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, hasRole, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

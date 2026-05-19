@@ -73,8 +73,12 @@ export default function Navbar() {
                 </Link>
               </div>
               <div className="relative" ref={menuRef}>
-                <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#221b16] text-xs font-bold text-[#f9f5f0]">{user.displayName?.[0]}</span>
+                  <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#221b16] text-xs font-bold text-[#f9f5f0]">{user.displayName?.[0]}</span>
+                  )}
                   {user.displayName}
                 </button>
                 {menuOpen && (

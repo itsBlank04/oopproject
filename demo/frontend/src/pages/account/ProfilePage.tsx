@@ -5,7 +5,7 @@ import MediaUploader from '../../components/MediaUploader'
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ displayName: '', phone: '', bio: '', location: '', avatarUrl: '' })
@@ -29,6 +29,7 @@ export default function ProfilePage() {
     setSaving(true)
     try {
       await apiClient.put('/api/profile', form)
+      await refreshUser()
       toast.success('Profile updated')
     } catch (e: any) {
       toast.error(e.response?.data?.error || 'Failed to update')
