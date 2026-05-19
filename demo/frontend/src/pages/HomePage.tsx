@@ -73,8 +73,8 @@ export default function HomePage() {
   const filtered = products.filter(p => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] py-6 px-4 sm:px-6">
-      <div className="mx-auto max-w-7xl bg-white rounded-[32px] shadow-[0_8px_40px_rgba(0,0,0,0.08)] min-h-[calc(100vh-3rem)] flex overflow-hidden">
+    <div className="min-h-screen bg-[#f9f5f0] py-3 px-2 sm:py-2 sm:px-4">
+      <div className="mx-auto max-w-[1800px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] min-h-[calc(100vh-3rem)] flex overflow-hidden">
         {/* Sidebar */}
         {/* Mobile filter backdrop */}
         {showMobileFilters && (
@@ -89,7 +89,7 @@ export default function HomePage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Price Range</h3>
               <button onClick={() => { setMinPrice(0); setMaxPrice(200000) }} className="text-[10px] text-gray-400 hover:text-gray-900 transition-colors">Reset</button>
@@ -203,7 +203,7 @@ export default function HomePage() {
             </button>
           </div>
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-gray-100 rounded-2xl h-72 animate-pulse" />
               ))}
@@ -213,7 +213,7 @@ export default function HomePage() {
               <p className="text-sm">No products found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {filtered.map(product => (
                 <Link
                   to={`/products/${product.id}`}
