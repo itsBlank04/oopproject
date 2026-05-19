@@ -1,7 +1,9 @@
 package atom.example.demo.product;
 
+import atom.example.demo.model.Inventory;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.ProductImage;
+import atom.example.demo.repository.InventoryRepository;
 import atom.example.demo.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final InventoryRepository inventoryRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, InventoryRepository inventoryRepository) {
         this.productRepository = productRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     public Page<Product> getActiveProducts(Pageable pageable) {
@@ -64,5 +68,24 @@ public class ProductService {
         img.setSortOrder(product.getImages().size());
         product.getImages().add(img);
         return productRepository.save(product);
+    }
+
+    public Inventory getInventory(Long productId) {
+        return inventoryRepository.findByProductIdAndProductVariantIdIsNull(productId)
+            .orElseGet(() -> {
+                Inventory inv = new Inventory();
+                inv.setProduct(getProduct(productId));
+                inv.setStockQty(0);
+                inv.setLowStockThreshold(5);
+                return inventoryRepository.save(inv);
+            });
+    }
+
+    @Transactional
+    public Inventory updateInventory(Long productId, int stockQty, int lowStockThreshold) {
+        Inventory inv = getInventory(productId);
+        inv.setStockQty(stockQty);
+        inv.setLowStockThreshold(lowStockThreshold);
+        return inventoryRepository.save(inv);
     }
 }

@@ -2,8 +2,10 @@ package atom.example.demo.web.api;
 
 import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Auction;
+import atom.example.demo.model.Order;
 import atom.example.demo.model.OrderItem;
 import atom.example.demo.model.Product;
+import atom.example.demo.model.User;
 import atom.example.demo.model.VendorCommission;
 import atom.example.demo.model.VendorProfile;
 import atom.example.demo.repository.AuctionRepository;
@@ -12,10 +14,14 @@ import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.VendorCommissionRepository;
 import atom.example.demo.repository.VendorProfileRepository;
+import atom.example.demo.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,17 +35,20 @@ public class VendorPanelController {
     private final VendorCommissionRepository vendorCommissionRepository;
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
+    private final OrderService orderService;
 
     public VendorPanelController(VendorProfileRepository vendorProfileRepository,
             AuctionRepository auctionRepository, ProductRepository productRepository,
             VendorCommissionRepository vendorCommissionRepository,
-            OrderItemRepository orderItemRepository, UserRepository userRepository) {
+            OrderItemRepository orderItemRepository, UserRepository userRepository,
+            OrderService orderService) {
         this.vendorProfileRepository = vendorProfileRepository;
         this.auctionRepository = auctionRepository;
         this.productRepository = productRepository;
         this.vendorCommissionRepository = vendorCommissionRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
+        this.orderService = orderService;
     }
 
     @GetMapping("/dashboard")
@@ -108,5 +117,37 @@ public class VendorPanelController {
         vendorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
         return auctionRepository.findByVendorId(userId);
+    }
+
+    @GetMapping("/orders/list")
+    public List<Order> listOrders(HttpSession session) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        return orderService.getVendorOrders(userId);
+    }
+
+    @PutMapping("/orders/{orderId}/status")
+    public Order updateOrderStatus(@PathVariable Long orderId, @RequestBody Map<String, String> body, HttpSession session) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        return orderService.updateOrderStatus(orderId, userId, body.get("status"));
+    }
+
+    @GetMapping("/customers/{customerId}")
+    public Map<String, Object> customerProfile(@PathVariable Long customerId, HttpSession session) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        User customer = userRepository.findById(customerId)
+            .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        return Map.of(
+            "id", customer.getId(),
+            "email", customer.getEmail(),
+            "displayName", customer.getDisplayName(),
+            "phone", customer.getPhone() != null ? customer.getPhone() : "",
+            "avatarUrl", customer.getAvatarUrl() != null ? customer.getAvatarUrl() : ""
+        );
     }
 }

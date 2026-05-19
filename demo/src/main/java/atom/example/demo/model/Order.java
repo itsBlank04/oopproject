@@ -3,6 +3,8 @@ package atom.example.demo.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -43,6 +45,10 @@ public class Order {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("id ASC")
+    private List<OrderItem> items = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -166,4 +172,7 @@ public class Order {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public List<OrderItem> getItems() { return items; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
 }

@@ -193,4 +193,33 @@ public class OrderService {
         return orderRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Order not found"));
     }
+
+    public List<Order> getVendorOrders(Long vendorId) {
+        List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(vendorId);
+        return commissions.stream()
+            .map(c -> c.getOrderItem().getOrder())
+            .distinct()
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .toList();
+    }
+
+    @Transactional
+    public Order updateOrderStatus(Long orderId, Long vendorId, String newStatus) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        boolean isVendorOrder = vendorCommissionRepository.findByVendorId(vendorId).stream()
+            .anyMatch(c -> c.getOrderItem().getOrder().getId().equals(orderId));
+        if (!isVendorOrder) throw new SecurityException("Not your order");
+        order.setStatus(newStatus);
+        Order saved = orderRepository.save(order);
+        Notification n = new Notification();
+        n.setUser(order.getCustomer());
+        n.setType("ORDER_STATUS");
+        n.setTitle("Order #" + orderId + " updated");
+        n.setBody("Your order #" + orderId + " status is now: " + newStatus);
+        n.setEntityType("ORDER");
+        n.setEntityId(orderId);
+        notificationRepository.save(n);
+        return saved;
+    }
 }

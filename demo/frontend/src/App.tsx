@@ -16,6 +16,7 @@ import MessagesPage from './pages/account/MessagesPage'
 import VendorProductsPage from './pages/vendor/VendorProductsPage'
 import VendorDashboardPage from './pages/vendor/VendorDashboardPage'
 import VendorAuctionsPage from './pages/vendor/VendorAuctionsPage'
+import VendorOrdersPage from './pages/vendor/VendorOrdersPage'
 import UsedListingsPage from './pages/used/UsedListingsPage'
 import UsedListingDetailPage from './pages/used/UsedListingDetailPage'
 import CreateUsedListingPage from './pages/used/CreateUsedListingPage'
@@ -65,6 +66,7 @@ export default function App() {
         {/* Vendor */}
         <Route path="/vendor/dashboard" element={<><Navbar /><VendorDashboardPage /></>} />
         <Route path="/vendor/products" element={<><Navbar /><VendorProductsPage /></>} />
+        <Route path="/vendor/orders" element={<><Navbar /><VendorOrdersPage /></>} />
         <Route path="/vendor/auctions" element={<><Navbar /><VendorAuctionsPage /></>} />
 
         {/* Home (catch-all) */}

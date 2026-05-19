@@ -37,9 +37,12 @@ export default function VendorDashboardPage() {
             </div>
           ))}
         </div>
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex gap-4 flex-wrap">
           <Link to="/vendor/products" className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0]">
             Manage Products
+          </Link>
+          <Link to="/vendor/orders" className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0]">
+            Manage Orders
           </Link>
           <Link to="/vendor/auctions" className="rounded-xl border border-[#d7c7b8] px-5 py-2.5 text-sm font-semibold text-[#221b16]">
             My Auctions

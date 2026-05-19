@@ -54,6 +54,7 @@ export default function Navbar() {
                   <>
                     <Link to="/vendor/dashboard" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Dashboard</Link>
                     <Link to="/vendor/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Sell</Link>
+                    <Link to="/vendor/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
                   </>
                 )}
                 {hasRole('CUSTOMER') && (
