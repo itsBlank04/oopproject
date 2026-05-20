@@ -3,10 +3,12 @@ package atom.example.demo.web.api;
 import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Cart;
 import atom.example.demo.model.CartItem;
+import atom.example.demo.model.Inventory;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.CartItemRepository;
 import atom.example.demo.repository.CartRepository;
+import atom.example.demo.repository.InventoryRepository;
 import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -29,13 +31,16 @@ public class CartController {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final InventoryRepository inventoryRepository;
 
     public CartController(CartRepository cartRepository, CartItemRepository cartItemRepository,
-            ProductRepository productRepository, UserRepository userRepository) {
+            ProductRepository productRepository, UserRepository userRepository,
+            InventoryRepository inventoryRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     @GetMapping
@@ -75,9 +80,23 @@ public class CartController {
 
     @PutMapping("/items/{id}")
     public CartItem updateItemQty(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
         CartItem item = cartItemRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
-        item.setQty(body.get("qty"));
+        if (!item.getCart().getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied");
+        }
+        int newQty = body.get("qty");
+        if (item.getProduct() != null) {
+            Inventory inv = inventoryRepository
+                .findByProductIdAndProductVariantIdIsNull(item.getProduct().getId())
+                .orElse(null);
+            if (inv != null && newQty > inv.getStockQty()) {
+                throw new IllegalArgumentException("Insufficient stock. Available: " + inv.getStockQty());
+            }
+        }
+        item.setQty(newQty);
         return cartItemRepository.save(item);
     }
 

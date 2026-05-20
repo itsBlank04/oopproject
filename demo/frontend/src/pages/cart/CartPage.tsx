@@ -29,7 +29,28 @@ export default function CartPage() {
   const updateQty = useMutation({
     mutationFn: ({ id, qty }: { id: number; qty: number }) =>
       apiClient.put(`/api/cart/items/${id}`, { qty }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
+    onMutate: async ({ id, qty }) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] })
+      const previousCart = queryClient.getQueryData<Cart>(['cart'])
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: previousCart.items.map((item) =>
+            item.id === id ? { ...item, qty } : item
+          ),
+        })
+      }
+      return { previousCart }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart)
+        toast.error('Failed to update quantity')
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
+    },
   })
 
   const removeItem = useMutation({
