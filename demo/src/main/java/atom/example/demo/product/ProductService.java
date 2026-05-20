@@ -88,4 +88,5 @@ public class ProductService {
         inv.setLowStockThreshold(lowStockThreshold);
         return inventoryRepository.save(inv);
     }
+
 }

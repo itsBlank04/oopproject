@@ -104,9 +104,9 @@ public class VendorPanelController {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        vendorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
-        return productRepository.findByVendorId(userId);
+        return productRepository.findByVendorId(userId).stream()
+            .filter(p -> p.getDeletedAt() == null)
+            .toList();
     }
 
     @GetMapping("/auctions")

@@ -1,126 +1,217 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import apiClient from '../../lib/apiClient'
-import MediaUploader from '../../components/MediaUploader'
 import toast from 'react-hot-toast'
 
+type Conv = {
+  id: number
+  otherUserId: number
+  otherUserName: string
+  otherUserAvatar: string
+  lastMessage?: string
+  lastMessageAt?: string
+  lastMessageSenderId?: number
+  unreadCount: number
+  createdAt: string
+}
+
+type Msg = {
+  id: number
+  body: string
+  senderId: number
+  senderName: string
+  senderAvatar: string
+  isMine: boolean
+  isRead: boolean
+  createdAt: string
+}
+
+function timeAgo(dateStr: string) {
+  const now = Date.now()
+  const d = new Date(dateStr).getTime()
+  const diff = now - d
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'now'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d`
+  return new Date(dateStr).toLocaleDateString('en-BD', { day: 'numeric', month: 'short' })
+}
+
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit' })
+}
+
 export default function MessagesPage() {
-  const [conversations, setConversations] = useState<any[]>([])
+  const [convs, setConvs] = useState<Conv[]>([])
   const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState<any>(null)
-  const [messages, setMessages] = useState<any[]>([])
-  const [newMsg, setNewMsg] = useState('')
-  const [attachments, setAttachments] = useState<string[]>([])
+  const [selected, setSelected] = useState<Conv | null>(null)
+  const [messages, setMessages] = useState<Msg[]>([])
+const [newMsg, setNewMsg] = useState('')
+const [sending, setSending] = useState(false)
+const msgEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     apiClient.get('/api/chat/conversations')
-      .then(r => setConversations(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setConversations([]))
+      .then(r => setConvs(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const loadMessages = async (conv: any) => {
+  useEffect(() => {
+    msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const loadMessages = async (conv: Conv) => {
     setSelected(conv)
     try {
       const r = await apiClient.get(`/api/chat/conversations/${conv.id}/messages`)
       setMessages(Array.isArray(r.data) ? r.data : [])
+      setConvs(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c))
     } catch { setMessages([]) }
   }
 
   const send = async () => {
-    if ((!newMsg.trim() && attachments.length === 0) || !selected) return
+    if (!newMsg.trim() || !selected || sending) return
+    setSending(true)
     try {
-      const body = attachments.length > 0
-        ? `${newMsg}\n${attachments.map(u => `[attachment](${u})`).join('\n')}`
-        : newMsg
-      await apiClient.post(`/api/chat/conversations/${selected.id}/messages`, { body })
+      const r = await apiClient.post(`/api/chat/conversations/${selected.id}/messages`, { body: newMsg })
+      setMessages(prev => [...prev, r.data])
       setNewMsg('')
-      setAttachments([])
-      loadMessages(selected)
+      setConvs(prev => prev.map(c => c.id === selected.id ? { ...c, lastMessage: newMsg, lastMessageAt: new Date().toISOString(), lastMessageSenderId: r.data.senderId } : c))
     } catch { toast.error('Failed to send') }
-  }
-
-  const isImageUrl = (url: string) => /\.(jpg|jpeg|png|gif|webp)($|\?)/i.test(url)
-  const isVideoUrl = (url: string) => /\.(mp4|webm)($|\?)/i.test(url)
-
-  const renderBody = (body: string) => {
-    const parts = body.split('\n')
-    return parts.map((line, i) => {
-      const match = line.match(/\[attachment\]\((.+)\)/)
-      if (match) {
-        const url = match[1]
-        if (isImageUrl(url)) return <img key={i} src={url} alt="attachment" className="mt-2 max-h-48 rounded-xl" />
-        if (isVideoUrl(url)) return <video key={i} src={url} controls className="mt-2 max-h-48 rounded-xl" />
-        return <a key={i} href={url} target="_blank" className="text-blue-400 underline">📎 Attachment</a>
-      }
-      return line ? <p key={i}>{line}</p> : null
-    })
+    finally { setSending(false) }
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Messages</h1>
-        <div className="mt-6 grid h-[650px] grid-cols-[280px_1fr] gap-4 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white">
-          {/* Conversation list */}
-          <div className="border-r border-[#e4d6c8] overflow-y-auto">
-            {loading ? (
-              <p className="p-4 text-sm text-[#8c7564]">Loading...</p>
-            ) : conversations.length === 0 ? (
-              <p className="p-4 text-sm text-[#8c7564]">No conversations yet</p>
-            ) : conversations.map(c => (
-              <button key={c.id} onClick={() => loadMessages(c)}
-                className={`w-full border-b border-[#e4d6c8] p-4 text-left transition hover:bg-[#f9f5f0] ${selected?.id === c.id ? 'bg-[#f0e8df]' : ''}`}>
-                <p className="font-semibold text-[#221b16] text-sm">Conversation #{c.id}</p>
-                <p className="text-xs text-[#8c7564]">{new Date(c.createdAt).toLocaleDateString()}</p>
-              </button>
-            ))}
-          </div>
-          {/* Chat area */}
-          <div className="flex flex-col">
-            {selected ? (
-              <>
-                <div className="border-b border-[#e4d6c8] p-4">
-                  <p className="font-semibold text-[#221b16]">Conversation #{selected.id}</p>
-                </div>
-                <div className="flex-1 space-y-3 overflow-y-auto p-4">
-                  {messages.map(m => (
-                    <div key={m.id} className={`max-w-[70%] rounded-2xl p-3 text-sm ${m.isMine ? 'ml-auto bg-[#221b16] text-[#f9f5f0]' : 'bg-[#f0e8df] text-[#221b16]'}`}>
-                      {renderBody(m.body)}
-                      <p className="mt-1 text-xs opacity-60">{new Date(m.createdAt).toLocaleTimeString()}</p>
+    <div className="min-h-screen bg-[#f9f5f0]">
+      <div className="mx-auto flex h-[calc(100vh-80px)] max-w-6xl px-4 py-6">
+        <div className="flex w-full overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white shadow-sm">
+          {/* Sidebar */}
+          <div className="flex w-[340px] flex-shrink-0 flex-col border-r border-[#e4d6c8]">
+            <div className="border-b border-[#e4d6c8] px-5 py-4">
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Messages</h2>
+              <p className="mt-0.5 text-xs text-[#8c7564]">{convs.length} conversation{convs.length !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="space-y-1 p-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="flex items-center gap-3 rounded-xl p-3 animate-pulse">
+                      <div className="h-10 w-10 rounded-full bg-[#e4d6c8]" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-24 rounded bg-[#e4d6c8]" />
+                        <div className="h-2 w-40 rounded bg-[#e4d6c8]" />
+                      </div>
                     </div>
                   ))}
                 </div>
-                {/* Attachment preview */}
-                {attachments.length > 0 && (
-                  <div className="flex gap-2 border-t border-[#e4d6c8] px-4 pt-3">
-                    {attachments.map((url, i) => (
-                      <div key={i} className="group relative h-16 w-16 overflow-hidden rounded-xl border border-[#e4d6c8]">
-                        {isVideoUrl(url)
-                          ? <video src={url} className="h-full w-full object-cover" />
-                          : <img src={url} className="h-full w-full object-cover" />}
-                        <button onClick={() => setAttachments(attachments.filter((_, j) => j !== i))}
-                          className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 text-xs">✕</button>
+              ) : convs.length === 0 ? (
+                <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-[#8c7564]">
+                  No conversations yet
+                </div>
+              ) : (
+                <div className="py-1">
+                  {convs.map(c => (
+                    <button key={c.id} onClick={() => loadMessages(c)}
+                      className={`flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-[#f9f5f0] ${
+                        selected?.id === c.id ? 'bg-[#f0e8df]' : ''
+                      }`}>
+                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
+                        {c.otherUserAvatar ? (
+                          <img src={c.otherUserAvatar} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
+                            {c.otherUserName?.charAt(0)?.toUpperCase()}
+                          </div>
+                        )}
+                        {c.unreadCount > 0 && (
+                          <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                            {c.unreadCount > 9 ? '9+' : c.unreadCount}
+                          </div>
+                        )}
                       </div>
-                    ))}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="truncate text-sm font-semibold text-[#221b16]">
+                            {c.otherUserName || `User #${c.otherUserId}`}
+                          </p>
+                          {c.lastMessageAt && (
+                            <p className="ml-2 shrink-0 text-[10px] text-[#8c7564]">{timeAgo(c.lastMessageAt)}</p>
+                          )}
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-[#8c7564]">
+                          {c.lastMessage || 'No messages yet'}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Chat area */}
+          <div className="flex flex-1 flex-col">
+            {selected ? (
+              <>
+                <div className="flex items-center gap-3 border-b border-[#e4d6c8] px-6 py-4">
+                  <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
+                    {selected.otherUserAvatar ? (
+                      <img src={selected.otherUserAvatar} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
+                        {selected.otherUserName?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                )}
-                {/* Input area */}
-                <div className="flex items-center gap-2 border-t border-[#e4d6c8] p-4">
-                  <MediaUploader
-                    folder="messages"
-                    maxFiles={5}
-                    maxSizeMB={10}
-                    allowVideo={true}
-                    compact
-                    onUpload={setAttachments}
-                  />
-                  <input value={newMsg} onChange={e => setNewMsg(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
-                    placeholder="Type a message..." className="flex-1 rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none" />
-                  <button onClick={send} className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0]">Send</button>
+                  <div>
+                    <p className="text-sm font-semibold text-[#221b16]">{selected.otherUserName || `User #${selected.otherUserId}`}</p>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+                  {messages.map(m => (
+                    <div key={m.id} className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                        m.isMine ? 'bg-[#221b16] text-[#f9f5f0] rounded-br-md' : 'bg-[#f0e8df] text-[#221b16] rounded-bl-md'
+                      }`}>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{m.body}</p>
+                        <p className={`mt-1 text-[10px] ${m.isMine ? 'text-[#b8a494]' : 'text-[#8c7564]'}`}>
+                          {formatTime(m.createdAt)}
+                          {m.isMine && (
+                            <span className="ml-1">{m.isRead ? '✓✓' : '✓'}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={msgEndRef} />
+                </div>
+                <div className="border-t border-[#e4d6c8] px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <input value={newMsg} onChange={e => setNewMsg(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+                      placeholder="Type a message..."
+                      className="flex-1 rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
+                    <button onClick={send} disabled={!newMsg.trim() || sending}
+                      className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] disabled:opacity-40 active:scale-[0.97]">
+                      {sending ? (
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                      ) : (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </>
             ) : (
-              <div className="flex flex-1 items-center justify-center text-sm text-[#8c7564]">Select a conversation</div>
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
+                  <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+                </div>
+                <p className="font-semibold text-[#221b16]">Your Messages</p>
+                <p className="text-sm text-[#8c7564]">Select a conversation to start chatting</p>
+              </div>
             )}
           </div>
         </div>

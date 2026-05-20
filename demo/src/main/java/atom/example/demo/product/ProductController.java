@@ -1,9 +1,11 @@
 package atom.example.demo.product;
 
 import atom.example.demo.config.SecurityConfig;
+import atom.example.demo.model.Inventory;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.UserRepository;
+import atom.example.demo.product.ProductService;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -94,5 +96,11 @@ public class ProductController {
         Product existing = productService.getProduct(id);
         if (!existing.getVendor().getId().equals(userId)) throw new SecurityException("Not your product");
         return productService.addProductImage(id, body.get("imageUrl"));
+    }
+
+    @GetMapping("/{id}/stock")
+    public Map<String, Object> getProductStock(@PathVariable Long id) {
+        Inventory inv = productService.getInventory(id);
+        return Map.of("stockQty", inv.getStockQty(), "lowStockThreshold", inv.getLowStockThreshold());
     }
 }

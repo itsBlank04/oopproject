@@ -20,13 +20,14 @@ export default function VendorProductsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
   const [stockCache, setStockCache] = useState<Record<number, { stockQty: number; lowStockThreshold: number }>>({})
 
-  const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isFetching: productsFetching } = useQuery<Product[]>({
     queryKey: ['vendor-products'],
     queryFn: async () => {
-      const res = await apiClient.get('/api/products')
-      return Array.isArray(res.data) ? res.data : res.data?.content ?? []
+      const res = await apiClient.get('/api/vendor/products')
+      return Array.isArray(res.data) ? res.data : []
     },
     enabled: !!user,
+    placeholderData: [],
   })
 
   const { data: categories } = useQuery<Category[]>({
@@ -146,12 +147,12 @@ export default function VendorProductsPage() {
     return { label: `${s.stockQty} in stock`, color: 'bg-emerald-100 text-emerald-700', barColor: 'bg-emerald-500', percent }
   }
 
-  const stats = products ? {
+  const stats = {
     total: products.length,
     active: products.filter(p => p.status === 'ACTIVE').length,
     lowStock: products.filter(p => stockFor(p).stockQty > 0 && stockFor(p).stockQty <= stockFor(p).lowStockThreshold).length,
     outOfStock: products.filter(p => stockFor(p).stockQty === 0).length,
-  } : null
+  }
 
   if (!user) {
     return <div className="mx-auto max-w-4xl px-6 py-20 text-center"><p className="text-[#6c5b4f]">Sign in as a vendor</p><Link to="/auth/login" className="mt-4 inline-block rounded-full bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0]">Sign in</Link></div>
@@ -175,7 +176,7 @@ export default function VendorProductsPage() {
           </div>
 
           {/* Stats */}
-          {stats && (
+          {(
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: 'Total Products', value: stats.total, color: 'text-[#221b16]', bg: 'bg-[#f9f5f0]' },
@@ -282,24 +283,16 @@ export default function VendorProductsPage() {
 
       {/* Product grid */}
       <div className="mx-auto max-w-6xl px-6 py-8">
-        {productsLoading ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[1,2,3].map(i => (
-              <div key={i} className="rounded-2xl bg-white p-5 animate-pulse">
-                <div className="aspect-[4/3] rounded-xl bg-gray-100" />
-                <div className="mt-4 h-4 w-2/3 rounded bg-gray-100" />
-                <div className="mt-2 h-3 w-1/3 rounded bg-gray-100" />
-                <div className="mt-4 h-2 rounded bg-gray-100" />
-              </div>
-            ))}
-          </div>
-        ) : !products || products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-[#e4d6c8] p-16 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
               <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
             </div>
             <p className="mt-4 font-semibold text-[#221b16]">No products yet</p>
             <p className="mt-1 text-sm text-[#8c7564]">Click "Add Product" to create your first listing</p>
+            {productsFetching && (
+              <p className="mt-2 text-xs text-[#b8a494]">Checking your catalog...</p>
+            )}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

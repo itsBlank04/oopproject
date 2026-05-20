@@ -1,8 +1,10 @@
 package atom.example.demo.web.api;
 
 import atom.example.demo.config.SecurityConfig;
+import atom.example.demo.model.Product;
 import atom.example.demo.model.Review;
 import atom.example.demo.model.User;
+import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.ReviewRepository;
 import atom.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -22,10 +24,13 @@ public class ReviewController {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
-    public ReviewController(ReviewRepository reviewRepository, UserRepository userRepository) {
+    public ReviewController(ReviewRepository reviewRepository, UserRepository userRepository,
+            ProductRepository productRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.productRepository = productRepository;
     }
 
     @PostMapping("/reviews")
@@ -43,6 +48,14 @@ public class ReviewController {
             User reviewee = userRepository.findById(Long.valueOf(body.get("revieweeId").toString()))
                 .orElseThrow(() -> new IllegalArgumentException("Reviewee not found"));
             review.setReviewee(reviewee);
+        }
+        if (body.containsKey("productId")) {
+            Product product = productRepository.findById(Long.valueOf(body.get("productId").toString()))
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            review.setProduct(product);
+            if (body.get("revieweeId") == null && product.getVendor() != null) {
+                review.setReviewee(product.getVendor());
+            }
         }
         if (body.containsKey("rating")) {
             review.setRating(Integer.parseInt(body.get("rating").toString()));
@@ -63,5 +76,10 @@ public class ReviewController {
             return reviews.stream().filter(r -> r.getBooking() != null).toList();
         }
         return reviews;
+    }
+
+    @GetMapping("/products/{productId}/reviews")
+    public List<Review> getProductReviews(@PathVariable Long productId) {
+        return reviewRepository.findByProductId(productId);
     }
 }
