@@ -55,9 +55,25 @@ export default function CartPage() {
 
   const removeItem = useMutation({
     mutationFn: (id: number) => apiClient.delete(`/api/cart/items/${id}`),
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] })
+      const previousCart = queryClient.getQueryData<Cart>(['cart'])
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: previousCart.items.filter((item) => item.id !== id),
+        })
+      }
+      return { previousCart }
+    },
+    onError: (_err, id, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart)
+      }
+      toast.error('Failed to remove item')
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] })
-      toast.success('Item removed')
     },
   })
 
