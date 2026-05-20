@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 
 export default function TechniciansPage() {
-  const [technicians, setTechnicians] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const [spec, setSpec] = useState('')
 
-  useEffect(() => {
-    apiClient.get('/api/technicians', { params: spec ? { specialization: spec } : {} })
-      .then(r => setTechnicians(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setTechnicians([]))
-      .finally(() => setLoading(false))
-  }, [spec])
+  const { data: technicians = [], isLoading } = useQuery<any[]>({
+    queryKey: ['technicians', spec],
+    queryFn: () => apiClient.get('/api/technicians', { params: spec ? { specialization: spec } : {} })
+      .then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev,
+  })
 
   const specs = ['', 'Electronics', 'Electrical', 'Furniture', 'Appliances']
 
@@ -23,13 +23,13 @@ export default function TechniciansPage() {
         <p className="mt-2 text-sm text-[#8c7564]">Find certified technicians for your repair needs</p>
         <div className="mt-6 flex gap-2">
           {specs.map(s => (
-            <button key={s} onClick={() => { setSpec(s); setLoading(true) }}
+            <button key={s} onClick={() => setSpec(s)}
               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${spec === s ? 'bg-[#221b16] text-[#f9f5f0]' : 'border border-[#d7c7b8] text-[#221b16] hover:bg-white'}`}>
               {s || 'All'}
             </button>
           ))}
         </div>
-        {loading ? (
+        {isLoading && technicians.length === 0 ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : technicians.length === 0 ? (
           <div className="mt-12 text-center text-[#8c7564]">No technicians found.</div>

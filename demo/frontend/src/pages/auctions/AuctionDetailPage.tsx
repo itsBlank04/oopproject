@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import MediaUploader from '../../components/MediaUploader'
@@ -8,45 +9,43 @@ import toast from 'react-hot-toast'
 export default function AuctionDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const [auction, setAuction] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [bidAmount, setBidAmount] = useState('')
-  const [bidding, setBidding] = useState(false)
   const [selectedLot, setSelectedLot] = useState<number | null>(null)
   const [selectedImg, setSelectedImg] = useState<Record<number, number>>({})
   const [showUpload, setShowUpload] = useState<number | null>(null)
 
-  const reload = () => apiClient.get(`/api/auctions/${id}`).then(r => setAuction(r.data))
+  const { data: auction, isLoading } = useQuery<any>({
+    queryKey: ['auction', id],
+    queryFn: () => apiClient.get(`/api/auctions/${id}`).then(r => r.data),
+    staleTime: 30_000,
+    placeholderData: (prev) => prev,
+  })
 
-  useEffect(() => {
-    reload().catch(() => toast.error('Auction not found')).finally(() => setLoading(false))
-  }, [id])
-
-  const placeBid = async (lotId: number) => {
-    if (!bidAmount) return
-    setBidding(true)
-    try {
-      await apiClient.post(`/api/auction-lots/${lotId}/bids`, { amountBdt: parseFloat(bidAmount) })
+  const bidMutation = useMutation({
+    mutationFn: (lotId: number) => apiClient.post(`/api/auction-lots/${lotId}/bids`, { amountBdt: parseFloat(bidAmount) }),
+    onSuccess: () => {
       toast.success('Bid placed!')
       setBidAmount('')
-      await reload()
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to place bid')
-    } finally {
-      setBidding(false)
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: ['auction', id] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to place bid'),
+  })
 
-  const uploadLotImages = async (lotId: number, urls: string[]) => {
-    for (const url of urls) {
-      await apiClient.post(`/api/auction-lots/${lotId}/images`, { imageUrl: url }).catch(() => {})
-    }
-    toast.success('Images uploaded to lot')
-    setShowUpload(null)
-    await reload()
-  }
+  const uploadImagesMutation = useMutation({
+    mutationFn: async ({ lotId, urls }: { lotId: number; urls: string[] }) => {
+      for (const url of urls) {
+        await apiClient.post(`/api/auction-lots/${lotId}/images`, { imageUrl: url }).catch(() => {})
+      }
+    },
+    onSuccess: () => {
+      toast.success('Images uploaded to lot')
+      setShowUpload(null)
+      queryClient.invalidateQueries({ queryKey: ['auction', id] })
+    },
+  })
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
   if (!auction) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Auction not found</div>
 
   const timeLeft = new Date(auction.endTime).getTime() - Date.now()
@@ -113,7 +112,7 @@ export default function AuctionDetailPage() {
                       <div className="mt-2">
                         <MediaUploader folder={`auctions/${auction.id}/lots/${lot.id}`}
                           maxFiles={8} maxSizeMB={10} allowVideo={false} compact
-                          onUpload={(urls) => uploadLotImages(lot.id, urls)} />
+                          onUpload={(urls) => uploadImagesMutation.mutate({ lotId: lot.id, urls })} />
                       </div>
                     )}
                   </div>
@@ -146,9 +145,9 @@ export default function AuctionDetailPage() {
                           onFocus={() => setSelectedLot(lot.id)}
                           onChange={e => { setSelectedLot(lot.id); setBidAmount(e.target.value) }}
                           className="flex-1 rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
-                        <button onClick={() => placeBid(lot.id)} disabled={bidding || selectedLot !== lot.id}
+                        <button onClick={() => bidMutation.mutate(lot.id)} disabled={bidMutation.isPending || selectedLot !== lot.id}
                           className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] disabled:opacity-50">
-                          {bidding && selectedLot === lot.id ? 'Bidding...' : 'Place Bid'}
+                          {bidMutation.isPending && selectedLot === lot.id ? 'Bidding...' : 'Place Bid'}
                         </button>
                       </div>
                     )}

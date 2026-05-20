@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useCallback, type ReactNode } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
 
 type User = {
@@ -24,56 +25,53 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    apiClient.get('/api/auth/me')
-      .then((res) => {
-        if (res.data && res.data.id) {
-          setUser(res.data)
-        } else {
-          setUser(null)
-        }
-      })
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: user = null, isLoading } = useQuery<User | null>({
+    queryKey: ['auth-user'],
+    queryFn: async () => {
+      const res = await apiClient.get('/api/auth/me')
+      return res.data?.id ? res.data : null
+    },
+    staleTime: 300_000,
+    retry: false,
+    placeholderData: (prev) => prev,
+  })
+
+  const clearOtherCaches = () => {
+    queryClient.removeQueries({
+      predicate: (query) => query.queryKey[0] !== 'auth-user',
+    })
+  }
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await apiClient.post('/api/auth/login', { email, password })
-    setUser(res.data)
-  }, [])
+    queryClient.setQueryData(['auth-user'], res.data)
+    clearOtherCaches()
+  }, [queryClient])
 
   const register = useCallback(async (email: string, password: string, displayName: string, roles?: string[]) => {
     const res = await apiClient.post('/api/auth/register', { email, password, displayName, roles })
-    setUser(res.data)
-  }, [])
+    queryClient.setQueryData(['auth-user'], res.data)
+    clearOtherCaches()
+  }, [queryClient])
 
   const logout = useCallback(async () => {
     await apiClient.post('/api/auth/logout')
-    setUser(null)
-  }, [])
+    queryClient.setQueryData(['auth-user'], null)
+    clearOtherCaches()
+  }, [queryClient])
 
   const hasRole = useCallback((role: string) => {
     return user?.roles?.includes(role) ?? false
   }, [user])
 
   const refreshUser = useCallback(async () => {
-    try {
-      const res = await apiClient.get('/api/auth/me')
-      if (res.data && res.data.id) {
-        setUser(res.data)
-      } else {
-        setUser(null)
-      }
-    } catch {
-      setUser(null)
-    }
-  }, [])
+    await queryClient.invalidateQueries({ queryKey: ['auth-user'] })
+  }, [queryClient])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, hasRole, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading: isLoading, login, register, logout, hasRole, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

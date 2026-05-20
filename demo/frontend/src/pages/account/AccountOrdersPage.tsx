@@ -102,6 +102,7 @@ export default function AccountOrdersPage() {
       return Array.isArray(res.data) ? res.data : []
     },
     enabled: !!user,
+    placeholderData: (prev) => prev,
   })
 
   const fetchPaymentInfo = async (orderId: number) => {

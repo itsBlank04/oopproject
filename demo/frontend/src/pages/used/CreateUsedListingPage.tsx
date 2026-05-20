@@ -1,20 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
 import toast from 'react-hot-toast'
 
 export default function CreateUsedListingPage() {
   const nav = useNavigate()
-  const [categories, setCategories] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [videoUrls, setVideoUrls] = useState<string[]>([])
   const [form, setForm] = useState({ title: '', description: '', askingPriceBdt: '', categoryId: '' })
 
-  useEffect(() => {
-    apiClient.get('/api/categories').then(r => setCategories(r.data)).catch(() => {})
-  }, [])
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.get('/api/categories').then(r => r.data),
+    staleTime: 300_000,
+  })
 
   const submit = async () => {
     if (!form.title || !form.askingPriceBdt) { toast.error('Title and price are required'); return }
@@ -27,11 +29,9 @@ export default function CreateUsedListingPage() {
       })
       const listingId = res.data.id
 
-      // Save images
       for (const url of imageUrls) {
         await apiClient.post(`/api/used-listings/${listingId}/images`, { imageUrl: url }).catch(() => {})
       }
-      // Save videos
       for (const url of videoUrls) {
         await apiClient.post(`/api/used-listings/${listingId}/videos`, { videoUrl: url }).catch(() => {})
       }
@@ -74,12 +74,11 @@ export default function CreateUsedListingPage() {
               <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}
                 className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]">
                 <option value="">Select category</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Photo upload */}
           <MediaUploader
             folder="used-items"
             label="Photos (up to 8)"
@@ -89,7 +88,6 @@ export default function CreateUsedListingPage() {
             onUpload={setImageUrls}
           />
 
-          {/* Video upload */}
           <MediaUploader
             folder="used-items/videos"
             label="Videos (optional, up to 3)"

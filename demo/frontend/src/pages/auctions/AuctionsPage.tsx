@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 
 type Auction = {
@@ -10,16 +11,15 @@ type Auction = {
 }
 
 export default function AuctionsPage() {
-  const [auctions, setAuctions] = useState<Auction[]>([])
-  const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<string>('ACTIVE')
 
-  useEffect(() => {
-    apiClient.get('/api/auctions', { params: { status: tab } })
-      .then(r => setAuctions(Array.isArray(r.data) ? r.data : r.data.content || []))
-      .catch(() => setAuctions([]))
-      .finally(() => setLoading(false))
-  }, [tab])
+  const { data: auctions = [], isLoading } = useQuery<Auction[]>({
+    queryKey: ['auctions', tab],
+    queryFn: () => apiClient.get('/api/auctions', { params: { status: tab } })
+      .then(r => Array.isArray(r.data) ? r.data : r.data.content || []),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
+  })
 
   const tabs = ['ACTIVE', 'COMPLETED', 'APPROVED', 'CREATED']
 
@@ -30,13 +30,13 @@ export default function AuctionsPage() {
         <p className="mt-2 text-sm text-[#8c7564]">Bid on unique items in real-time</p>
         <div className="mt-6 flex gap-2">
           {tabs.map(t => (
-            <button key={t} onClick={() => { setTab(t); setLoading(true) }}
+            <button key={t} onClick={() => setTab(t)}
               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${tab === t ? 'bg-[#221b16] text-[#f9f5f0]' : 'border border-[#d7c7b8] text-[#221b16] hover:bg-white'}`}>
               {t}
             </button>
           ))}
         </div>
-        {loading ? (
+        {isLoading && auctions.length === 0 ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading auctions...</div>
         ) : auctions.length === 0 ? (
           <div className="mt-12 text-center text-[#8c7564]">No {tab.toLowerCase()} auctions found.</div>

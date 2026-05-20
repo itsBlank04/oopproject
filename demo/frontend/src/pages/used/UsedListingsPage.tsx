@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 
 type UsedListing = {
@@ -16,16 +17,15 @@ type UsedListing = {
 }
 
 export default function UsedListingsPage() {
-  const [listings, setListings] = useState<UsedListing[]>([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    apiClient.get('/api/used-listings', { params: { search: search || undefined } })
-      .then(r => setListings(Array.isArray(r.data) ? r.data : r.data.content || []))
-      .catch(() => setListings([]))
-      .finally(() => setLoading(false))
-  }, [search])
+  const { data: listings = [], isLoading } = useQuery<UsedListing[]>({
+    queryKey: ['used-listings', search],
+    queryFn: () => apiClient.get('/api/used-listings', { params: { search: search || undefined } })
+      .then(r => Array.isArray(r.data) ? r.data : r.data.content || []),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev,
+  })
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
@@ -41,7 +41,7 @@ export default function UsedListingsPage() {
           placeholder="Search used items..."
           className="mt-6 w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-3 text-sm outline-none focus:border-[#221b16]"
         />
-        {loading ? (
+        {isLoading ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : listings.length === 0 ? (
           <div className="mt-12 text-center text-[#8c7564]">No used items found. Be the first to list one!</div>

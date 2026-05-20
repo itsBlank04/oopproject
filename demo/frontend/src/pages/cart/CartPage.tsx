@@ -24,6 +24,7 @@ export default function CartPage() {
     queryKey: ['cart'],
     queryFn: () => apiClient.get('/api/cart').then((r) => r.data),
     enabled: !!user,
+    placeholderData: (prev) => prev,
   })
 
   const updateQty = useMutation({

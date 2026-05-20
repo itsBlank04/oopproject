@@ -24,6 +24,7 @@ export default function ProductListPage() {
   const { data, isLoading, error } = useQuery<PageResponse>({
     queryKey: ['products'],
     queryFn: () => apiClient.get('/api/products').then((r) => r.data),
+    placeholderData: (prev) => prev,
   })
 
   return (

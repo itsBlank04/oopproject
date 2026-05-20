@@ -1,24 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useState, useEffect, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!user) { setUnreadCount(0); return }
-    apiClient.get('/api/notifications')
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setUnreadCount(res.data.filter((n: any) => !n.read).length)
-        }
-      })
-      .catch(() => {})
-  }, [user])
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => apiClient.get('/api/notifications').then(r => r.data),
+    enabled: !!user,
+    staleTime: 60_000,
+  })
+  const unreadCount = (Array.isArray(notifications) ? notifications : []).filter((n: any) => !n.read).length
 
   useEffect(() => {
     if (!menuOpen) return

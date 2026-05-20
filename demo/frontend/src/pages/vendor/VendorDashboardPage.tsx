@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
@@ -63,58 +63,32 @@ function clamp(v: number, min: number, max: number) { return Math.max(min, Math.
 
 export default function VendorDashboardPage() {
   const { user } = useAuth()
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [analytics, setAnalytics] = useState<Analytics | null>(null)
-  const [orders, setOrders] = useState<Order[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    Promise.all([
-      apiClient.get('/api/vendor/dashboard').catch(() => ({ data: null })),
-      apiClient.get('/api/vendor/analytics').catch(() => ({ data: null })),
-      apiClient.get('/api/vendor/orders').catch(() => ({ data: [] })),
-      apiClient.get('/api/vendor/products').catch(() => ({ data: [] })),
-    ]).then(([d, a, o, p]) => {
-      setStats(d.data)
-      setAnalytics(a.data)
-      setOrders(Array.isArray(o.data) ? o.data : [])
-      setProducts(Array.isArray(p.data) ? p.data : [])
-    }).finally(() => setLoading(false))
-  }, [])
+  const { data: stats } = useQuery<Stats | null>({
+    queryKey: ['vendor-dashboard'],
+    queryFn: () => apiClient.get('/api/vendor/dashboard').then(r => r.data),
+    staleTime: 120_000,
+  })
 
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf6f2]">
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a1512] mb-4">
-            <svg className="h-7 w-7 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72" />
-            </svg>
-          </div>
-          <p className="text-sm text-[#6c5b4f] mb-4">Sign in as a vendor to access your dashboard</p>
-          <Link to="/auth/login" className="inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
-            Sign in
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  const { data: analytics } = useQuery<Analytics | null>({
+    queryKey: ['vendor-analytics'],
+    queryFn: () => apiClient.get('/api/vendor/analytics').then(r => r.data),
+    staleTime: 120_000,
+  })
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf6f2]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative h-10 w-10">
-            <div className="absolute inset-0 rounded-full border-2 border-[#e4d6c8]" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#1a1512] animate-spin" />
-          </div>
-          <p className="text-sm text-[#8c7564]">Loading dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+  const { data: orders = [] } = useQuery<Order[]>({
+    queryKey: ['vendor-orders'],
+    queryFn: () => apiClient.get('/api/vendor/orders').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 120_000,
+  })
+
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ['vendor-products'],
+    queryFn: () => apiClient.get('/api/vendor/products').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 120_000,
+  })
+
+  const isLoading = false
 
   const activeProducts = products.filter(p => p.status === 'ACTIVE').length
   const draftProducts = products.filter(p => p.status === 'DRAFT').length
@@ -138,10 +112,6 @@ export default function VendorDashboardPage() {
         @keyframes scaleIn {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(-8px); }
-          to { opacity: 1; transform: translateX(0); }
         }
         @keyframes growWidth {
           from { width: 0; }
@@ -173,10 +143,10 @@ export default function VendorDashboardPage() {
               </div>
               <div>
                 <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">
-                  {stats?.shopName || `${user.displayName}'s Shop`}
+                  {stats?.shopName || `${user?.displayName}'s Shop`}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm text-[#8c7564]">{user.displayName}</span>
+                  <span className="text-sm text-[#8c7564]">{user?.displayName}</span>
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                     stats?.verificationStatus === 'VERIFIED'
                       ? 'bg-emerald-50 text-emerald-700'

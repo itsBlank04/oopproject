@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -7,38 +8,31 @@ import toast from 'react-hot-toast'
 export default function UsedListingDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const [item, setItem] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [offerAmount, setOfferAmount] = useState('')
   const [offerMsg, setOfferMsg] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
 
-  useEffect(() => {
-    apiClient.get(`/api/used-listings/${id}`)
-      .then(r => setItem(r.data))
-      .catch(() => toast.error('Item not found'))
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data: item, isLoading } = useQuery<any>({
+    queryKey: ['used-listing', id],
+    queryFn: () => apiClient.get(`/api/used-listings/${id}`).then(r => r.data),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev,
+  })
 
-  const makeOffer = async () => {
-    if (!offerAmount) return
-    setSubmitting(true)
-    try {
-      await apiClient.post(`/api/used-listings/${id}/offers`, {
-        offerAmountBdt: parseFloat(offerAmount), message: offerMsg
-      })
+  const offerMutation = useMutation({
+    mutationFn: () => apiClient.post(`/api/used-listings/${id}/offers`, {
+      offerAmountBdt: parseFloat(offerAmount), message: offerMsg
+    }),
+    onSuccess: () => {
       toast.success('Offer sent!')
       setOfferAmount('')
       setOfferMsg('')
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to send offer')
-    } finally {
-      setSubmitting(false)
-    }
-  }
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to send offer'),
+  })
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
   if (!item) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Item not found</div>
 
   const images = item.images || []
@@ -63,7 +57,6 @@ export default function UsedListingDetailPage() {
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
               )}
             </div>
-            {/* Thumbnails */}
             {allMedia.length > 1 && (
               <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
                 {allMedia.map((m: any, i: number) => (
@@ -108,9 +101,9 @@ export default function UsedListingDetailPage() {
                 <textarea value={offerMsg} onChange={e => setOfferMsg(e.target.value)}
                   placeholder="Message to seller (optional)" rows={2}
                   className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
-                <button onClick={makeOffer} disabled={submitting}
+                <button onClick={() => offerMutation.mutate()} disabled={!offerAmount || offerMutation.isPending}
                   className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
-                  {submitting ? 'Sending...' : 'Send Offer'}
+                  {offerMutation.isPending ? 'Sending...' : 'Send Offer'}
                 </button>
               </div>
             )}

@@ -1,50 +1,48 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
 import toast from 'react-hot-toast'
 
 export default function RepairRequestsPage() {
-  const [requests, setRequests] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
-  const [categories, setCategories] = useState<any[]>([])
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
-  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', deviceType: '', categoryId: '' })
 
-  useEffect(() => {
-    apiClient.get('/api/repair/requests/mine')
-      .then(r => setRequests(Array.isArray(r.data) ? r.data : []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-    apiClient.get('/api/categories').then(r => setCategories(r.data)).catch(() => {})
-  }, [])
+  const { data: requests = [], isLoading } = useQuery<any[]>({
+    queryKey: ['repair-requests'],
+    queryFn: () => apiClient.get('/api/repair/requests/mine').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev ?? [],
+  })
 
-  const submit = async () => {
-    if (!form.title || !form.deviceType) { toast.error('Title and device type required'); return }
-    setSaving(true)
-    try {
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.get('/api/categories').then(r => r.data),
+    staleTime: 300_000,
+  })
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
       const res = await apiClient.post('/api/repair/requests', {
         ...form, categoryId: form.categoryId ? parseInt(form.categoryId) : null
       })
-      // Upload media to repair request
       for (const url of mediaUrls) {
         await apiClient.post(`/api/repair/requests/${res.data.id}/media`, { mediaUrl: url }).catch(() => {})
       }
+      return res.data
+    },
+    onSuccess: () => {
       toast.success('Repair request created')
       setShowForm(false)
       setForm({ title: '', description: '', deviceType: '', categoryId: '' })
       setMediaUrls([])
-      // Reload
-      const r = await apiClient.get('/api/repair/requests/mine')
-      setRequests(Array.isArray(r.data) ? r.data : [])
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to create')
-    } finally {
-      setSaving(false)
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: ['repair-requests'] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to create'),
+  })
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -67,7 +65,6 @@ export default function RepairRequestsPage() {
           </button>
         </div>
 
-        {/* New repair request form */}
         {showForm && (
           <div className="mt-6 space-y-4 rounded-2xl border border-[#e4d6c8] bg-white p-6">
             <h3 className="font-semibold text-[#221b16]">Describe your repair need</h3>
@@ -81,14 +78,13 @@ export default function RepairRequestsPage() {
               <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}
                 className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]">
                 <option value="">Category</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <textarea placeholder="Describe the issue in detail..." value={form.description} rows={4}
               onChange={e => setForm({ ...form, description: e.target.value })}
               className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
 
-            {/* Media upload for repair photos/videos */}
             <MediaUploader
               folder="repairs"
               label="Photos & Videos of the issue (up to 6)"
@@ -98,15 +94,14 @@ export default function RepairRequestsPage() {
               onUpload={setMediaUrls}
             />
 
-            <button onClick={submit} disabled={saving}
+            <button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}
               className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
-              {saving ? 'Submitting...' : 'Submit Repair Request'}
+              {createMutation.isPending ? 'Submitting...' : 'Submit Repair Request'}
             </button>
           </div>
         )}
 
-        {/* Requests list */}
-        {loading ? (
+        {isLoading ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : requests.length === 0 && !showForm ? (
           <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center">
@@ -127,7 +122,6 @@ export default function RepairRequestsPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor(r.status)}`}>{r.status}</span>
                 </div>
                 <p className="mt-2 text-sm text-[#6c5b4f]">{r.description}</p>
-                {/* Show uploaded media */}
                 {r.media?.length > 0 && (
                   <div className="mt-3 flex gap-2">
                     {r.media.map((m: any, i: number) => (

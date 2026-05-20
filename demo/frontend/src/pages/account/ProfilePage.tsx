@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
@@ -6,39 +7,42 @@ import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
   const [form, setForm] = useState({ displayName: '', phone: '', bio: '', location: '', avatarUrl: '' })
 
-  useEffect(() => {
-    apiClient.get('/api/profile')
-      .then(r => {
-        setForm({
-          displayName: r.data.displayName || '',
-          phone: r.data.phone || '',
-          bio: r.data.bio || '',
-          location: r.data.location || '',
-          avatarUrl: r.data.avatarUrl || ''
-        })
-      })
-      .catch(() => toast.error('Failed to load profile'))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => apiClient.get('/api/profile').then(r => r.data),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev,
+  })
 
-  const save = async () => {
-    setSaving(true)
-    try {
-      await apiClient.put('/api/profile', form)
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        displayName: profile.displayName || '',
+        phone: profile.phone || '',
+        bio: profile.bio || '',
+        location: profile.location || '',
+        avatarUrl: profile.avatarUrl || '',
+      })
+    }
+  }, [profile])
+
+  const saveMutation = useMutation({
+    mutationFn: () => apiClient.put('/api/profile', form),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.setQueryData(['auth-user'], (old: any) => old ? { ...old, ...form } : old)
       await refreshUser()
       toast.success('Profile updated')
-    } catch (e: any) {
+    },
+    onError: (e: any) => {
       toast.error(e.response?.data?.error || 'Failed to update')
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+  })
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
@@ -109,9 +113,9 @@ export default function ProfilePage() {
             <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })}
               className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
           </div>
-          <button onClick={save} disabled={saving}
+          <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}
             className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

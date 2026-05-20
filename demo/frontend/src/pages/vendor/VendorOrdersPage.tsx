@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -75,34 +76,26 @@ const ALL_STATUSES = ['ALL', 'PLACED', 'APPROVED', 'PAID', 'PROCESSING', 'SHIPPE
 
 export default function VendorOrdersPage() {
   const { user } = useAuth()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [filter, setFilter] = useState('ALL')
   const [expandedId, setExpandedId] = useState<number | null>(null)
-  const [updating, setUpdating] = useState<number | null>(null)
 
-  const fetchOrders = () => {
-    setLoading(true)
-    apiClient.get('/api/vendor/orders/list')
-      .then(r => setOrders(Array.isArray(r.data) ? r.data : []))
-      .catch(() => toast.error('Failed to load orders'))
-      .finally(() => setLoading(false))
-  }
+  const { data: orders = [], isLoading } = useQuery<Order[]>({
+    queryKey: ['vendor-orders-list'],
+    queryFn: () => apiClient.get('/api/vendor/orders/list').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev ?? [],
+  })
 
-  useEffect(() => { fetchOrders() }, [])
-
-  const updateStatus = async (orderId: number, status: string) => {
-    setUpdating(orderId)
-    try {
-      await apiClient.put(`/api/vendor/orders/${orderId}/status`, { status })
-      toast.success(`Order #${orderId} updated`)
-      fetchOrders()
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to update')
-    } finally {
-      setUpdating(null)
-    }
-  }
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: number; status: string }) =>
+      apiClient.put(`/api/vendor/orders/${orderId}/status`, { status }),
+    onSuccess: (_data, { orderId, status }) => {
+      toast.success(`Order #${orderId} updated to ${status.toLowerCase()}`)
+      queryClient.invalidateQueries({ queryKey: ['vendor-orders-list'] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to update'),
+  })
 
   const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
   const orderCounts = ALL_STATUSES.reduce((acc, s) => {
@@ -183,7 +176,7 @@ export default function VendorOrdersPage() {
 
         {/* Orders */}
         <div className="mt-6">
-          {loading ? (
+          {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
                 <div key={i} className="animate-pulse rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
@@ -268,8 +261,8 @@ export default function VendorOrdersPage() {
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                           {flow.next.map(action => (
                             <button key={action.status}
-                              onClick={() => updateStatus(order.id, action.status)}
-                              disabled={updating === order.id}
+                              onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: action.status })}
+                              disabled={updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id}
                               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition active:scale-[0.97] disabled:opacity-50 ${
                                 action.variant === 'primary'
                                   ? 'bg-[#1a1512] text-[#faf6f2] hover:bg-[#2d241e]'
@@ -277,7 +270,7 @@ export default function VendorOrdersPage() {
                                   ? 'border border-red-200 text-red-600 hover:bg-red-50'
                                   : 'border border-[#d7c7b8] text-[#1a1512] hover:bg-[#faf6f2]'
                               }`}>
-                              {updating === order.id ? (
+                              {updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id ? (
                                 <span className="flex items-center gap-1.5">
                                   <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                                   Updating...

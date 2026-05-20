@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 
@@ -44,44 +45,54 @@ function formatTime(dateStr: string) {
 }
 
 export default function MessagesPage() {
-  const [convs, setConvs] = useState<Conv[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [selected, setSelected] = useState<Conv | null>(null)
-  const [messages, setMessages] = useState<Msg[]>([])
-const [newMsg, setNewMsg] = useState('')
-const [sending, setSending] = useState(false)
-const msgEndRef = useRef<HTMLDivElement>(null)
+  const [newMsg, setNewMsg] = useState('')
+  const msgEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    apiClient.get('/api/chat/conversations')
-      .then(r => setConvs(Array.isArray(r.data) ? r.data : []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: convs = [], isLoading } = useQuery<Conv[]>({
+    queryKey: ['conversations'],
+    queryFn: () => apiClient.get('/api/chat/conversations').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev ?? [],
+  })
+
+  const { data: messages = [] } = useQuery<Msg[]>({
+    queryKey: ['messages', selected?.id],
+    queryFn: () => apiClient.get(`/api/chat/conversations/${selected!.id}/messages`).then(r => Array.isArray(r.data) ? r.data : []),
+    enabled: !!selected,
+    staleTime: 30_000,
+    placeholderData: (prev) => prev ?? [],
+  })
 
   useEffect(() => {
     msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const loadMessages = async (conv: Conv) => {
+  const sendMutation = useMutation({
+    mutationFn: () => apiClient.post(`/api/chat/conversations/${selected!.id}/messages`, { body: newMsg }),
+    onSuccess: (r) => {
+      setMessages((prev: Msg[]) => [...prev, r.data])
+      setNewMsg('')
+      queryClient.invalidateQueries({ queryKey: ['conversations'] })
+    },
+    onError: () => toast.error('Failed to send'),
+  })
+
+  const selectConv = (conv: Conv) => {
     setSelected(conv)
-    try {
-      const r = await apiClient.get(`/api/chat/conversations/${conv.id}/messages`)
-      setMessages(Array.isArray(r.data) ? r.data : [])
-      setConvs(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c))
-    } catch { setMessages([]) }
+    queryClient.setQueryData<Conv[]>(['conversations'], prev =>
+      prev?.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c) ?? []
+    )
   }
 
-  const send = async () => {
-    if (!newMsg.trim() || !selected || sending) return
-    setSending(true)
-    try {
-      const r = await apiClient.post(`/api/chat/conversations/${selected.id}/messages`, { body: newMsg })
-      setMessages(prev => [...prev, r.data])
-      setNewMsg('')
-      setConvs(prev => prev.map(c => c.id === selected.id ? { ...c, lastMessage: newMsg, lastMessageAt: new Date().toISOString(), lastMessageSenderId: r.data.senderId } : c))
-    } catch { toast.error('Failed to send') }
-    finally { setSending(false) }
+  const handleSend = () => {
+    if (!newMsg.trim() || !selected || sendMutation.isPending) return
+    sendMutation.mutate()
+  }
+
+  const setMessages = (updater: Msg[] | ((prev: Msg[]) => Msg[])) => {
+    queryClient.setQueryData(['messages', selected?.id], updater)
   }
 
   return (
@@ -95,7 +106,7 @@ const msgEndRef = useRef<HTMLDivElement>(null)
               <p className="mt-0.5 text-xs text-[#8c7564]">{convs.length} conversation{convs.length !== 1 ? 's' : ''}</p>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {loading ? (
+              {isLoading ? (
                 <div className="space-y-1 p-3">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex items-center gap-3 rounded-xl p-3 animate-pulse">
@@ -114,7 +125,7 @@ const msgEndRef = useRef<HTMLDivElement>(null)
               ) : (
                 <div className="py-1">
                   {convs.map(c => (
-                    <button key={c.id} onClick={() => loadMessages(c)}
+                    <button key={c.id} onClick={() => selectConv(c)}
                       className={`flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-[#f9f5f0] ${
                         selected?.id === c.id ? 'bg-[#f0e8df]' : ''
                       }`}>
@@ -190,12 +201,12 @@ const msgEndRef = useRef<HTMLDivElement>(null)
                 <div className="border-t border-[#e4d6c8] px-6 py-4">
                   <div className="flex items-center gap-3">
                     <input value={newMsg} onChange={e => setNewMsg(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                       placeholder="Type a message..."
                       className="flex-1 rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
-                    <button onClick={send} disabled={!newMsg.trim() || sending}
+                    <button onClick={handleSend} disabled={!newMsg.trim() || sendMutation.isPending}
                       className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] disabled:opacity-40 active:scale-[0.97]">
-                      {sending ? (
+                      {sendMutation.isPending ? (
                         <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                       ) : (
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>

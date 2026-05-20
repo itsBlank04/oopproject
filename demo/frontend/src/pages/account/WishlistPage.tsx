@@ -1,34 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 
 export default function WishlistPage() {
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const load = () => {
-    apiClient.get('/api/wishlist')
-      .then(r => setItems(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false))
-  }
+  const { data: items = [], isLoading } = useQuery<any[]>({
+    queryKey: ['wishlist'],
+    queryFn: () => apiClient.get('/api/wishlist').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev ?? [],
+  })
 
-  useEffect(load, [])
-
-  const remove = async (productId: number) => {
-    try {
-      await apiClient.delete(`/api/wishlist/${productId}`)
-      setItems(items.filter(i => i.product?.id !== productId))
-      toast.success('Removed from wishlist')
-    } catch { toast.error('Failed') }
-  }
+  const removeMutation = useMutation({
+    mutationFn: (productId: number) => apiClient.delete(`/api/wishlist/${productId}`),
+    onMutate: async (productId) => {
+      await queryClient.cancelQueries({ queryKey: ['wishlist'] })
+      const prev = queryClient.getQueryData<any[]>(['wishlist'])
+      if (prev) queryClient.setQueryData(['wishlist'], prev.filter(i => i.product?.id !== productId))
+      return { prev }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['wishlist'], ctx.prev)
+      toast.error('Failed')
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] }),
+    onSuccess: () => toast.success('Removed from wishlist'),
+  })
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
       <div className="mx-auto max-w-4xl">
         <h1 className="font-[Fraunces] text-3xl text-[#221b16]">My Wishlist</h1>
-        {loading ? (
+        {isLoading ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : items.length === 0 ? (
           <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center">
@@ -48,7 +53,7 @@ export default function WishlistPage() {
                   <Link to={`/products/${w.product?.id}`} className="font-semibold text-[#221b16] hover:underline">{w.product?.name}</Link>
                   <p className="mt-1 text-lg font-bold text-[#221b16]">৳{w.product?.priceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
                 </div>
-                <button onClick={() => remove(w.product?.id)} className="rounded-xl border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                <button onClick={() => removeMutation.mutate(w.product?.id)} className="rounded-xl border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                   Remove
                 </button>
               </div>

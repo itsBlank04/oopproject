@@ -107,12 +107,14 @@ export default function ProductDetailPage() {
     queryKey: ['product', id],
     queryFn: () => apiClient.get(`/api/products/${id}`).then((r) => r.data),
     enabled: !!id,
+    placeholderData: (prev) => prev,
   })
 
   const { data: stock } = useQuery<{ stockQty: number; lowStockThreshold: number }>({
     queryKey: ['product-stock', id],
     queryFn: () => apiClient.get(`/api/products/${id}/stock`).then((r) => r.data),
     enabled: !!id,
+    placeholderData: (prev) => prev,
   })
 
   const vendorId = product?.vendor?.id
@@ -120,12 +122,14 @@ export default function ProductDetailPage() {
     queryKey: ['vendor-profile', vendorId],
     queryFn: () => apiClient.get(`/api/vendors/${vendorId}/profile`).then((r) => r.data),
     enabled: !!vendorId,
+    placeholderData: (prev) => prev,
   })
 
   const { data: reviews = [], refetch: refetchReviews } = useQuery<Review[]>({
     queryKey: ['product-reviews', id],
     queryFn: () => apiClient.get(`/api/products/${id}/reviews`).then((r) => r.data),
     enabled: !!id,
+    placeholderData: (prev) => prev ?? [],
   })
 
   if (isLoading) {

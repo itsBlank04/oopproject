@@ -1,53 +1,55 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 
 export default function AddressesPage() {
-  const [addresses, setAddresses] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ label: '', addressLine1: '', addressLine2: '', city: '', district: '', postalCode: '', phone: '' })
-  const [saving, setSaving] = useState(false)
 
-  const load = () => {
-    apiClient.get('/api/addresses')
-      .then(r => setAddresses(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setAddresses([]))
-      .finally(() => setLoading(false))
-  }
+  const { data: addresses = [], isLoading } = useQuery<any[]>({
+    queryKey: ['addresses'],
+    queryFn: () => apiClient.get('/api/addresses').then(r => Array.isArray(r.data) ? r.data : []),
+    staleTime: 120_000,
+    placeholderData: (prev) => prev ?? [],
+  })
 
-  useEffect(load, [])
-
-  const save = async () => {
-    setSaving(true)
-    try {
-      await apiClient.post('/api/addresses', form)
+  const saveMutation = useMutation({
+    mutationFn: () => apiClient.post('/api/addresses', form),
+    onSuccess: () => {
       toast.success('Address added')
       setShowForm(false)
       setForm({ label: '', addressLine1: '', addressLine2: '', city: '', district: '', postalCode: '', phone: '' })
-      load()
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed')
-    } finally {
-      setSaving(false)
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: ['addresses'] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed'),
+  })
 
-  const remove = async (id: number) => {
-    try {
-      await apiClient.delete(`/api/addresses/${id}`)
-      setAddresses(addresses.filter(a => a.id !== id))
-      toast.success('Deleted')
-    } catch { toast.error('Failed') }
-  }
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => apiClient.delete(`/api/addresses/${id}`),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['addresses'] })
+      const prev = queryClient.getQueryData<any[]>(['addresses'])
+      if (prev) queryClient.setQueryData(['addresses'], prev.filter(a => a.id !== id))
+      return { prev }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['addresses'], ctx.prev)
+      toast.error('Failed')
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
+    onSuccess: () => toast.success('Deleted'),
+  })
 
-  const setDefault = async (id: number) => {
-    try {
-      await apiClient.put(`/api/addresses/${id}/default`)
+  const setDefaultMutation = useMutation({
+    mutationFn: (id: number) => apiClient.put(`/api/addresses/${id}/default`),
+    onSuccess: () => {
       toast.success('Set as default')
-      load()
-    } catch { toast.error('Failed') }
-  }
+      queryClient.invalidateQueries({ queryKey: ['addresses'] })
+    },
+    onError: () => toast.error('Failed'),
+  })
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
@@ -65,12 +67,12 @@ export default function AddressesPage() {
                 placeholder={k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}
                 className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
             ))}
-            <button onClick={save} disabled={saving} className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
-              {saving ? 'Saving...' : 'Save Address'}
+            <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
+              {saveMutation.isPending ? 'Saving...' : 'Save Address'}
             </button>
           </div>
         )}
-        {loading ? (
+        {isLoading ? (
           <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : addresses.length === 0 ? (
           <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center text-[#8c7564]">No addresses yet</div>
@@ -86,8 +88,8 @@ export default function AddressesPage() {
                     {a.phone && <p className="text-sm text-[#8c7564]">📞 {a.phone}</p>}
                   </div>
                   <div className="flex gap-2">
-                    {!a.isDefault && <button onClick={() => setDefault(a.id)} className="text-xs text-[#221b16] hover:underline">Set Default</button>}
-                    <button onClick={() => remove(a.id)} className="text-xs text-red-600 hover:underline">Delete</button>
+                    {!a.isDefault && <button onClick={() => setDefaultMutation.mutate(a.id)} className="text-xs text-[#221b16] hover:underline">Set Default</button>}
+                    <button onClick={() => removeMutation.mutate(a.id)} className="text-xs text-red-600 hover:underline">Delete</button>
                   </div>
                 </div>
               </div>
