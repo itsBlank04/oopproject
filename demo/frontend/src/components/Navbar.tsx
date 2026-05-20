@@ -40,7 +40,6 @@ export default function Navbar() {
             <span className="font-[Fraunces] text-lg font-semibold text-[#221b16]">AtomDrops</span>
           </Link>
           <div className="hidden items-center gap-4 md:flex">
-            <Link to="/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Products</Link>
             <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
             <Link to="/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Auctions</Link>
             <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>

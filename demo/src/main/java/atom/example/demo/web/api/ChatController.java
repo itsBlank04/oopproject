@@ -9,11 +9,14 @@ import atom.example.demo.repository.ConversationMemberRepository;
 import atom.example.demo.repository.ConversationRepository;
 import atom.example.demo.repository.MessageRepository;
 import atom.example.demo.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,14 +32,17 @@ public class ChatController {
     private final ConversationMemberRepository conversationMemberRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     public ChatController(ConversationRepository conversationRepository,
             ConversationMemberRepository conversationMemberRepository,
-            MessageRepository messageRepository, UserRepository userRepository) {
+            MessageRepository messageRepository, UserRepository userRepository,
+            EntityManager entityManager) {
         this.conversationRepository = conversationRepository;
         this.conversationMemberRepository = conversationMemberRepository;
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
+        this.entityManager = entityManager;
     }
 
     private Long getUserId(HttpSession session) {
@@ -165,5 +171,14 @@ public class ChatController {
         result.put("isMine", true);
         result.put("createdAt", message.getCreatedAt());
         return result;
+    }
+
+    @Transactional
+    @DeleteMapping("/conversations")
+    public String deleteAllConversations() {
+        entityManager.createNativeQuery("DELETE FROM messages").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM conversation_members").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM conversations").executeUpdate();
+        return "ok";
     }
 }
