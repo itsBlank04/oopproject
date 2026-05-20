@@ -40,9 +40,13 @@ export default function Navbar() {
             <span className="font-[Fraunces] text-lg font-semibold text-[#221b16]">AtomDrops</span>
           </Link>
           <div className="hidden items-center gap-4 md:flex">
-            <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
+            {!hasRole('VENDOR') && (
+              <>
+                <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
+                <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
+              </>
+            )}
             <Link to="/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Auctions</Link>
-            <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -56,7 +60,7 @@ export default function Navbar() {
                     <Link to="/vendor/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
                   </>
                 )}
-                {hasRole('CUSTOMER') && (
+                {hasRole('CUSTOMER') && !hasRole('VENDOR') && (
                   <>
                     <Link to="/cart" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Cart</Link>
                     <Link to="/account/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
@@ -83,15 +87,11 @@ export default function Navbar() {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-10 w-48 rounded-xl border border-[#e4d6c8] bg-white p-2 shadow-lg">
-                    {hasRole('CUSTOMER') && (
-                      <Link to="/profile" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Profile</Link>
-                    )}
+                    <Link to="/profile" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Profile</Link>
                     <Link to="/addresses" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Addresses</Link>
                     <Link to="/messages" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Messages</Link>
-                    {hasRole('CUSTOMER') && (
-                      <>
-                        <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
-                      </>
+                    {!hasRole('VENDOR') && (
+                      <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
                     )}
                     {hasRole('VENDOR') && (
                       <Link to="/vendor/auctions" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Auctions</Link>

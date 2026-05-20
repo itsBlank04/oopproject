@@ -16,8 +16,12 @@ import atom.example.demo.repository.VendorCommissionRepository;
 import atom.example.demo.repository.VendorProfileRepository;
 import atom.example.demo.service.OrderService;
 import jakarta.servlet.http.HttpSession;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -56,8 +60,7 @@ public class VendorPanelController {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        VendorProfile profile = vendorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
+        VendorProfile profile = getOrCreateProfile(userId);
         List<Auction> auctions = auctionRepository.findByVendorId(userId);
         long activeAuctions = auctions.stream().filter(a -> "ACTIVE".equals(a.getStatus())).count();
         long pendingAuctions = auctions.stream().filter(a -> "CREATED".equals(a.getStatus())).count();
@@ -79,8 +82,7 @@ public class VendorPanelController {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        vendorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
+        getOrCreateProfile(userId);
         List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
         List<Map<String, Object>> result = commissions.stream().map(c -> {
             Map<String, Object> m = new java.util.HashMap<>();
@@ -114,8 +116,7 @@ public class VendorPanelController {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        vendorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
+        getOrCreateProfile(userId);
         return auctionRepository.findByVendorId(userId);
     }
 
@@ -149,5 +150,82 @@ public class VendorPanelController {
             "phone", customer.getPhone() != null ? customer.getPhone() : "",
             "avatarUrl", customer.getAvatarUrl() != null ? customer.getAvatarUrl() : ""
         );
+    }
+
+    @GetMapping("/analytics")
+    public Map<String, Object> analytics(HttpSession session) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
+
+        // Monthly sales grouped by year-month
+        Map<YearMonth, List<VendorCommission>> byMonth = commissions.stream()
+            .collect(Collectors.groupingBy(
+                c -> YearMonth.from(c.getCreatedAt().atZone(java.time.ZoneOffset.UTC)),
+                LinkedHashMap::new,
+                Collectors.toList()
+            ));
+        List<Map<String, Object>> monthlySales = new ArrayList<>();
+        for (var entry : byMonth.entrySet()) {
+            YearMonth ym = entry.getKey();
+            List<VendorCommission> monthComms = entry.getValue();
+            double totalSale = monthComms.stream().mapToDouble(c -> c.getSaleAmountBdt().doubleValue()).sum();
+            double totalNet = monthComms.stream().mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum();
+            double totalCommission = monthComms.stream().mapToDouble(c -> c.getCommissionBdt().doubleValue()).sum();
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("month", ym.getMonthValue());
+            m.put("year", ym.getYear());
+            m.put("label", ym.getMonth().toString().substring(0, 3) + " " + String.valueOf(ym.getYear()).substring(2));
+            m.put("totalSale", totalSale);
+            m.put("totalCommission", totalCommission);
+            m.put("netPayout", totalNet);
+            m.put("orderCount", monthComms.size());
+            monthlySales.add(m);
+        }
+
+        // Top products by sales
+        Map<String, Double> productSales = new LinkedHashMap<>();
+        for (VendorCommission c : commissions) {
+            String name = c.getOrderItem().getProduct() != null ? c.getOrderItem().getProduct().getName() : "N/A";
+            productSales.merge(name, c.getSaleAmountBdt().doubleValue(), Double::sum);
+        }
+        List<Map<String, Object>> topProducts = productSales.entrySet().stream()
+            .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
+            .limit(5)
+            .map(e -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("name", e.getKey());
+                m.put("totalRevenue", e.getValue());
+                return m;
+            })
+            .toList();
+
+        // Low stock products — skip inventory query, just count products
+        List<Product> allProducts = productRepository.findByVendorId(userId).stream()
+            .filter(p -> p.getDeletedAt() == null).toList();
+
+        return Map.of(
+            "monthlySales", monthlySales,
+            "topProducts", topProducts,
+            "totalRevenue", commissions.stream().filter(c -> "PAID".equals(c.getStatus()))
+                .mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum(),
+            "totalOrders", commissions.size(),
+            "totalProducts", allProducts.size(),
+            "pendingOrders", commissions.stream().filter(c -> "PENDING".equals(c.getStatus())).count()
+        );
+    }
+
+    private VendorProfile getOrCreateProfile(Long userId) {
+        return vendorProfileRepository.findByUserId(userId).orElseGet(() -> {
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            VendorProfile p = new VendorProfile();
+            p.setUser(user);
+            p.setShopName(user.getDisplayName() + "'s Shop");
+            p.setShopSlug("shop-" + userId + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
+            p.setVerificationStatus("PENDING");
+            return vendorProfileRepository.save(p);
+        });
     }
 }

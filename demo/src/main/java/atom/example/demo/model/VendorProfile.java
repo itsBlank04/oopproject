@@ -3,6 +3,8 @@ package atom.example.demo.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "vendor_profiles")
@@ -37,7 +39,8 @@ public class VendorProfile {
     @Column(name = "website_url")
     private String websiteUrl;
 
-    @Column(name = "social_links", columnDefinition = "JSONB")
+    @Column(name = "social_links")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String socialLinks;
 
     @Column(name = "verification_status")

@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
+import { useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ProductListPage from './pages/products/ProductListPage'
@@ -69,9 +70,16 @@ export default function App() {
         <Route path="/vendor/orders" element={<><Navbar /><VendorOrdersPage /></>} />
         <Route path="/vendor/auctions" element={<><Navbar /><VendorAuctionsPage /></>} />
 
-        {/* Home (catch-all) */}
-        <Route path="*" element={<><Navbar /><HomePage /></>} />
+        {/* Home: vendors see dashboard, customers/guests see marketplace */}
+        <Route path="*" element={<HomeRouter />} />
       </Routes>
     </>
   )
+}
+
+function HomeRouter() {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  if (user?.roles?.includes('VENDOR')) return <><Navbar /><VendorDashboardPage /></>
+  return <><Navbar /><HomePage /></>
 }

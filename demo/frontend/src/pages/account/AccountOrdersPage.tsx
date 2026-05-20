@@ -1,58 +1,357 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
+import toast from 'react-hot-toast'
+
+type OrderItem = {
+  id: number
+  itemType: string
+  product?: { id: number; name: string; images?: { imageUrl: string }[] }
+  usedListing?: { id: number }
+  qty: number
+  unitPriceBdt: number
+}
 
 type Order = {
   id: number
   status: string
   totalBdt: number
+  subtotalBdt: number
+  shippingFeeBdt: number
+  discountBdt: number
+  taxBdt: number
   createdAt: string
-  shippingAddress: { fullName: string; addressLine: string; city: string }
+  items: OrderItem[]
+  shippingAddress?: { fullName: string; addressLine: string; city: string; phone?: string }
+}
+
+type PaymentInfo = {
+  payment: { id: number; amountBdt: number; method: string; status: string; paidAt: string } | null
+  invoice: { id: number; invoiceNumber: string; amountBdt: number; status: string; paidAt: string; generatedAt: string } | null
+}
+
+const STATUS_META: Record<string, { label: string; color: string; badge: string; dot: string }> = {
+  PLACED: { label: 'Pending Approval', color: 'text-amber-700', badge: 'bg-amber-50 text-amber-700 border-amber-200/60', dot: 'bg-amber-400' },
+  APPROVED: { label: 'Approved', color: 'text-blue-700', badge: 'bg-blue-50 text-blue-700 border-blue-200/60', dot: 'bg-blue-500' },
+  PROCESSING: { label: 'Processing', color: 'text-amber-700', badge: 'bg-amber-50 text-amber-700 border-amber-200/60', dot: 'bg-amber-500' },
+  SHIPPED: { label: 'Shipped', color: 'text-purple-700', badge: 'bg-purple-50 text-purple-700 border-purple-200/60', dot: 'bg-purple-500' },
+  DELIVERED: { label: 'Delivered', color: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/60', dot: 'bg-emerald-500' },
+  PAID: { label: 'Paid', color: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/60', dot: 'bg-emerald-500' },
+  CANCELLED: { label: 'Cancelled', color: 'text-red-700', badge: 'bg-red-50 text-red-600 border-red-200/60', dot: 'bg-red-500' },
+  REJECTED: { label: 'Rejected', color: 'text-red-700', badge: 'bg-red-50 text-red-600 border-red-200/60', dot: 'bg-red-500' },
+}
+
+function OrderTimeline({ status }: { status: string }) {
+  const steps = ['PLACED', 'APPROVED', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+  const currentIdx = steps.indexOf(status)
+  if (status === 'CANCELLED' || status === 'REJECTED') {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100">
+          <svg className="h-3 w-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </div>
+        <span className="text-xs font-semibold text-red-600">{status === 'REJECTED' ? 'Rejected by vendor' : 'Cancelled'}</span>
+      </div>
+    )
+  }
+  if (currentIdx < 0) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
+          <div className="h-2 w-2 rounded-full bg-gray-400" />
+        </div>
+        <span className="text-xs text-gray-500">{status}</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex items-center gap-0.5">
+      {steps.slice(0, 5).map((s, i) => {
+        const done = currentIdx >= i
+        const isLast = i === 4
+        return (
+          <div key={s} className="flex items-center">
+            <div className={`flex h-5 w-5 items-center justify-center rounded-full transition-all ${done ? 'bg-emerald-500' : 'bg-gray-200'}`}>
+              {done ? (
+                <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              ) : (
+                <div className="h-1.5 w-1.5 rounded-full bg-white" />
+              )}
+            </div>
+            {!isLast && <div className={`h-0.5 w-5 sm:w-8 ${currentIdx > i ? 'bg-emerald-500' : 'bg-gray-200'}`} />}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function AccountOrdersPage() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [payingId, setPayingId] = useState<number | null>(null)
+  const [paymentInfo, setPaymentInfo] = useState<Record<number, PaymentInfo>>({})
 
-  const { data: orders, isLoading } = useQuery<Order[]>({
+  const { data: orders, isLoading, isError, error } = useQuery<Order[]>({
     queryKey: ['orders'],
-    queryFn: () => apiClient.get('/api/orders').then((r) => r.data),
+    queryFn: async () => {
+      const res = await apiClient.get('/api/orders')
+      return Array.isArray(res.data) ? res.data : []
+    },
     enabled: !!user,
   })
 
+  const fetchPaymentInfo = async (orderId: number) => {
+    try {
+      const res = await apiClient.get(`/api/payments/order/${orderId}`)
+      setPaymentInfo(prev => ({ ...prev, [orderId]: res.data }))
+    } catch {}
+  }
+
+  const handleExpand = (id: number) => {
+    if (expandedId === id) { setExpandedId(null); return }
+    setExpandedId(id)
+    fetchPaymentInfo(id)
+  }
+
+  const payMutation = useMutation({
+    mutationFn: async (orderId: number) => {
+      const res = await apiClient.post(`/api/payments/order/${orderId}`, { method: 'DUMMY' })
+      return res.data
+    },
+    onSuccess: (data, orderId) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      setPayingId(null)
+      fetchPaymentInfo(orderId)
+      toast.success('Payment successful! Invoice generated.')
+    },
+    onError: (err: any) => {
+      setPayingId(null)
+      toast.error(err.response?.data?.error || 'Payment failed')
+    },
+  })
+
+  const handlePay = (orderId: number) => {
+    setPayingId(orderId)
+    payMutation.mutate(orderId)
+  }
+
   if (!user) {
-    return <div className="mx-auto max-w-3xl px-6 py-20 text-center"><p className="text-[#6c5b4f]">Sign in to view orders</p><Link to="/auth/login" className="mt-4 inline-block rounded-full bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0]">Sign in</Link></div>
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#faf6f2]">
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a1512] mb-4">
+            <svg className="h-7 w-7 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+          </div>
+          <p className="text-sm text-[#6c5b4f] mb-4">Sign in to view your orders</p>
+          <Link to="/auth/login" className="inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
+            Sign in
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[#faf6f2] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 mb-4">
+            <svg className="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+          </div>
+          <p className="text-sm font-semibold text-[#1a1512]">Failed to load orders</p>
+          <p className="text-xs text-[#8c7564] mt-1">{(error as any)?.message || 'Something went wrong'}</p>
+          <button onClick={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
+            Try again
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="font-[Fraunces] text-3xl text-[#221b16]">My Orders</h1>
-      {isLoading && <div className="mt-8 h-32 animate-pulse rounded-2xl bg-[#e4d6c8]" />}
-      {orders && orders.length === 0 && (
-        <div className="mt-8 text-center">
-          <p className="text-[#6c5b4f]">No orders yet</p>
-          <Link to="/products" className="mt-4 inline-block rounded-full bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0]">Start shopping</Link>
-        </div>
-      )}
-      {orders && orders.length > 0 && (
-        <div className="mt-8 space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="rounded-2xl border border-[#e4d6c8] bg-white p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-[#a28672]">Order #{order.id}</p>
-                  <p className="mt-1 font-[Fraunces] text-2xl text-[#221b16]">৳{order.totalBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
-                </div>
-                <span className="rounded-full border border-[#d7c7b8] px-4 py-1 text-xs">{order.status}</span>
-              </div>
-              <p className="mt-3 text-sm text-[#6c5b4f]">
-                Ship to: {order.shippingAddress?.fullName}, {order.shippingAddress?.addressLine}, {order.shippingAddress?.city}
-              </p>
-              <p className="mt-1 text-xs text-[#a28672]">{new Date(order.createdAt).toLocaleDateString('en-BD')}</p>
+    <div className="min-h-screen bg-[#faf6f2]">
+      <style>{`
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .anim-fade { animation: fadeSlideUp 0.4s ease-out both; }
+        .anim-fade-1 { animation-delay: 0.05s; }
+        .anim-fade-2 { animation-delay: 0.1s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        {/* Header */}
+        <div className="anim-fade anim-fade-1">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1a1512] shadow-sm">
+              <svg className="h-5 w-5 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
             </div>
-          ))}
+            <div>
+              <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">My Orders</h1>
+              <p className="text-xs text-[#8c7564] mt-0.5">Track, pay, and manage your purchases</p>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="space-y-4 anim-fade">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-lg bg-[#f5f0eb]" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-1/3 rounded bg-[#f5f0eb]" />
+                    <div className="h-3 w-1/4 rounded bg-[#f5f0eb]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!isLoading && orders && orders.length === 0 && (
+          <div className="anim-fade anim-fade-2 rounded-2xl border-2 border-dashed border-[#e4d6c8] p-12 sm:p-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f0eb]">
+              <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+            </div>
+            <p className="mt-4 font-semibold text-[#1a1512]">No orders yet</p>
+            <p className="mt-1 text-sm text-[#8c7564]">When you place an order, it will appear here</p>
+            <Link to="/" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
+              Start shopping
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </Link>
+          </div>
+        )}
+
+        {/* Orders list */}
+        {!isLoading && orders && orders.length > 0 && (
+          <div className="space-y-4 anim-fade anim-fade-2">
+            {orders.map((order, idx) => {
+              const meta = STATUS_META[order.status] || STATUS_META.PLACED
+              const isExpanded = expandedId === order.id
+              const pinfo = paymentInfo[order.id]
+              const isPaying = payingId === order.id
+              const totalItems = order.items?.reduce((s, i) => s + i.qty, 0) || 0
+              return (
+                <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.04}s` }}>
+                  {/* Collapsed header */}
+                  <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 cursor-pointer select-none"
+                    onClick={() => handleExpand(order.id)}>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f5f0eb]">
+                      <svg className="h-5 w-5 text-[#6c5b4f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-[#1a1512]">Order #{order.id}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${meta.badge}`}>{meta.label}</span>
+                      </div>
+                      <p className="text-xs text-[#8c7564] mt-0.5">
+                        {totalItems} item{totalItems !== 1 ? 's' : ''} · {new Date(order.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="hidden sm:block">
+                      <OrderTimeline status={order.status} />
+                    </div>
+                    <div className="text-right shrink-0 ml-2">
+                      <p className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                    <svg className={`h-5 w-5 shrink-0 text-[#b8a494] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                  </div>
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="border-t border-[#e4d6c8]/40 px-4 sm:px-5 pb-5">
+                      {/* Items */}
+                      <div className="mt-4 space-y-2">
+                        {(order.items || []).map(item => (
+                          <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
+                            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
+                              {item.product?.images?.[0]?.imageUrl ? (
+                                <img src={item.product.images[0].imageUrl} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-xs text-[#a28672]">
+                                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-[#1a1512] truncate">{item.product?.name || 'Product'}</p>
+                              <p className="text-xs text-[#8c7564]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
+                            </div>
+                            <p className="shrink-0 text-sm font-semibold text-[#1a1512]">৳{(item.unitPriceBdt * item.qty).toLocaleString('en-BD')}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Order summary */}
+                      <div className="mt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                        <div>
+                          {order.shippingAddress && (
+                            <p className="text-xs text-[#6c5b4f]">
+                              <span className="font-medium text-[#1a1512]">Ship to:</span> {order.shippingAddress.fullName}, {order.shippingAddress.addressLine}, {order.shippingAddress.city}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-1 text-right">
+                          <div className="flex justify-between gap-6 text-xs text-[#6c5b4f]">
+                            <span>Subtotal</span><span>৳{order.subtotalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          {order.discountBdt > 0 && (
+                            <div className="flex justify-between gap-6 text-xs text-emerald-600">
+                              <span>Discount</span><span>-৳{order.discountBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between gap-6 text-xs text-[#6c5b4f]">
+                            <span>Shipping</span><span>৳{order.shippingFeeBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="flex justify-between gap-6 font-semibold text-sm text-[#1a1512] border-t border-[#e4d6c8]/40 pt-1">
+                            <span>Total</span><span className="font-[Fraunces]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        {order.status === 'APPROVED' && (
+                          <button onClick={() => handlePay(order.id)} disabled={isPaying}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-[0.97] disabled:opacity-50">
+                            {isPaying ? (
+                              <><svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Processing...</>
+                            ) : (
+                              <><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m0 0v-.375c0-.621-.504-1.125-1.125-1.125H3.75M3.75 6h16.5M3.75 6h16.5" /></svg>Pay Now</>
+                            )}
+                          </button>
+                        )}
+                        {pinfo?.invoice && (
+                          <div className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/60 bg-emerald-50 px-3 py-2">
+                            <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                            <span className="text-[10px] font-semibold text-emerald-700">Invoice: {pinfo.invoice.invoiceNumber}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

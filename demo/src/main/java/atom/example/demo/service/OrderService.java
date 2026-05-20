@@ -136,6 +136,7 @@ public class OrderService {
             }
             orderItem.setUnitPriceBdt(unitPrice);
             orderItemRepository.save(orderItem);
+            savedOrder.getItems().add(orderItem);
 
             // Decrement inventory
             if (cartItem.getProduct() != null) {
@@ -210,6 +211,38 @@ public class OrderService {
         boolean isVendorOrder = vendorCommissionRepository.findByVendorId(vendorId).stream()
             .anyMatch(c -> c.getOrderItem().getOrder().getId().equals(orderId));
         if (!isVendorOrder) throw new SecurityException("Not your order");
+
+        String current = order.getStatus();
+        if ("PLACED".equals(current) && "PROCESSING".equals(newStatus)) {
+            // Vendor approved
+            order.setStatus("APPROVED");
+            Order saved = orderRepository.save(order);
+            Notification n = new Notification();
+            n.setUser(order.getCustomer());
+            n.setType("ORDER_APPROVED");
+            n.setTitle("Order #" + orderId + " approved");
+            n.setBody("Your order #" + orderId + " has been approved by the vendor. You can now proceed to payment.");
+            n.setEntityType("ORDER");
+            n.setEntityId(orderId);
+            notificationRepository.save(n);
+            return saved;
+        }
+
+        if ("PLACED".equals(current) && "CANCELLED".equals(newStatus)) {
+            // Vendor rejected
+            order.setStatus("REJECTED");
+            Order saved = orderRepository.save(order);
+            Notification n = new Notification();
+            n.setUser(order.getCustomer());
+            n.setType("ORDER_REJECTED");
+            n.setTitle("Order #" + orderId + " rejected");
+            n.setBody("Your order #" + orderId + " has been rejected by the vendor.");
+            n.setEntityType("ORDER");
+            n.setEntityId(orderId);
+            notificationRepository.save(n);
+            return saved;
+        }
+
         order.setStatus(newStatus);
         Order saved = orderRepository.save(order);
         Notification n = new Notification();
