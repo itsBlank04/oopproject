@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
 
 type Category = {
@@ -18,9 +19,6 @@ type Product = {
 }
 
 export default function HomePage() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(200000)
@@ -51,25 +49,27 @@ export default function HomePage() {
 
   const handlePointerUp = () => setDragging(null)
 
-  useEffect(() => {
-    apiClient.get('/api/categories').then(r => {
-      if (Array.isArray(r.data)) setCategories(r.data)
-    }).catch(() => {})
-  }, [])
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.get('/api/categories').then(r => r.data),
+    staleTime: 300_000,
+  })
 
-  useEffect(() => {
-    setLoading(true)
-    const params: any = { size: 50 }
-    if (selectedCategory) params.categoryId = selectedCategory
-    apiClient.get('/api/products', { params })
-      .then(r => {
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['products', selectedCategory],
+    queryFn: () => {
+      const params: any = { size: 50 }
+      if (selectedCategory) params.categoryId = selectedCategory
+      return apiClient.get('/api/products', { params }).then(r => {
         const list = r.data?.content ?? r.data ?? []
-        setProducts(Array.isArray(list) ? list : [])
+        return Array.isArray(list) ? list : []
       })
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false))
-  }, [selectedCategory])
+    },
+    staleTime: 120_000,
+    placeholderData: (prev) => prev,
+  })
 
+  const products = productsData ?? []
   const filtered = products.filter(p => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
 
   return (
@@ -202,7 +202,7 @@ export default function HomePage() {
               Filters
             </button>
           </div>
-          {loading ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-gray-100 rounded-2xl h-72 animate-pulse" />
