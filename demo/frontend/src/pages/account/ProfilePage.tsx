@@ -82,9 +82,10 @@ export default function ProfilePage() {
             <div>
               <p className="font-semibold text-[#221b16]">{user?.email}</p>
               <div className="mt-1 flex gap-2">
-                {user?.roles?.map((r: string) => (
-                  <span key={r} className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">{r}</span>
-                ))}
+                {user?.roles?.filter((r: string) => r !== 'CUSTOMER' || !user.roles.includes('VENDOR')).map((r: string) => {
+                  const labels: Record<string, string> = { CUSTOMER: 'Customer', VENDOR: 'Vendor', TECHNICIAN: 'Technician', ADMIN: 'Admin' }
+                  return <span key={r} className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">{labels[r] || r}</span>
+                })}
               </div>
             </div>
           </div>
