@@ -1,11 +1,22 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useState, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
+
+
+function PrefetchLink({ to, queryKey, queryFn, children, className }: { to: string; queryKey: string[]; queryFn: () => Promise<any>; children: ReactNode; className?: string }) {
+  const queryClient = useQueryClient()
+  return (
+    <Link to={to} className={className} onMouseEnter={() => queryClient.prefetchQuery({ queryKey, queryFn, staleTime: 120_000 })}>
+      {children}
+    </Link>
+  )
+}
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
+  const queryClient = useQueryClient()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -37,12 +48,8 @@ export default function Navbar() {
             <span className="font-[Fraunces] text-lg font-semibold text-[#221b16]">AtomDrops</span>
           </Link>
           <div className="hidden items-center gap-4 md:flex">
-            {!hasRole('VENDOR') && (
-              <>
-                <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
-                <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
-              </>
-            )}
+            <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
+            <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
             <Link to="/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Auctions</Link>
           </div>
         </div>
@@ -52,12 +59,16 @@ export default function Navbar() {
               <div className="hidden items-center gap-3 md:flex">
                 {hasRole('VENDOR') && (
                   <>
-                    <Link to="/vendor/dashboard" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Dashboard</Link>
-                    <Link to="/vendor/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Sell</Link>
-                    <Link to="/vendor/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
+                    <Link to="/vendor/dashboard" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
+                      onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['vendor-dashboard'], queryFn: () => apiClient.get('/api/vendor/dashboard').then(r => r.data), staleTime: 120_000 })}>Dashboard</Link>
+                    <Link to="/vendor/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
+                      onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['vendor-products'], queryFn: () => apiClient.get('/api/vendor/products').then(r => Array.isArray(r.data) ? r.data : []), staleTime: 120_000 })}>Sell</Link>
+                    <PrefetchLink to="/vendor/orders" queryKey={['vendor-orders-list']}
+                      queryFn={() => apiClient.get('/api/vendor/orders/list').then(r => Array.isArray(r.data) ? r.data : [])}
+                      className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</PrefetchLink>
                   </>
                 )}
-                {hasRole('CUSTOMER') && !hasRole('VENDOR') && (
+                {hasRole('CUSTOMER') && (
                   <>
                     <Link to="/cart" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Cart</Link>
                     <Link to="/account/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
@@ -76,7 +87,7 @@ export default function Navbar() {
               <div className="relative" ref={menuRef}>
                   <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
                   {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <img src={user.avatarUrl} alt="" loading="lazy" className="h-6 w-6 rounded-full object-cover" />
                   ) : (
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#221b16] text-xs font-bold text-[#f9f5f0]">{user.displayName?.[0]}</span>
                   )}
@@ -87,7 +98,18 @@ export default function Navbar() {
                     <Link to="/profile" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Profile</Link>
                     <Link to="/addresses" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Addresses</Link>
                     <Link to="/messages" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Messages</Link>
-                    {!hasRole('VENDOR') && (
+                    {!hasRole('VENDOR') && !hasRole('TECHNICIAN') && (
+                      <Link to="/profile#role-upgrade" onClick={() => setMenuOpen(false)} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
+                        <span className="flex items-center gap-2">
+                          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-[#a28672]">
+                            <path d="M10.362 1.093a.75.75 0 0 0-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925ZM18 6.443l-7.25 4v8.25l6.862-3.786A.75.75 0 0 0 18 14.25V6.443ZM9.25 18.693v-8.25l-7.25-4v7.807a.75.75 0 0 0 .388.657l6.862 3.786Z" />
+                          </svg>
+                          Upgrade Account
+                        </span>
+                        <span className="rounded-full bg-[#f0e8df] px-2 py-0.5 text-[10px] font-semibold text-[#6c5b4f]">New</span>
+                      </Link>
+                    )}
+                    {hasRole('CUSTOMER') && (
                       <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
                     )}
                     {hasRole('VENDOR') && (
