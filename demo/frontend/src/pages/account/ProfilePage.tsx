@@ -31,11 +31,8 @@ const emptyForm: ProfileForm = {
 }
 
 const genders = [
-  { value: '', label: 'Prefer not to say' },
   { value: 'FEMALE', label: 'Female' },
   { value: 'MALE', label: 'Male' },
-  { value: 'NON_BINARY', label: 'Non-binary' },
-  { value: 'OTHER', label: 'Other' },
 ]
 
 export default function ProfilePage() {
@@ -44,9 +41,10 @@ export default function ProfilePage() {
   const location = useLocation()
   const upgradeRef = useRef<HTMLDivElement | null>(null)
   const [form, setForm] = useState<ProfileForm>(emptyForm)
+  const [savedProfile, setSavedProfile] = useState<ProfileForm>(emptyForm)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
-
+  const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview')
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get('/api/profile').then(r => r.data),
@@ -63,7 +61,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (profile) {
-      setForm({
+      const next = {
         displayName: profile.displayName || '',
         phone: profile.phone || '',
         bio: profile.bio || '',
@@ -72,17 +70,34 @@ export default function ProfilePage() {
         websiteUrl: profile.websiteUrl || '',
         gender: profile.gender || '',
         dateOfBirth: profile.dateOfBirth || '',
-      })
+      }
+      setForm(next)
+      setSavedProfile(next)
       setErrors({})
       setSubmitAttempted(false)
     }
   }, [profile])
 
-  const completion = useMemo(() => {
+  const draftCompletion = useMemo(() => {
     const fields: Array<keyof ProfileForm> = ['displayName', 'phone', 'bio', 'location', 'avatarUrl', 'websiteUrl', 'gender', 'dateOfBirth']
     const filled = fields.filter(k => (form[k] || '').toString().trim().length > 0).length
     return Math.round((filled / fields.length) * 100)
   }, [form])
+
+  const savedCompletion = useMemo(() => {
+    const fields: Array<keyof ProfileForm> = ['displayName', 'phone', 'bio', 'location', 'avatarUrl', 'websiteUrl', 'gender', 'dateOfBirth']
+    const filled = fields.filter(k => (savedProfile[k] || '').toString().trim().length > 0).length
+    return Math.round((filled / fields.length) * 100)
+  }, [savedProfile])
+
+  const isDirty = useMemo(() => {
+    const fields: Array<keyof ProfileForm> = ['displayName', 'phone', 'bio', 'location', 'avatarUrl', 'websiteUrl', 'gender', 'dateOfBirth']
+    return fields.some(k => (form[k] || '').toString() !== (savedProfile[k] || '').toString())
+  }, [form, savedProfile])
+
+  const savedName = savedProfile.displayName || user?.displayName || ''
+  const savedAvatar = savedProfile.avatarUrl || user?.avatarUrl || ''
+  const savedInitial = savedName?.[0] || '?'
 
   const defaultAddress = useMemo(() => addresses.find(a => a.isDefault) || addresses[0], [addresses])
 
@@ -113,7 +128,22 @@ export default function ProfilePage() {
   const saveMutation = useMutation({
     mutationFn: (payload: ProfileForm) => apiClient.put('/api/profile', payload).then(r => r.data),
     onSuccess: async (data) => {
+      const next = {
+        displayName: data.displayName || '',
+        phone: data.phone || '',
+        bio: data.bio || '',
+        location: data.location || '',
+        avatarUrl: data.avatarUrl || '',
+        websiteUrl: data.websiteUrl || '',
+        gender: data.gender || '',
+        dateOfBirth: data.dateOfBirth || '',
+      }
+      setForm(next)
+      setSavedProfile(next)
+      setErrors({})
+      setSubmitAttempted(false)
       queryClient.setQueryData(['profile'], data)
+      await queryClient.invalidateQueries({ queryKey: ['profile'] })
       queryClient.setQueryData(['auth-user'], (old: any) => old ? {
         ...old,
         displayName: data.displayName,
@@ -147,27 +177,21 @@ export default function ProfilePage() {
   }
 
   const handleReset = () => {
-    if (!profile) return
-    setForm({
-      displayName: profile.displayName || '',
-      phone: profile.phone || '',
-      bio: profile.bio || '',
-      location: profile.location || '',
-      avatarUrl: profile.avatarUrl || '',
-      websiteUrl: profile.websiteUrl || '',
-      gender: profile.gender || '',
-      dateOfBirth: profile.dateOfBirth || '',
-    })
+    setForm(savedProfile)
     setErrors({})
     setSubmitAttempted(false)
   }
 
   const scrollToUpgrade = () => {
-    upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setActiveTab('settings')
+    requestAnimationFrame(() => {
+      upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   useEffect(() => {
     if (location.hash === '#role-upgrade') {
+      setActiveTab('settings')
       requestAnimationFrame(() => {
         upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
@@ -194,7 +218,7 @@ export default function ProfilePage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Account</p>
-            <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Profile Settings</h1>
+            <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Profile</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#8c7564]">
               <span className="rounded-full bg-[#f0e8df] px-2.5 py-1 font-semibold text-[#6c5b4f]">New</span>
               <span>Unlock Merchant or Craftsman tools from your profile.</span>
@@ -214,249 +238,385 @@ export default function ProfilePage() {
               </svg>
               Upgrade Roles
             </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="rounded-full border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#221b16]"
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saveMutation.isPending}
-              className="rounded-full bg-[#221b16] px-5 py-2 text-xs font-semibold text-[#f9f5f0] disabled:opacity-50"
-            >
-              {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </button>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
-                  {form.avatarUrl ? (
-                    <img src={form.avatarUrl} alt="Avatar" loading="lazy" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[#a28672]">
-                      {user?.displayName?.[0] || '?'}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#221b16]">{form.displayName || 'Your name'}</p>
-                  <p className="text-xs text-[#8c7564]">{user?.email}</p>
-                </div>
-              </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#e4d6c8] bg-white p-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('overview')}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${activeTab === 'overview' ? 'bg-[#221b16] text-[#f9f5f0]' : 'text-[#221b16] hover:bg-[#f9f5f0]'}`}
+            >
+              Overview
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('settings')}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${activeTab === 'settings' ? 'bg-[#221b16] text-[#f9f5f0]' : 'text-[#221b16] hover:bg-[#f9f5f0]'}`}
+            >
+              Edit Settings
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-[#8c7564]">
+            <span className={`rounded-full px-2.5 py-1 font-semibold ${isDirty ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+              {isDirty ? 'Draft changes' : 'Saved'}
+            </span>
+          </div>
+        </div>
 
-              <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Profile Completion</p>
-                <div className="mt-3">
-                  <div className="h-2 w-full rounded-full bg-[#e7ddd3]">
-                    <div className="h-2 rounded-full bg-[#221b16]" style={{ width: `${completion}%` }} />
+        {activeTab === 'overview' ? (
+          <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
+                    {savedAvatar ? (
+                      <img src={savedAvatar} alt="Avatar" loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[#a28672]">
+                        {savedInitial}
+                      </div>
+                    )}
                   </div>
-                  <p className="mt-2 text-xs font-semibold text-[#221b16]">{completion}% complete</p>
+                  <div>
+                    <p className="text-sm font-semibold text-[#221b16]">{savedName || 'Your name'}</p>
+                    <p className="text-xs text-[#8c7564]">{user?.email}</p>
+                    <p className="mt-1 text-[11px] text-emerald-700">Saved profile</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Profile Completion</p>
+                  <div className="mt-3">
+                    <div className="h-2 w-full rounded-full bg-[#e7ddd3]">
+                      <div className="h-2 rounded-full bg-[#221b16]" style={{ width: `${savedCompletion}%` }} />
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-[#221b16]">{savedCompletion}% complete</p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Roles</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {user?.roles?.map((r: string) => {
+                      const labels: Record<string, string> = {
+                        CUSTOMER: 'Customer',
+                        VENDOR: 'Vendor',
+                        TECHNICIAN: 'Technician',
+                        ADMIN: 'Admin',
+                      }
+                      return (
+                        <span key={r} className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">
+                          {labels[r] || r}
+                        </span>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Roles</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {user?.roles?.map((r: string) => {
-                    const labels: Record<string, string> = {
-                      CUSTOMER: 'Customer',
-                      VENDOR: 'Vendor',
-                      TECHNICIAN: 'Technician',
-                      ADMIN: 'Admin',
-                    }
-                    return (
-                      <span key={r} className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">
-                        {labels[r] || r}
-                      </span>
-                    )
-                  })}
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Unlock More</p>
+                    <p className="mt-1 text-sm font-semibold text-[#221b16]">Upgrade your account</p>
+                    <p className="mt-1 text-xs text-[#8c7564]">Sell products or offer repair services with a one-time upgrade.</p>
+                  </div>
+                  <div className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">99 TK</div>
                 </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Unlock More</p>
-                  <p className="mt-1 text-sm font-semibold text-[#221b16]">Upgrade your account</p>
-                  <p className="mt-1 text-xs text-[#8c7564]">Sell products or offer repair services with a one-time upgrade.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Merchant</span>
+                  <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Craftsman</span>
                 </div>
-                <div className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">99 TK</div>
+                <button
+                  onClick={scrollToUpgrade}
+                  className="mt-4 w-full rounded-xl bg-[#221b16] py-2.5 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
+                >
+                  See upgrade options
+                </button>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Merchant</span>
-                <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Craftsman</span>
-              </div>
-              <button
-                onClick={scrollToUpgrade}
-                className="mt-4 w-full rounded-xl bg-[#221b16] py-2.5 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
-              >
-                See upgrade options
-              </button>
-            </div>
 
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <p className="text-sm font-semibold text-[#221b16]">Profile Picture</p>
-              <p className="mt-1 text-xs text-[#8c7564]">Update your avatar shown across the marketplace.</p>
-              <div className="mt-4">
-                <MediaUploader
-                  folder={`avatars/${user?.id}`}
-                  maxFiles={1}
-                  maxSizeMB={5}
-                  allowVideo={false}
-                  compact
-                  onUpload={(urls) => setForm({ ...form, avatarUrl: urls[0] || '' })}
-                  existingMedia={form.avatarUrl ? [{ url: form.avatarUrl, type: 'image', name: 'avatar' }] : []}
-                />
-              </div>
-              <p className="mt-2 text-xs text-[#8c7564]">JPG, PNG, or WebP. Max 5MB.</p>
-            </div>
-
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <p className="text-sm font-semibold text-[#221b16]">Primary Address</p>
-              <p className="mt-1 text-xs text-[#8c7564]">Use this for fast checkout and service requests.</p>
-              <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
-                {defaultAddress ? (
-                  <>
-                    <p className="text-sm font-semibold text-[#221b16]">{defaultAddress.label || 'Address'}</p>
-                    {defaultAddress.fullName && <p className="text-xs text-[#6c5b4f]">{defaultAddress.fullName}</p>}
-                    <p className="mt-1 text-xs text-[#6c5b4f]">{defaultAddress.addressLine}</p>
-                    <p className="text-xs text-[#6c5b4f]">{defaultAddress.city}{defaultAddress.area ? `, ${defaultAddress.area}` : ''} {defaultAddress.postalCode}</p>
-                    {defaultAddress.phone && <p className="text-xs text-[#8c7564]">{defaultAddress.phone}</p>}
-                  </>
-                ) : (
-                  <p className="text-xs text-[#8c7564]">No address on file yet.</p>
-                )}
-              </div>
-              <Link to="/addresses" className="mt-4 inline-flex items-center text-xs font-semibold text-[#221b16] underline">
-                Manage addresses
-              </Link>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Personal</p>
-                  <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Personal Details</h2>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold text-[#221b16]">Display Name</label>
-                  <input
-                    value={form.displayName}
-                    onChange={e => setForm({ ...form, displayName: e.target.value })}
-                    className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.displayName && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
-                  />
-                  {errors.displayName && submitAttempted && (
-                    <p className="mt-1 text-xs text-red-600">{errors.displayName}</p>
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-sm font-semibold text-[#221b16]">Primary Address</p>
+                <p className="mt-1 text-xs text-[#8c7564]">Use this for fast checkout and service requests.</p>
+                <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+                  {defaultAddress ? (
+                    <>
+                      <p className="text-sm font-semibold text-[#221b16]">{defaultAddress.label || 'Address'}</p>
+                      {defaultAddress.fullName && <p className="text-xs text-[#6c5b4f]">{defaultAddress.fullName}</p>}
+                      <p className="mt-1 text-xs text-[#6c5b4f]">{defaultAddress.addressLine}</p>
+                      <p className="text-xs text-[#6c5b4f]">{defaultAddress.city}{defaultAddress.area ? `, ${defaultAddress.area}` : ''} {defaultAddress.postalCode}</p>
+                      {defaultAddress.phone && <p className="text-xs text-[#8c7564]">{defaultAddress.phone}</p>}
+                    </>
+                  ) : (
+                    <p className="text-xs text-[#8c7564]">No address on file yet.</p>
                   )}
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Gender</label>
-                  <select
-                    value={form.gender}
-                    onChange={e => setForm({ ...form, gender: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
+                <Link to="/addresses" className="mt-4 inline-flex items-center text-xs font-semibold text-[#221b16] underline">
+                  Manage addresses
+                </Link>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Personal</p>
+                <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Saved Details</h2>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-[#221b16]">Display Name</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.displayName || 'Not set'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Gender</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.gender || 'Not set'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Date of Birth</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.dateOfBirth || 'Not set'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Contact</p>
+                <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Saved Contact</h2>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Email</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {user?.email}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Phone</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.phone || 'Not set'}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-[#221b16]">Location</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.location || 'Not set'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">About</p>
+                <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Saved Bio</h2>
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Bio</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.bio || 'Not set'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Website</label>
+                    <p className="mt-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]">
+                      {savedProfile.websiteUrl || 'Not set'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
+                    {form.avatarUrl ? (
+                      <img src={form.avatarUrl} alt="Avatar" loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[#a28672]">
+                        {user?.displayName?.[0] || '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#221b16]">{form.displayName || 'Your name'}</p>
+                    <p className="text-xs text-[#8c7564]">{user?.email}</p>
+                    <p className={`mt-1 text-[11px] ${isDirty ? 'text-amber-700' : 'text-emerald-700'}`}>
+                      {isDirty ? 'Draft changes' : 'Saved profile'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Profile Completion (Draft)</p>
+                  <div className="mt-3">
+                    <div className="h-2 w-full rounded-full bg-[#e7ddd3]">
+                      <div className="h-2 rounded-full bg-[#221b16]" style={{ width: `${draftCompletion}%` }} />
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-[#221b16]">{draftCompletion}% complete</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="rounded-full border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#221b16]"
                   >
-                    {genders.map(g => (
-                      <option key={g.value} value={g.value}>{g.label}</option>
-                    ))}
-                  </select>
+                    Reset Draft
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saveMutation.isPending}
+                    className="rounded-full bg-[#221b16] px-5 py-2 text-xs font-semibold text-[#f9f5f0] disabled:opacity-50"
+                  >
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </button>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={form.dateOfBirth}
-                    onChange={e => setForm({ ...form, dateOfBirth: e.target.value })}
-                    className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.dateOfBirth && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
+              </div>
+
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-sm font-semibold text-[#221b16]">Profile Picture</p>
+                <p className="mt-1 text-xs text-[#8c7564]">Update your avatar shown across the marketplace.</p>
+                <div className="mt-4">
+                  <MediaUploader
+                    folder={`avatars/${user?.id}`}
+                    maxFiles={1}
+                    maxSizeMB={5}
+                    allowVideo={false}
+                    compact
+                    onUpload={(urls) => setForm({ ...form, avatarUrl: urls[0] || '' })}
+                    existingMedia={form.avatarUrl ? [{ url: form.avatarUrl, type: 'image', name: 'avatar' }] : []}
                   />
-                  {errors.dateOfBirth && submitAttempted && (
-                    <p className="mt-1 text-xs text-red-600">{errors.dateOfBirth}</p>
-                  )}
                 </div>
+                <p className="mt-2 text-xs text-[#8c7564]">JPG, PNG, or WebP. Max 5MB.</p>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Contact</p>
-              <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Contact Information</h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Email</label>
-                  <input
-                    value={user?.email || ''}
-                    disabled
-                    className="mt-1 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#8c7564]"
-                  />
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Personal</p>
+                    <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Edit Details</h2>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Phone</label>
-                  <input
-                    value={form.phone}
-                    onChange={e => setForm({ ...form, phone: e.target.value })}
-                    className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.phone && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
-                  />
-                  {errors.phone && submitAttempted && (
-                    <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
-                  )}
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold text-[#221b16]">Location</label>
-                  <input
-                    value={form.location}
-                    onChange={e => setForm({ ...form, location: e.target.value })}
-                    placeholder="City or region"
-                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">About</p>
-              <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Tell us about you</h2>
-              <div className="mt-5 space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Bio</label>
-                  <textarea
-                    value={form.bio}
-                    onChange={e => setForm({ ...form, bio: e.target.value })}
-                    rows={4}
-                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
-                    placeholder="Share a quick intro for the community"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#221b16]">Website</label>
-                  <input
-                    value={form.websiteUrl}
-                    onChange={e => setForm({ ...form, websiteUrl: e.target.value })}
-                    placeholder="https://"
-                    className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.websiteUrl && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
-                  />
-                  {errors.websiteUrl && submitAttempted && (
-                    <p className="mt-1 text-xs text-red-600">{errors.websiteUrl}</p>
-                  )}
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-[#221b16]">Display Name</label>
+                    <input
+                      value={form.displayName}
+                      onChange={e => setForm({ ...form, displayName: e.target.value })}
+                      className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.displayName && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
+                    />
+                    {errors.displayName && submitAttempted && (
+                      <p className="mt-1 text-xs text-red-600">{errors.displayName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Gender</label>
+                    <select
+                      value={form.gender}
+                      onChange={e => setForm({ ...form, gender: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
+                    >
+                      {genders.map(g => (
+                        <option key={g.value} value={g.value}>{g.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Date of Birth</label>
+                    <input
+                      type="date"
+                      value={form.dateOfBirth}
+                      onChange={e => setForm({ ...form, dateOfBirth: e.target.value })}
+                      className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.dateOfBirth && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
+                    />
+                    {errors.dateOfBirth && submitAttempted && (
+                      <p className="mt-1 text-xs text-red-600">{errors.dateOfBirth}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div ref={upgradeRef} id="role-upgrade">
-              <RoleUpgradeSection />
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Contact</p>
+                <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Edit Contact</h2>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Email</label>
+                    <input
+                      value={user?.email || ''}
+                      disabled
+                      className="mt-1 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#8c7564]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Phone</label>
+                    <input
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                      className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.phone && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
+                    />
+                    {errors.phone && submitAttempted && (
+                      <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-[#221b16]">Location</label>
+                    <input
+                      value={form.location}
+                      onChange={e => setForm({ ...form, location: e.target.value })}
+                      placeholder="City or region"
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">About</p>
+                <h2 className="mt-1 text-lg font-semibold text-[#221b16]">Edit Bio</h2>
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Bio</label>
+                    <textarea
+                      value={form.bio}
+                      onChange={e => setForm({ ...form, bio: e.target.value })}
+                      rows={4}
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
+                      placeholder="Share a quick intro for the community"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#221b16]">Website</label>
+                    <input
+                      value={form.websiteUrl}
+                      onChange={e => setForm({ ...form, websiteUrl: e.target.value })}
+                      placeholder="https://"
+                      className={`mt-1 w-full rounded-xl border px-4 py-2.5 text-sm outline-none ${errors.websiteUrl && submitAttempted ? 'border-red-400' : 'border-[#d7c7b8] focus:border-[#221b16]'}`}
+                    />
+                    {errors.websiteUrl && submitAttempted && (
+                      <p className="mt-1 text-xs text-red-600">{errors.websiteUrl}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div ref={upgradeRef} id="role-upgrade">
+                <RoleUpgradeSection />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

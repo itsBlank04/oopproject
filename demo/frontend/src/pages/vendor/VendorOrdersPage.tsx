@@ -90,11 +90,24 @@ export default function VendorOrdersPage() {
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: number; status: string }) =>
       apiClient.put(`/api/vendor/orders/${orderId}/status`, { status }),
+    onMutate: async ({ orderId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['vendor-orders-list'] })
+      const prev = queryClient.getQueryData<any[]>(['vendor-orders-list'])
+      if (prev) {
+        queryClient.setQueryData(['vendor-orders-list'], prev.map(o =>
+          o.id === orderId ? { ...o, status } : o
+        ))
+      }
+      return { prev }
+    },
     onSuccess: (_data, { orderId, status }) => {
       toast.success(`Order #${orderId} updated to ${status.toLowerCase()}`)
-      queryClient.invalidateQueries({ queryKey: ['vendor-orders-list'] })
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to update'),
+    onError: (e: any, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['vendor-orders-list'], ctx.prev)
+      toast.error(e.response?.data?.error || 'Failed to update')
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['vendor-orders-list'] }),
   })
 
   const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
@@ -213,7 +226,7 @@ export default function VendorOrdersPage() {
                       onClick={() => setExpandedId(isExpanded ? null : order.id)}>
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f0e8df]">
                         {order.customer?.avatarUrl ? (
-                          <img src={order.customer.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+                          <img src={order.customer.avatarUrl} alt="" loading="lazy" className="h-full w-full rounded-full object-cover" />
                         ) : (
                           <span className="text-sm font-bold text-[#6c5b4f]">{order.customer?.displayName?.[0] || '?'}</span>
                         )}
@@ -241,7 +254,7 @@ export default function VendorOrdersPage() {
                             <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
                               <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
                                 {item.product?.images?.[0]?.imageUrl ? (
-                                  <img src={item.product.images[0].imageUrl} alt="" className="h-full w-full object-cover" />
+                                  <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                                 ) : (
                                   <div className="flex h-full w-full items-center justify-center text-xs text-[#a28672]">
                                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>

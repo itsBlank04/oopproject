@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
-import { useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ProductListPage from './pages/products/ProductListPage'
@@ -18,6 +17,7 @@ import VendorProductsPage from './pages/vendor/VendorProductsPage'
 import VendorDashboardPage from './pages/vendor/VendorDashboardPage'
 import VendorAuctionsPage from './pages/vendor/VendorAuctionsPage'
 import VendorOrdersPage from './pages/vendor/VendorOrdersPage'
+import VendorShopPage from './pages/vendor/VendorShopPage'
 import UsedListingsPage from './pages/used/UsedListingsPage'
 import UsedListingDetailPage from './pages/used/UsedListingDetailPage'
 import CreateUsedListingPage from './pages/used/CreateUsedListingPage'
@@ -38,6 +38,7 @@ export default function App() {
         {/* Products */}
         <Route path="/products" element={<><Navbar /><ProductListPage /></>} />
         <Route path="/products/:id" element={<><Navbar /><ProductDetailPage /></>} />
+        <Route path="/shop/:slug" element={<><Navbar /><VendorShopPage /></>} />
 
         {/* Shopping */}
         <Route path="/cart" element={<><Navbar /><CartPage /></>} />
@@ -78,8 +79,5 @@ export default function App() {
 }
 
 function HomeRouter() {
-  const { user, loading } = useAuth()
-  if (loading) return null
-  if (user?.roles?.includes('VENDOR')) return <><Navbar /><VendorDashboardPage /></>
   return <><Navbar /><HomePage /></>
 }

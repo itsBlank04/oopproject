@@ -55,11 +55,11 @@ public class OrderService {
     }
 
     @Transactional
-    public Order checkout(Long userId, Long shippingAddressId, String couponCode) {
+    public Order checkout(Long userId, Long shippingAddressId, String couponCode, String shippingOption) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Cart cart = cartService.getCart(userId);
+        Cart cart = cartService.initiateCheckout(userId);
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
 
         if (cartItems.isEmpty()) {
@@ -71,10 +71,14 @@ public class OrderService {
 
         // Calculate subtotal first
         BigDecimal subtotal = BigDecimal.ZERO;
+        boolean hasPaidShipping = false;
         for (CartItem cartItem : cartItems) {
             BigDecimal unitPrice = BigDecimal.ZERO;
             if (cartItem.getProduct() != null) {
                 unitPrice = cartItem.getProduct().getPriceBdt();
+                if ("PAID".equals(cartItem.getProduct().getShippingType())) {
+                    hasPaidShipping = true;
+                }
             } else if (cartItem.getUsedListing() != null) {
                 unitPrice = cartItem.getUsedListing().getPriceBdt();
             }
@@ -98,7 +102,19 @@ public class OrderService {
             }
         }
 
-        BigDecimal shippingFee = new BigDecimal("60.00");
+        // Calculate shipping fee
+        String resolvedOption = null;
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        if (hasPaidShipping) {
+            if (shippingOption == null || shippingOption.isBlank()) {
+                throw new IllegalArgumentException("Shipping option required (INSIDE_DHAKA or OUTSIDE_DHAKA)");
+            }
+            resolvedOption = shippingOption;
+            shippingFee = "INSIDE_DHAKA".equals(shippingOption)
+                ? new BigDecimal("60.00")
+                : new BigDecimal("100.00");
+        }
+
         BigDecimal tax = BigDecimal.ZERO;
         BigDecimal total = subtotal.subtract(discount).add(shippingFee).add(tax);
 
@@ -114,6 +130,12 @@ public class OrderService {
         order.setTotalBdt(total);
         if (coupon != null) {
             order.setCoupon(coupon);
+        }
+
+        if (resolvedOption != null) {
+            order.setShippingOption(resolvedOption);
+        } else {
+            order.setShippingOption(null);
         }
 
         Order savedOrder = orderRepository.save(order);
@@ -180,7 +202,8 @@ public class OrderService {
             }
         }
 
-        // Clear the cart
+        // Mark cart as completed
+        cartService.completeCheckout(userId);
         cartService.clearCart(cart.getId());
 
         return savedOrder;
@@ -208,8 +231,7 @@ public class OrderService {
     public Order updateOrderStatus(Long orderId, Long vendorId, String newStatus) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-        boolean isVendorOrder = vendorCommissionRepository.findByVendorId(vendorId).stream()
-            .anyMatch(c -> c.getOrderItem().getOrder().getId().equals(orderId));
+        boolean isVendorOrder = vendorCommissionRepository.existsByVendorIdAndOrderId(vendorId, orderId);
         if (!isVendorOrder) throw new SecurityException("Not your order");
 
         String current = order.getStatus();

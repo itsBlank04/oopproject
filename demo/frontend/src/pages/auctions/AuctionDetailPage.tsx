@@ -19,7 +19,7 @@ export default function AuctionDetailPage() {
     queryKey: ['auction', id],
     queryFn: () => apiClient.get(`/api/auctions/${id}`).then(r => r.data),
     staleTime: 30_000,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev: any) => prev,
   })
 
   const bidMutation = useMutation({
@@ -87,7 +87,7 @@ export default function AuctionDetailPage() {
                   <div>
                     <div className="aspect-square overflow-hidden rounded-xl bg-[#f0e8df]">
                       {images.length > 0 ? (
-                        <img src={images[si]?.imageUrl} alt={lot.title} className="h-full w-full object-cover" />
+                        <img src={images[si]?.imageUrl} alt={lot.title} loading="lazy" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-sm text-[#a28672]">No image</div>
                       )}
@@ -97,7 +97,7 @@ export default function AuctionDetailPage() {
                         {images.map((img: any, i: number) => (
                           <button key={i} onClick={() => setSelectedImg({ ...selectedImg, [lot.id]: i })}
                             className={`h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border-2 ${si === i ? 'border-[#221b16]' : 'border-[#e4d6c8]'}`}>
-                            <img src={img.imageUrl} className="h-full w-full object-cover" />
+                            <img src={img.imageUrl} loading="lazy" className="h-full w-full object-cover" />
                           </button>
                         ))}
                       </div>

@@ -14,17 +14,10 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const ROLE_OPTIONS = [
-  { value: 'CUSTOMER', label: 'Customer', desc: 'Buy products, bid on auctions, request repairs' },
-  { value: 'VENDOR', label: 'Vendor', desc: 'Sell products, run auctions, manage a shop' },
-  { value: 'TECHNICIAN', label: 'Technician', desc: 'Offer repair services, accept bookings' },
-] as const
-
 export default function RegisterPage() {
   const { register: registerUser } = useAuth()
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<string>('CUSTOMER')
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -33,8 +26,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: FormData) => {
     setSubmitting(true)
     try {
-      const roles = selectedRole === 'CUSTOMER' ? ['CUSTOMER'] : ['CUSTOMER', selectedRole]
-      await registerUser(data.email, data.password, data.displayName, roles)
+      await registerUser(data.email, data.password, data.displayName, [])
       toast.success('Account created')
       navigate('/')
     } catch (err: any) {
@@ -52,28 +44,8 @@ export default function RegisterPage() {
           <p className="mt-2 text-sm text-[#6c5b4f]">Join AtomDrops marketplace</p>
         </div>
 
-        {/* Role selection */}
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-[#221b16]">I want to join as:</p>
-          <div className="grid gap-2">
-            {ROLE_OPTIONS.map((role) => (
-              <button
-                key={role.value}
-                type="button"
-                onClick={() => setSelectedRole(role.value)}
-                className={`rounded-xl border p-3 text-left transition ${
-                  selectedRole === role.value
-                    ? 'border-[#221b16] bg-[#221b16] text-[#f9f5f0]'
-                    : 'border-[#d7c7b8] bg-white text-[#221b16] hover:border-[#221b16]'
-                }`}
-              >
-                <p className="text-sm font-semibold">{role.label}</p>
-                <p className={`text-xs ${selectedRole === role.value ? 'text-[#c9b8a8]' : 'text-[#8c7564]'}`}>
-                  {role.desc}
-                </p>
-              </button>
-            ))}
-          </div>
+        <div className="rounded-xl border border-[#d7c7b8] bg-white p-3 text-sm text-[#6c5b4f]">
+          All accounts start as <span className="font-semibold text-[#221b16]">Customer</span>. You can upgrade to Vendor or Technician later with a one-time payment.
         </div>
 
         <div>

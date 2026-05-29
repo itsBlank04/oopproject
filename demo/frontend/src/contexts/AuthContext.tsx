@@ -57,9 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient])
 
   const logout = useCallback(async () => {
-    await apiClient.post('/api/auth/logout')
+    try { await apiClient.post('/api/auth/logout') } catch {}
     queryClient.setQueryData(['auth-user'], null)
-    clearOtherCaches()
+    queryClient.clear()
   }, [queryClient])
 
   const hasRole = useCallback((role: string) => {

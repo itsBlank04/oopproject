@@ -10,14 +10,6 @@ type Category = {
   parentId: number | null
 }
 
-type Product = {
-  id: number
-  name: string
-  priceBdt: number
-  category: { name: string }
-  images: { imageUrl: string }[]
-}
-
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [minPrice, setMinPrice] = useState(0)
@@ -53,6 +45,7 @@ export default function HomePage() {
     queryKey: ['categories'],
     queryFn: () => apiClient.get('/api/categories').then(r => r.data),
     staleTime: 300_000,
+    placeholderData: (prev) => prev,
   })
 
   const { data: productsData, isLoading } = useQuery({
@@ -225,6 +218,7 @@ export default function HomePage() {
                       <img
                         src={product.images[0].imageUrl}
                         alt={product.name}
+                        loading="lazy"
                         className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (

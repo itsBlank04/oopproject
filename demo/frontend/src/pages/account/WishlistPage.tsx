@@ -47,7 +47,7 @@ export default function WishlistPage() {
             {items.map((w: any) => (
               <div key={w.id} className="flex items-center gap-4 rounded-2xl border border-[#e4d6c8] bg-white p-4">
                 <div className="h-20 w-20 rounded-xl bg-[#f0e8df] flex items-center justify-center text-xs text-[#a28672]">
-                  {w.product?.images?.[0] ? <img src={w.product.images[0].imageUrl} className="h-full w-full rounded-xl object-cover" /> : 'No img'}
+                  {w.product?.images?.[0] ? <img src={w.product.images[0].imageUrl} loading="lazy" className="h-full w-full rounded-xl object-cover" /> : 'No img'}
                 </div>
                 <div className="flex-1">
                   <Link to={`/products/${w.product?.id}`} className="font-semibold text-[#221b16] hover:underline">{w.product?.name}</Link>

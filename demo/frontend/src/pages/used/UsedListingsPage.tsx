@@ -51,7 +51,7 @@ export default function UsedListingsPage() {
               <Link key={item.id} to={`/used-listings/${item.id}`}
                 className="group rounded-2xl border border-[#e4d6c8] bg-white overflow-hidden transition hover:shadow-lg">
                 <div className="aspect-[4/3] bg-[#f0e8df] flex items-center justify-center text-sm text-[#a28672]">
-                  {item.images?.[0] ? <img src={item.images[0].imageUrl} alt={item.title} className="h-full w-full object-cover" /> : 'No image'}
+                  {item.images?.[0] ? <img src={item.images[0].imageUrl} alt={item.title} loading="lazy" className="h-full w-full object-cover" /> : 'No image'}
                 </div>
                 <div className="p-4">
                   <p className="text-xs uppercase tracking-wider text-[#a28672]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>

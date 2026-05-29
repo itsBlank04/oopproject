@@ -41,15 +41,10 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Assign only the single selected role (no auto-CUSTOMER)
+        // Always assign CUSTOMER only; upgrades handled via paid flow
         Set<Role> roles = new HashSet<>();
-        String selectedRole = (requestedRoles != null && !requestedRoles.isEmpty())
-            ? requestedRoles.get(0).toUpperCase().trim() : Role.ROLE_CUSTOMER;
-        if ("ADMIN".equals(selectedRole)) selectedRole = Role.ROLE_CUSTOMER;
-        String finalRole = selectedRole;
-        Role role = roleRepository.findByName(finalRole)
-            .orElseGet(() -> roleRepository.save(new Role(finalRole)));
-        roles.add(role);
+        roles.add(roleRepository.findByName(Role.ROLE_CUSTOMER)
+            .orElseGet(() -> roleRepository.save(new Role(Role.ROLE_CUSTOMER))));
 
         User user = new User();
         user.setEmail(email);
@@ -98,4 +93,5 @@ public class AuthService {
     public User update(User user) {
         return userRepository.save(user);
     }
+
 }

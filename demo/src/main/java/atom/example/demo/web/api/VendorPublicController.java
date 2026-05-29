@@ -1,5 +1,6 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
 import atom.example.demo.model.VendorProfile;
 import atom.example.demo.repository.ReviewRepository;
@@ -7,6 +8,7 @@ import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.VendorProfileRepository;
 import atom.example.demo.repository.ProductRepository;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,5 +56,19 @@ public class VendorPublicController {
         result.put("reviewCount", reviews.size());
         result.put("avgRating", Math.round(avgRating * 10.0) / 10.0);
         return result;
+    }
+
+    @GetMapping("/slug/{shopSlug}")
+    public Map<String, Object> getVendorBySlug(@PathVariable String shopSlug) {
+        VendorProfile profile = vendorProfileRepository.findByShopSlug(shopSlug)
+            .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+        return getVendorProfile(profile.getUser().getId());
+    }
+
+    @GetMapping("/{vendorId}/products")
+    public List<Product> getVendorProducts(@PathVariable Long vendorId) {
+        return productRepository.findByVendorId(vendorId).stream()
+            .filter(p -> "ACTIVE".equals(p.getStatus()))
+            .toList();
     }
 }

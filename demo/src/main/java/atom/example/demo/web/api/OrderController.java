@@ -33,7 +33,8 @@ public class OrderController {
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         Long addressId = Long.valueOf(body.get("shippingAddressId").toString());
         String couponCode = body.containsKey("couponCode") ? (String) body.get("couponCode") : null;
-        return orderService.checkout(userId, addressId, couponCode);
+        String shippingOption = body.containsKey("shippingOption") ? (String) body.get("shippingOption") : null;
+        return orderService.checkout(userId, addressId, couponCode, shippingOption);
     }
 
     @GetMapping

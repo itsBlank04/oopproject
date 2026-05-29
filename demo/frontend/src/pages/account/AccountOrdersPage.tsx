@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
 type OrderItem = {
   id: number
@@ -43,6 +45,15 @@ const STATUS_META: Record<string, { label: string; color: string; badge: string;
   REJECTED: { label: 'Rejected', color: 'text-red-700', badge: 'bg-red-50 text-red-600 border-red-200/60', dot: 'bg-red-500' },
 }
 
+type PaymentMethod = 'BKASH' | 'NAGAD' | 'CARD' | 'COD'
+
+const PAYMENT_METHODS: { key: PaymentMethod; label: string; icon: string; desc: string }[] = [
+  { key: 'BKASH', label: 'bKash', icon: '📱', desc: 'Pay with bKash mobile banking' },
+  { key: 'NAGAD', label: 'Nagad', icon: '💳', desc: 'Pay with Nagad mobile banking' },
+  { key: 'CARD', label: 'Card', icon: '💳', desc: 'Credit / Debit card payment' },
+  { key: 'COD', label: 'Cash on Delivery', icon: '💵', desc: 'Pay when you receive' },
+]
+
 function OrderTimeline({ status }: { status: string }) {
   const steps = ['PLACED', 'APPROVED', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED']
   const currentIdx = steps.indexOf(status)
@@ -68,7 +79,7 @@ function OrderTimeline({ status }: { status: string }) {
   }
   return (
     <div className="flex items-center gap-0.5">
-      {steps.slice(0, 5).map((s, i) => {
+      {['PLACED', 'APPROVED', 'PAID', 'PROCESSING', 'SHIPPED'].map((s, i) => {
         const done = currentIdx >= i
         const isLast = i === 4
         return (
@@ -88,11 +99,84 @@ function OrderTimeline({ status }: { status: string }) {
   )
 }
 
+function PaymentModal({ orderId, amount, onClose }: { orderId: number; amount: number; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  const handlePay = async () => {
+    if (!selectedMethod) return
+    setIsProcessing(true)
+    try {
+      await apiClient.post(`/api/payments/order/${orderId}`, { method: selectedMethod })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      toast.success(selectedMethod === 'COD'
+        ? 'Order confirmed with Cash on Delivery!'
+        : `Payment via ${selectedMethod} successful! Invoice generated.`
+      )
+      onClose()
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Payment failed')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[#e4d6c8]/40 px-6 py-4">
+          <h2 className="font-semibold text-[#1a1512]">Select Payment Method</h2>
+          <button onClick={onClose} className="text-[#8c7564] hover:text-[#1a1512] transition-colors">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="space-y-2 px-6 py-4">
+          <p className="text-center text-sm text-[#6c5b4f] mb-3">
+            Order total: <strong className="text-[#1a1512]">৳{amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</strong>
+          </p>
+          {PAYMENT_METHODS.map(m => (
+            <button key={m.key} onClick={() => setSelectedMethod(m.key)}
+              className={`w-full flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
+                selectedMethod === m.key
+                  ? 'border-[#1a1512] bg-[#faf6f2]'
+                  : 'border-[#e4d6c8]/60 hover:border-[#b8a494]'
+              }`}
+            >
+              <span className="text-2xl">{m.icon}</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-[#1a1512]">{m.label}</p>
+                <p className="text-xs text-[#8c7564]">{m.desc}</p>
+              </div>
+              {selectedMethod === m.key && (
+                <svg className="h-5 w-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 border-t border-[#e4d6c8]/40 px-6 py-4">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
+            Cancel
+          </button>
+          <button onClick={handlePay} disabled={!selectedMethod || isProcessing}
+            className="flex-1 rounded-xl bg-[#1a1512] px-4 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e] disabled:opacity-40">
+            {isProcessing ? (
+              <span className="inline-flex items-center gap-2"><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Processing...</span>
+            ) : 'Confirm Payment'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AccountOrdersPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [expandedId, setExpandedId] = useState<number | null>(null)
-  const [payingId, setPayingId] = useState<number | null>(null)
+  const [payingOrderId, setPayingOrderId] = useState<number | null>(null)
   const [paymentInfo, setPaymentInfo] = useState<Record<number, PaymentInfo>>({})
 
   const { data: orders, isLoading, isError, error } = useQuery<Order[]>({
@@ -116,28 +200,6 @@ export default function AccountOrdersPage() {
     if (expandedId === id) { setExpandedId(null); return }
     setExpandedId(id)
     fetchPaymentInfo(id)
-  }
-
-  const payMutation = useMutation({
-    mutationFn: async (orderId: number) => {
-      const res = await apiClient.post(`/api/payments/order/${orderId}`, { method: 'DUMMY' })
-      return res.data
-    },
-    onSuccess: (data, orderId) => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
-      setPayingId(null)
-      fetchPaymentInfo(orderId)
-      toast.success('Payment successful! Invoice generated.')
-    },
-    onError: (err: any) => {
-      setPayingId(null)
-      toast.error(err.response?.data?.error || 'Payment failed')
-    },
-  })
-
-  const handlePay = (orderId: number) => {
-    setPayingId(orderId)
-    payMutation.mutate(orderId)
   }
 
   if (!user) {
@@ -186,6 +248,14 @@ export default function AccountOrdersPage() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
+
+      {payingOrderId && (
+        <PaymentModal
+          orderId={payingOrderId}
+          amount={orders?.find(o => o.id === payingOrderId)?.totalBdt ?? 0}
+          onClose={() => setPayingOrderId(null)}
+        />
+      )}
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* Header */}
@@ -244,7 +314,6 @@ export default function AccountOrdersPage() {
               const meta = STATUS_META[order.status] || STATUS_META.PLACED
               const isExpanded = expandedId === order.id
               const pinfo = paymentInfo[order.id]
-              const isPaying = payingId === order.id
               const totalItems = order.items?.reduce((s, i) => s + i.qty, 0) || 0
               return (
                 <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.04}s` }}>
@@ -262,7 +331,7 @@ export default function AccountOrdersPage() {
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${meta.badge}`}>{meta.label}</span>
                       </div>
                       <p className="text-xs text-[#8c7564] mt-0.5">
-                        {totalItems} item{totalItems !== 1 ? 's' : ''} · {new Date(order.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {totalItems} item{totalItems !== 1 ? 's' : ''} · {new Date(order.createdAt).toLocaleString('en-BD', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                       </p>
                     </div>
                     <div className="hidden sm:block">
@@ -283,7 +352,7 @@ export default function AccountOrdersPage() {
                           <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
                               {item.product?.images?.[0]?.imageUrl ? (
-                                <img src={item.product.images[0].imageUrl} alt="" className="h-full w-full object-cover" />
+                                <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-xs text-[#a28672]">
                                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
@@ -329,20 +398,33 @@ export default function AccountOrdersPage() {
                       {/* Actions */}
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         {order.status === 'APPROVED' && (
-                          <button onClick={() => handlePay(order.id)} disabled={isPaying}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-[0.97] disabled:opacity-50">
-                            {isPaying ? (
-                              <><svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Processing...</>
-                            ) : (
-                              <><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m0 0v-.375c0-.621-.504-1.125-1.125-1.125H3.75M3.75 6h16.5M3.75 6h16.5" /></svg>Pay Now</>
-                            )}
+                          <button onClick={() => setPayingOrderId(order.id)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-[0.97]">
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m0 0v-.375c0-.621-.504-1.125-1.125-1.125H3.75M3.75 6h16.5M3.75 6h16.5" /></svg>
+                            Pay Now
                           </button>
                         )}
                         {pinfo?.invoice && (
                           <div className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/60 bg-emerald-50 px-3 py-2">
                             <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
-                            <span className="text-[10px] font-semibold text-emerald-700">Invoice: {pinfo.invoice.invoiceNumber}</span>
+                            <span className="text-[10px] font-semibold text-emerald-700">
+                              {pinfo.payment?.method || 'COD'} · {pinfo.invoice.status === 'PAID' ? 'Paid' : 'Unpaid'} · {pinfo.invoice.invoiceNumber}
+                            </span>
                           </div>
+                        )}
+                        {pinfo?.invoice && (
+                          <>
+                            <a href={`${API_URL}/api/payments/invoice/${order.id}/download?download=false`} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3 py-2 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                              View
+                            </a>
+                            <a href={`${API_URL}/api/payments/invoice/${order.id}/download`} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3 py-2 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                              Download
+                            </a>
+                          </>
                         )}
                       </div>
                     </div>

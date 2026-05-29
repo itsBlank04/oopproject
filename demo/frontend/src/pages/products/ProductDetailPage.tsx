@@ -5,6 +5,16 @@ import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 
+type ProductQuestion = {
+  id: number
+  question: string
+  answer: string | null
+  asker: { id: number; displayName: string }
+  answeredBy: { id: number; displayName: string } | null
+  answeredAt: string | null
+  createdAt: string
+}
+
 type Product = {
   id: number
   name: string
@@ -71,7 +81,7 @@ function ReviewCard({ review }: { review: Review }) {
       <div className="flex items-center gap-3">
         <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e4d6c8]">
           {review.reviewer?.avatarUrl ? (
-            <img src={review.reviewer.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <img src={review.reviewer.avatarUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
               {review.reviewer?.displayName?.charAt(0)?.toUpperCase()}
@@ -131,6 +141,23 @@ export default function ProductDetailPage() {
     enabled: !!id,
     placeholderData: (prev) => prev ?? [],
   })
+
+  const { data: questions = [], refetch: refetchQuestions } = useQuery<ProductQuestion[]>({
+    queryKey: ['product-questions', id],
+    queryFn: () => apiClient.get(`/api/products/${id}/questions`).then((r) => r.data),
+    enabled: !!id,
+    placeholderData: (prev) => prev ?? [],
+  })
+
+  const [newQuestion, setNewQuestion] = useState('')
+  const [asking, setAsking] = useState(false)
+  const [answering, setAnswering] = useState<Record<number, string>>({})
+  const [submittingAnswer, setSubmittingAnswer] = useState<Record<number, boolean>>({})
+
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportType, setReportType] = useState<'PRODUCT' | 'VENDOR'>('PRODUCT')
+  const [reportReason, setReportReason] = useState('')
+  const [submittingReport, setSubmittingReport] = useState(false)
 
   if (isLoading) {
     return (
@@ -203,7 +230,7 @@ export default function ProductDetailPage() {
           <div>
             <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
               {images.length > 0 ? (
-                <img src={images[selectedImage]?.imageUrl} alt={product.name}
+                <img src={images[selectedImage]?.imageUrl} alt={product.name} loading="lazy"
                   className="h-full w-full object-cover transition-all duration-300" />
               ) : (
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
@@ -216,7 +243,7 @@ export default function ProductDetailPage() {
                     className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
                       selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#b8a494]'
                     }`}>
-                    <img src={img.imageUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={img.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -302,20 +329,20 @@ export default function ProductDetailPage() {
             {vendorProfile && (
               <div className="mt-6 rounded-xl border border-[#e4d6c8] bg-white p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
+                  <Link to={`/shop/${vendorProfile.shopSlug}`} className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
                     {(vendorProfile.logoUrl || vendorProfile.avatarUrl) ? (
-                      <img src={vendorProfile.logoUrl || vendorProfile.avatarUrl} alt=""
+                      <img src={vendorProfile.logoUrl || vendorProfile.avatarUrl} alt="" loading="lazy"
                         className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full items-center justify-center font-[Fraunces] text-lg text-[#6c5b4f]">
                         {vendorProfile.shopName?.charAt(0) || vendorProfile.displayName?.charAt(0)}
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div className="flex-1">
-                    <p className="font-semibold text-[#221b16]">
+                    <Link to={`/shop/${vendorProfile.shopSlug}`} className="font-semibold text-[#221b16] hover:underline">
                       {vendorProfile.shopName || vendorProfile.displayName}
-                    </p>
+                    </Link>
                     <div className="mt-0.5 flex items-center gap-3 text-xs text-[#8c7564]">
                       <span>{vendorProfile.productCount} product{vendorProfile.productCount !== 1 ? 's' : ''}</span>
                       {vendorProfile.reviewCount > 0 && (
@@ -329,10 +356,16 @@ export default function ProductDetailPage() {
                       <p className="mt-0.5 text-xs text-[#8c7564]">{vendorProfile.location}</p>
                     )}
                   </div>
-                  <button onClick={handleMessageVendor}
-                    className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] hover:bg-[#f0e8df] transition">
-                    Message
-                  </button>
+                  <div className="flex flex-col gap-1.5">
+                    <button onClick={handleMessageVendor}
+                      className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] hover:bg-[#f0e8df] transition">
+                      Message
+                    </button>
+                    <button onClick={() => { setReportType('VENDOR'); setShowReportModal(true) }}
+                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition">
+                      Report
+                    </button>
+                  </div>
                 </div>
                 {vendorProfile.bio && (
                   <p className="mt-2 border-t border-[#f0e8df] pt-2 text-xs leading-relaxed text-[#6c5b4f]">
@@ -368,7 +401,7 @@ export default function ProductDetailPage() {
             </div>
           ) : (
             <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4 text-center text-sm text-[#8c7564]">
-              <Link to="/login" className="font-semibold text-[#221b16] underline">Sign in</Link> to leave a review
+              <Link to="/auth/login" className="font-semibold text-[#221b16] underline">Sign in</Link> to leave a review
             </div>
           )}
           {/* Reviews list */}
@@ -380,7 +413,155 @@ export default function ProductDetailPage() {
             )}
           </div>
         </div>
+        {/* Q&A section */}
+        <div className="mt-12">
+          <h2 className="font-[Fraunces] text-2xl text-[#221b16]">
+            Questions & Answers ({questions.length})
+          </h2>
+          {/* Ask question */}
+          {user ? (
+            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
+              <textarea value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}
+                placeholder="Ask a question about this product..."
+                rows={2}
+                className="w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+              <div className="mt-3 flex justify-end">
+                <button onClick={async () => {
+                  if (!newQuestion.trim()) { toast.error('Please enter a question'); return }
+                  setAsking(true)
+                  try {
+                    await apiClient.post(`/api/products/${product.id}/questions`, { question: newQuestion })
+                    toast.success('Question submitted')
+                    setNewQuestion('')
+                    refetchQuestions()
+                  } catch { toast.error('Failed to submit question') }
+                  finally { setAsking(false) }
+                }} disabled={asking}
+                  className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
+                  {asking ? 'Submitting...' : 'Ask Question'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4 text-center text-sm text-[#8c7564]">
+              <Link to="/auth/login" className="font-semibold text-[#221b16] underline">Sign in</Link> to ask a question
+            </div>
+          )}
+          {/* Questions list */}
+          <div className="mt-6 space-y-3">
+            {questions.length === 0 ? (
+              <p className="text-sm text-[#8c7564]">No questions yet.</p>
+            ) : (
+              questions.map((q) => {
+                const date = new Date(q.createdAt).toLocaleDateString('en-BD', {
+                  year: 'numeric', month: 'short', day: 'numeric'
+                })
+                const isVendor = user && vendorId === user.id
+                return (
+                  <div key={q.id} className="rounded-xl border border-[#e4d6c8] bg-white p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-[#221b16]">{q.asker?.displayName}</p>
+                        <p className="mt-1 text-sm text-[#4f4035]">{q.question}</p>
+                        <p className="mt-1 text-xs text-[#8c7564]">{date}</p>
+                      </div>
+                    </div>
+                    {q.answer ? (
+                      <div className="mt-3 ml-4 border-l-2 border-[#221b16] pl-3">
+                        <p className="text-xs font-semibold text-[#221b16]">
+                          {q.answeredBy?.displayName || 'Vendor'} replied
+                        </p>
+                        <p className="mt-1 text-sm text-[#4f4035]">{q.answer}</p>
+                        {q.answeredAt && (
+                          <p className="mt-1 text-xs text-[#8c7564]">
+                            {new Date(q.answeredAt).toLocaleDateString('en-BD', {
+                              year: 'numeric', month: 'short', day: 'numeric'
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    ) : isVendor && (
+                      <div className="mt-3 ml-4 border-l-2 border-[#d7c7b8] pl-3">
+                        <textarea value={answering[q.id] || ''}
+                          onChange={(e) => setAnswering(prev => ({ ...prev, [q.id]: e.target.value }))}
+                          placeholder="Write your answer..."
+                          rows={2}
+                          className="w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+                        <div className="mt-2 flex justify-end">
+                          <button onClick={async () => {
+                            const answer = answering[q.id]
+                            if (!answer?.trim()) { toast.error('Please enter an answer'); return }
+                            setSubmittingAnswer(prev => ({ ...prev, [q.id]: true }))
+                            try {
+                              await apiClient.put(`/api/products/${product.id}/questions/${q.id}/answer`, { answer })
+                              toast.success('Answer submitted')
+                              setAnswering(prev => { const n = { ...prev }; delete n[q.id]; return n })
+                              refetchQuestions()
+                            } catch { toast.error('Failed to submit answer') }
+                            finally { setSubmittingAnswer(prev => ({ ...prev, [q.id]: false })) }
+                          }} disabled={submittingAnswer[q.id]}
+                            className="rounded-lg bg-[#221b16] px-4 py-2 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
+                            {submittingAnswer[q.id] ? 'Submitting...' : 'Answer'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+        {/* Report product button */}
+        {user && (
+          <div className="mt-8 flex justify-end">
+            <button onClick={() => { setReportType('PRODUCT'); setShowReportModal(true) }}
+              className="text-xs font-semibold text-red-500 hover:text-red-700 transition">
+              Report this product
+            </button>
+          </div>
+        )}
       </div>
+      {/* Report modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setShowReportModal(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-[Fraunces] text-lg text-[#221b16]">
+              Report {reportType === 'PRODUCT' ? 'Product' : 'Vendor'}
+            </h3>
+            <textarea value={reportReason} onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Tell us why you're reporting this..."
+              rows={4}
+              className="mt-4 w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+            <div className="mt-4 flex justify-end gap-3">
+              <button onClick={() => setShowReportModal(false)}
+                className="rounded-xl border border-[#d7c7b8] px-5 py-2.5 text-sm font-semibold text-[#6c5b4f] hover:bg-[#f0e8df] transition">
+                Cancel
+              </button>
+              <button onClick={async () => {
+                if (!reportReason.trim()) { toast.error('Please provide a reason'); return }
+                setSubmittingReport(true)
+                try {
+                  await apiClient.post('/api/reports', {
+                    reportedId: reportType === 'VENDOR' ? vendorId : null,
+                    entityType: reportType,
+                    entityId: reportType === 'PRODUCT' ? product.id : null,
+                    reason: reportReason,
+                  })
+                  toast.success('Report submitted')
+                  setShowReportModal(false)
+                  setReportReason('')
+                } catch { toast.error('Failed to submit report') }
+                finally { setSubmittingReport(false) }
+              }} disabled={submittingReport}
+                className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50">
+                {submittingReport ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

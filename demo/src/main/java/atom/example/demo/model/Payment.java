@@ -27,7 +27,7 @@ public class Payment {
     @Column(unique = true)
     private String transactionRef;
 
-    @Column(columnDefinition = "JSONB")
+    @Column(columnDefinition = "TEXT")
     private String gatewayResponse;
 
     private Instant paidAt;

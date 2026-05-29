@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -8,7 +8,6 @@ import toast from 'react-hot-toast'
 export default function UsedListingDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const queryClient = useQueryClient()
   const [offerAmount, setOfferAmount] = useState('')
   const [offerMsg, setOfferMsg] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
@@ -17,7 +16,7 @@ export default function UsedListingDetailPage() {
     queryKey: ['used-listing', id],
     queryFn: () => apiClient.get(`/api/used-listings/${id}`).then(r => r.data),
     staleTime: 120_000,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev: any) => prev,
   })
 
   const offerMutation = useMutation({
@@ -51,7 +50,7 @@ export default function UsedListingDetailPage() {
                 allMedia[selectedImage]?.type === 'video' ? (
                   <video src={allMedia[selectedImage]?.url} controls className="h-full w-full object-cover rounded-2xl" />
                 ) : (
-                  <img src={allMedia[selectedImage]?.url} alt={item.title} className="h-full w-full object-cover" />
+                  <img src={allMedia[selectedImage]?.url} alt={item.title} loading="lazy" className="h-full w-full object-cover" />
                 )
               ) : (
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
@@ -70,7 +69,7 @@ export default function UsedListingDetailPage() {
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-lg">▶</div>
                       </>
                     ) : (
-                      <img src={m.url} alt="" className="h-full w-full object-cover" />
+                      <img src={m.url} alt="" loading="lazy" className="h-full w-full object-cover" />
                     )}
                   </button>
                 ))}

@@ -131,7 +131,7 @@ export default function MessagesPage() {
                       }`}>
                       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
                         {c.otherUserAvatar ? (
-                          <img src={c.otherUserAvatar} alt="" className="h-full w-full object-cover" />
+                          <img src={c.otherUserAvatar} alt="" loading="lazy" className="h-full w-full object-cover" />
                         ) : (
                           <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
                             {c.otherUserName?.charAt(0)?.toUpperCase()}
@@ -169,7 +169,7 @@ export default function MessagesPage() {
                 <div className="flex items-center gap-3 border-b border-[#e4d6c8] px-6 py-4">
                   <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
                     {selected.otherUserAvatar ? (
-                      <img src={selected.otherUserAvatar} alt="" className="h-full w-full object-cover" />
+                      <img src={selected.otherUserAvatar} alt="" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
                         {selected.otherUserName?.charAt(0)?.toUpperCase()}

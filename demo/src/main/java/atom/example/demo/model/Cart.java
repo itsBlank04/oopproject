@@ -17,7 +17,11 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column
+    private String status = "ACTIVE";
+
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("createdAt ASC")
     private List<CartItem> items = new ArrayList<>();
 
     @Column(name = "expires_at")
@@ -54,6 +58,14 @@ public class Cart {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Instant getExpiresAt() {

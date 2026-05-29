@@ -54,6 +54,9 @@ public class Product {
     @Column(nullable = false, length = 20)
     private String status = "DRAFT";
 
+    @Column(name = "shipping_type", length = 10)
+    private String shippingType = "FREE";
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -92,6 +95,8 @@ public class Product {
     public void setPriceBdt(BigDecimal priceBdt) { this.priceBdt = priceBdt; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getShippingType() { return shippingType; }
+    public void setShippingType(String shippingType) { this.shippingType = shippingType; }
     public Instant getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
     public Instant getCreatedAt() { return createdAt; }

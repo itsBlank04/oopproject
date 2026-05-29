@@ -68,27 +68,29 @@ export default function VendorDashboardPage() {
     queryKey: ['vendor-dashboard'],
     queryFn: () => apiClient.get('/api/vendor/dashboard').then(r => r.data),
     staleTime: 120_000,
+    placeholderData: (prev) => prev,
   })
 
   const { data: analytics } = useQuery<Analytics | null>({
     queryKey: ['vendor-analytics'],
     queryFn: () => apiClient.get('/api/vendor/analytics').then(r => r.data),
     staleTime: 120_000,
+    placeholderData: (prev) => prev,
   })
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ['vendor-orders'],
     queryFn: () => apiClient.get('/api/vendor/orders').then(r => Array.isArray(r.data) ? r.data : []),
     staleTime: 120_000,
+    placeholderData: (prev) => prev,
   })
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['vendor-products'],
     queryFn: () => apiClient.get('/api/vendor/products').then(r => Array.isArray(r.data) ? r.data : []),
     staleTime: 120_000,
+    placeholderData: (prev) => prev,
   })
-
-  const isLoading = false
 
   const activeProducts = products.filter(p => p.status === 'ACTIVE').length
   const draftProducts = products.filter(p => p.status === 'DRAFT').length

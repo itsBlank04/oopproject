@@ -52,6 +52,7 @@ export default function ProductListPage() {
                 <img
                   src={product.images[0].imageUrl}
                   alt={product.name}
+                  loading="lazy"
                   className="h-48 w-full rounded-xl object-cover"
                 />
               ) : (

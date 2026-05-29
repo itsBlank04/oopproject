@@ -1,15 +1,6 @@
 package atom.example.demo.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -41,7 +32,7 @@ public class RepairPayment {
     @Column(name = "transaction_ref", unique = true)
     private String transactionRef;
 
-    @Column(name = "gateway_response", columnDefinition = "JSONB")
+    @Column(name = "gateway_response", columnDefinition = "TEXT")
     private String gatewayResponse;
 
     @Column(name = "paid_at")

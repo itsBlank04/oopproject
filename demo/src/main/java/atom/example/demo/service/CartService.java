@@ -27,7 +27,10 @@ public class CartService {
     private final ProductVariantRepository productVariantRepository;
     private final UsedListingRepository usedListingRepository;
 
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, UserRepository userRepository, ProductRepository productRepository, ProductVariantRepository productVariantRepository, UsedListingRepository usedListingRepository) {
+    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository,
+            UserRepository userRepository, ProductRepository productRepository,
+            ProductVariantRepository productVariantRepository,
+            UsedListingRepository usedListingRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
@@ -37,25 +40,45 @@ public class CartService {
     }
 
     @Transactional
-    public Cart getCart(Long userId) {
-        return cartRepository.findByUserId(userId)
+    public Cart getActiveCart(Long userId) {
+        return cartRepository.findByUserIdAndStatus(userId, "ACTIVE")
             .orElseGet(() -> {
+                Cart expanded = cartRepository.findByUserIdAndStatus(userId, "EXPIRED")
+                    .orElse(null);
+                if (expanded != null) {
+                    expanded.setStatus("ACTIVE");
+                    expanded.getItems().clear();
+                    return cartRepository.save(expanded);
+                }
                 User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
                 Cart cart = new Cart();
                 cart.setUser(user);
+                cart.setStatus("ACTIVE");
                 return cartRepository.save(cart);
             });
     }
 
     @Transactional
-    public CartItem addItem(Long cartId, String itemType, Long productId, Long variantId, Long usedListingId, int qty) {
-        Cart cart = cartRepository.findById(cartId)
-            .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+    public Cart getCartByUser(Long userId) {
+        return cartRepository.findByUserIdAndStatus(userId, "ACTIVE").orElse(null);
+    }
+
+    @Transactional
+    public CartItem addItem(Long userId, String itemType, Long productId, Long variantId,
+            Long usedListingId, int qty) {
+        Cart cart = getActiveCart(userId);
+
+        for (CartItem ci : cart.getItems()) {
+            if (productId != null && ci.getProduct() != null && ci.getProduct().getId().equals(productId)) {
+                ci.setQty(ci.getQty() + qty);
+                return cartItemRepository.save(ci);
+            }
+        }
 
         CartItem item = new CartItem();
         item.setCart(cart);
-        item.setItemType(itemType);
+        item.setItemType(itemType != null ? itemType : "PRODUCT");
         item.setQty(qty);
 
         if (productId != null) {
@@ -80,24 +103,70 @@ public class CartService {
     }
 
     @Transactional
-    public CartItem updateItemQty(Long itemId, int qty) {
+    public CartItem updateItemQty(Long itemId, int qty, Long userId) {
         CartItem item = cartItemRepository.findById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
+        if (!item.getCart().getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied");
+        }
+        if (!"ACTIVE".equals(item.getCart().getStatus())) {
+            throw new IllegalArgumentException("Cart is not active");
+        }
         item.setQty(qty);
         return cartItemRepository.save(item);
     }
 
     @Transactional
-    public void removeItem(Long itemId) {
+    public void removeItem(Long itemId, Long userId) {
         CartItem item = cartItemRepository.findById(itemId)
             .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
-        cartItemRepository.delete(item);
+        if (!item.getCart().getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied");
+        }
+        Cart cart = item.getCart();
+        cart.getItems().remove(item);
+        cartRepository.save(cart);
     }
 
     @Transactional
     public void clearCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-            .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
         cartItemRepository.deleteByCartId(cartId);
+    }
+
+    @Transactional
+    public Cart initiateCheckout(Long userId) {
+        Cart cart = getActiveCart(userId);
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Cart is empty");
+        }
+        cart.setStatus("PENDING_CHECKOUT");
+        return cartRepository.save(cart);
+    }
+
+    @Transactional
+    public Cart completeCheckout(Long userId) {
+        Cart cart = cartRepository.findByUserIdAndStatus(userId, "PENDING_CHECKOUT")
+            .orElseThrow(() -> new IllegalArgumentException("No pending checkout cart"));
+        cart.setStatus("COMPLETED");
+        return cartRepository.save(cart);
+    }
+
+    @Transactional
+    public Cart cancelCheckout(Long userId) {
+        Cart cart = cartRepository.findByUserIdAndStatus(userId, "PENDING_CHECKOUT")
+            .orElseThrow(() -> new IllegalArgumentException("No pending checkout cart"));
+        cart.setStatus("ACTIVE");
+        return cartRepository.save(cart);
+    }
+
+    @Transactional
+    public Cart getCartStatus(Long userId) {
+        return cartRepository.findByUserIdAndStatus(userId, "ACTIVE")
+            .orElseGet(() -> cartRepository.findByUserIdAndStatus(userId, "PENDING_CHECKOUT")
+                .orElseGet(() -> cartRepository.findByUserIdAndStatus(userId, "COMPLETED")
+                    .orElseGet(() -> cartRepository.findByUserIdAndStatus(userId, "CANCELLED")
+                        .orElseGet(() -> cartRepository.findByUserIdAndStatus(userId, "ABANDONED")
+                            .orElseGet(() -> cartRepository.findByUserIdAndStatus(userId, "EXPIRED")
+                                .orElse(null))))));
     }
 }

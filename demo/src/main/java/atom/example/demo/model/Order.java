@@ -39,6 +39,9 @@ public class Order {
 
     private String status = "PLACED";
 
+    @Column(name = "shipping_option", length = 20)
+    private String shippingOption;
+
     @Column(columnDefinition = "TEXT")
     private String note;
 
@@ -147,6 +150,14 @@ public class Order {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getShippingOption() {
+        return shippingOption;
+    }
+
+    public void setShippingOption(String shippingOption) {
+        this.shippingOption = shippingOption;
     }
 
     public String getNote() {

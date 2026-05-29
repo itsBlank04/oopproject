@@ -111,6 +111,24 @@ public class VendorPanelController {
             .toList();
     }
 
+    @PutMapping("/products/{productId}/shipping")
+    public Product updateShippingType(@PathVariable Long productId, @RequestBody Map<String, String> body) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        if (!product.getVendor().getId().equals(userId)) {
+            throw new SecurityException("Not your product");
+        }
+        String shippingType = body.get("shippingType");
+        if (!List.of("FREE", "PAID").contains(shippingType)) {
+            throw new IllegalArgumentException("Invalid shipping type. Use FREE or PAID");
+        }
+        product.setShippingType(shippingType);
+        return productRepository.save(product);
+    }
+
     @GetMapping("/auctions")
     public List<Auction> auctions(HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");

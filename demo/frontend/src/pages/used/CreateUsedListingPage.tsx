@@ -16,6 +16,7 @@ export default function CreateUsedListingPage() {
     queryKey: ['categories'],
     queryFn: () => apiClient.get('/api/categories').then(r => r.data),
     staleTime: 300_000,
+    placeholderData: (prev) => prev,
   })
 
   const submit = async () => {
