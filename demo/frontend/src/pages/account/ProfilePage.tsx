@@ -297,19 +297,33 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Roles</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {user?.roles?.map((r: string) => {
-                      const labels: Record<string, string> = {
-                        CUSTOMER: 'Customer',
-                        VENDOR: 'Vendor',
-                        TECHNICIAN: 'Technician',
-                        ADMIN: 'Admin',
-                      }
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Roles &amp; Access</p>
+                  <div className="mt-3 space-y-2">
+                    {[
+                      { key: 'VENDOR', label: 'Vendor', icon: 'M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z', color: 'text-amber-700 bg-amber-50 border-amber-200' },
+                      { key: 'TECHNICIAN', label: 'Technician', icon: 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.087 4.113', color: 'text-blue-700 bg-blue-50 border-blue-200' },
+                    ].map(({ key, label, icon, color }) => {
+                      const hasRole = user?.roles?.includes(key)
                       return (
-                        <span key={r} className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">
-                          {labels[r] || r}
-                        </span>
+                        <div
+                          key={key}
+                          className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 transition ${hasRole ? color : 'border-[#e4d6c8] bg-[#f9f5f0] text-[#6c5b4f]'}`}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`h-5 w-5 shrink-0 ${hasRole ? '' : 'text-[#a28672]'}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
+                          </svg>
+                          <span className="flex-1 text-sm font-semibold">{label}</span>
+                          {hasRole ? (
+                            <span className="rounded-full bg-white/60 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">Active</span>
+                          ) : (
+                            <button
+                              onClick={scrollToUpgrade}
+                              className="rounded-full bg-[#221b16] px-3 py-1 text-[11px] font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
+                            >
+                              Upgrade
+                            </button>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
@@ -317,24 +331,72 @@ export default function ProfilePage() {
               </div>
 
               <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Unlock More</p>
-                    <p className="mt-1 text-sm font-semibold text-[#221b16]">Upgrade your account</p>
-                    <p className="mt-1 text-xs text-[#8c7564]">Sell products or offer repair services with a one-time upgrade.</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f0e8df]">
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-[#a28672]">
+                      <path d="M10.362 1.093a.75.75 0 0 0-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925ZM18 6.443l-7.25 4v8.25l6.862-3.786A.75.75 0 0 0 18 14.25V6.443ZM9.25 18.693v-8.25l-7.25-4v7.807a.75.75 0 0 0 .388.657l6.862 3.786Z" />
+                    </svg>
                   </div>
-                  <div className="rounded-full bg-[#f0e8df] px-3 py-1 text-xs font-semibold text-[#6c5b4f]">99 TK</div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Upgrade</p>
+                    <p className="text-sm font-semibold text-[#221b16]">Unlock more capabilities</p>
+                  </div>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Merchant</span>
-                  <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-semibold text-[#6c5b4f]">Craftsman</span>
+                <div className="mt-4 grid gap-3">
+                  {[
+                    {
+                      key: 'VENDOR',
+                      label: 'Merchant',
+                      desc: 'Sell products, run auctions, manage your shop',
+                      benefits: ['List products', 'Run auctions', 'Manage orders', 'Shop page'],
+                      owned: user?.roles?.includes('VENDOR'),
+                    },
+                    {
+                      key: 'TECHNICIAN',
+                      label: 'Craftsman',
+                      desc: 'Offer repair services, accept bookings',
+                      benefits: ['List services', 'Accept bookings', 'Set pricing', 'Build reputation'],
+                      owned: user?.roles?.includes('TECHNICIAN'),
+                    },
+                  ].map(({ key, label, desc, benefits, owned }) => (
+                    <div
+                      key={key}
+                      className={`rounded-xl border p-4 transition ${owned ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#e4d6c8] bg-[#f9f5f0] hover:border-[#d0c0b0]'}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-[#221b16]">{label}</p>
+                          <p className="mt-0.5 text-xs text-[#8c7564]">{desc}</p>
+                        </div>
+                        {owned ? (
+                          <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Active</span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-[#f0e8df] px-2.5 py-1 text-[11px] font-semibold text-[#6c5b4f]">99 TK</span>
+                        )}
+                      </div>
+                      {!owned && (
+                        <>
+                          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                            {benefits.map((b) => (
+                              <div key={b} className="flex items-center gap-1.5 text-[11px] text-[#6c5b4f]">
+                                <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-emerald-600">
+                                  <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+                                </svg>
+                                {b}
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={scrollToUpgrade}
+                            className="mt-3 w-full rounded-xl bg-[#221b16] py-2 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
+                          >
+                            Upgrade to {label} — 99 TK
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <button
-                  onClick={scrollToUpgrade}
-                  className="mt-4 w-full rounded-xl bg-[#221b16] py-2.5 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
-                >
-                  See upgrade options
-                </button>
               </div>
 
               <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">

@@ -95,7 +95,9 @@ public class ProfileController {
     }
 
     private String asString(Object value) {
-        return value == null ? null : value.toString();
+        if (value == null) return null;
+        String s = value.toString().trim();
+        return s.isEmpty() ? null : s;
     }
 
     private LocalDate asDate(Object value) {
