@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { Link } from 'react-router-dom'
@@ -7,11 +7,11 @@ import MediaUploader from '../../components/MediaUploader'
 import toast from 'react-hot-toast'
 
 type Category = { id: number; name: string }
-type Product = { id: number; name: string; description?: string; priceBdt: number; status: string; category: { id: number; name: string }; images?: { imageUrl: string }[] }
+type Product = { id: number; name: string; description?: string; priceBdt: number; status: string; shippingType: string; category: { id: number; name: string }; images?: { imageUrl: string }[] }
 type Inventory = { id: number; stockQty: number; lowStockThreshold: number }
 
 export default function VendorProductsPage() {
-  const { user } = useAuth()
+  const { user, hasRole } = useAuth()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [editProductId, setEditProductId] = useState<number | null>(null)
@@ -27,12 +27,13 @@ export default function VendorProductsPage() {
       return Array.isArray(res.data) ? res.data : []
     },
     enabled: !!user,
-    placeholderData: [],
+    placeholderData: (prev) => prev,
   })
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => apiClient.get('/api/categories').then((r) => r.data.value ?? r.data),
+    placeholderData: (prev) => prev,
   })
 
   const fetchInventoryBatch = useCallback(async (productIds: number[]) => {
@@ -107,15 +108,50 @@ export default function VendorProductsPage() {
     onError: (err: any) => toast.error(err.response?.data?.error ?? 'Failed to delete'),
   })
 
-  const updateStock = async (productId: number, stockQty: number, lowStockThreshold: number) => {
-    try {
-      await apiClient.put(`/api/products/${productId}/inventory`, { stockQty, lowStockThreshold })
-      setStockCache(prev => ({ ...prev, [productId]: { stockQty, lowStockThreshold } }))
-      toast.success('Stock updated')
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to update stock')
-    }
+  const stockTimers = useRef<Record<number, number | undefined>>({})
+
+  const stockCacheRef = useRef(stockCache)
+  stockCacheRef.current = stockCache
+
+  const syncStock = useCallback((productId: number, stockQty: number, lowStockThreshold: number) => {
+    apiClient.put(`/api/products/${productId}/inventory`, { stockQty, lowStockThreshold })
+      .catch((err) => {
+        setStockCache(prev => {
+          const old = stockCacheRef.current[productId]
+          return old ? { ...prev, [productId]: old } : prev
+        })
+        toast.error(err.response?.data?.error ?? 'Failed to update stock')
+      })
+  }, [])
+
+  const setStock = (productId: number, stockQty: number, lowStockThreshold: number) => {
+    setStockCache(prev => ({ ...prev, [productId]: { stockQty, lowStockThreshold } }))
+    if (stockTimers.current[productId]) clearTimeout(stockTimers.current[productId])
+    stockTimers.current[productId] = window.setTimeout(() => {
+      delete stockTimers.current[productId]
+      syncStock(productId, stockQty, lowStockThreshold)
+    }, 400)
   }
+
+  const updateShipping = useMutation({
+    mutationFn: async ({ productId, shippingType }: { productId: number; shippingType: string }) => {
+      await apiClient.put(`/api/vendor/products/${productId}/shipping`, { shippingType })
+    },
+    onMutate: async ({ productId, shippingType }) => {
+      await queryClient.cancelQueries({ queryKey: ['vendor-products'] })
+      const prev = queryClient.getQueryData<any[]>(['vendor-products'])
+      if (prev) {
+        queryClient.setQueryData(['vendor-products'], prev.map(p =>
+          p.id === productId ? { ...p, shippingType } : p
+        ))
+      }
+      return { prev }
+    },
+    onError: (err: any, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['vendor-products'], ctx.prev)
+      toast.error(err.response?.data?.error ?? err.message ?? 'Failed to update shipping')
+    },
+  })
 
   const resetForm = () => {
     setShowForm(false)
@@ -156,6 +192,32 @@ export default function VendorProductsPage() {
 
   if (!user) {
     return <div className="mx-auto max-w-4xl px-6 py-20 text-center"><p className="text-[#6c5b4f]">Sign in as a vendor</p><Link to="/auth/login" className="mt-4 inline-block rounded-full bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0]">Sign in</Link></div>
+  }
+
+  if (!hasRole('VENDOR')) {
+    return (
+      <div className="mx-auto max-w-4xl px-6 py-20 text-center">
+        <div className="mx-auto max-w-xl rounded-3xl border border-[#e4d6c8] bg-white p-8 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f0e8df]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-[#221b16]">
+              <path d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+            </svg>
+          </div>
+          <p className="mt-4 font-semibold text-[#221b16]">Upgrade to Merchant to access products</p>
+          <p className="mt-2 text-sm text-[#8c7564]">List products, manage inventory, and sell with your own shop page.</p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-[#6c5b4f]">
+            <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1">One-time 99 TK</span>
+            <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1">Instant activation</span>
+          </div>
+          <Link to="/profile#role-upgrade" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0]">
+            Upgrade in Profile
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -313,7 +375,7 @@ export default function VendorProductsPage() {
                   {/* Image */}
                   <div className="aspect-[4/3] overflow-hidden rounded-t-2xl bg-[#f9f5f0]">
                     {p.images?.[0] ? (
-                      <img src={p.images[0].imageUrl} alt={p.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <img src={p.images[0].imageUrl} alt={p.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <svg className="h-10 w-10 text-[#d7c7b8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
@@ -344,8 +406,8 @@ export default function VendorProductsPage() {
 
                     {/* Stock controls */}
                     <div className="mt-4 flex items-center gap-2">
-                      <button onClick={() => updateStock(p.id, Math.max(0, s.stockQty - 1), s.lowStockThreshold)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
+                      <button onClick={() => setStock(p.id, Math.max(0, s.stockQty - 1), s.lowStockThreshold)}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" /></svg>
                       </button>
                       <input
@@ -353,12 +415,12 @@ export default function VendorProductsPage() {
                         value={s.stockQty}
                         onChange={e => {
                           const val = parseInt(e.target.value) || 0
-                          updateStock(p.id, val, s.lowStockThreshold)
+                          setStock(p.id, val, s.lowStockThreshold)
                         }}
                         className="w-16 rounded-lg border border-[#d7c7b8] bg-[#faf8f6] px-2 py-1.5 text-center text-xs font-semibold text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
-                      <button onClick={() => updateStock(p.id, s.stockQty + 1, s.lowStockThreshold)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
+                      <button onClick={() => setStock(p.id, s.stockQty + 1, s.lowStockThreshold)}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                       </button>
                       <div className="ml-auto flex items-center gap-1">
@@ -366,10 +428,34 @@ export default function VendorProductsPage() {
                         <input
                           type="number" min="0"
                           value={s.lowStockThreshold}
-                          onChange={e => updateStock(p.id, s.stockQty, Math.max(0, parseInt(e.target.value) || 0))}
+                          onChange={e => setStock(p.id, s.stockQty, Math.max(0, parseInt(e.target.value) || 0))}
                           className="w-12 rounded-lg border border-[#d7c7b8] bg-[#faf8f6] px-1.5 py-1 text-center text-[10px] text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </div>
+                    </div>
+
+                    {/* Shipping toggle */}
+                    <div className="mt-4 border-t border-[#f0e8e0] pt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#6c5b4f]">Shipping</span>
+                        <button
+                          onClick={() => updateShipping.mutate({
+                            productId: p.id,
+                            shippingType: p.shippingType === 'FREE' ? 'PAID' : 'FREE',
+                          })}
+                          disabled={updateShipping.isPending}
+                          className={`relative inline-flex h-6 w-10 cursor-pointer items-center rounded-full transition-all ${
+                            p.shippingType === 'PAID' ? 'bg-[#221b16]' : 'bg-[#d7c7b8]'
+                          }`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-all ${
+                            p.shippingType === 'PAID' ? 'translate-x-5' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+                      <p className="mt-0.5 text-[10px] text-[#8c7564]">
+                        {p.shippingType === 'PAID' ? 'Customer pays shipping (60/100 tk)' : 'Free shipping'}
+                      </p>
                     </div>
 
                     {/* Actions */}

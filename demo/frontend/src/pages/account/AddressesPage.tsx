@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 export default function AddressesPage() {
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ label: '', addressLine1: '', addressLine2: '', city: '', district: '', postalCode: '', phone: '' })
+  const [form, setForm] = useState({ label: '', fullName: '', phone: '', addressLine: '', city: '', area: '', postalCode: '' })
 
   const { data: addresses = [], isLoading } = useQuery<any[]>({
     queryKey: ['addresses'],
@@ -20,7 +20,7 @@ export default function AddressesPage() {
     onSuccess: () => {
       toast.success('Address added')
       setShowForm(false)
-      setForm({ label: '', addressLine1: '', addressLine2: '', city: '', district: '', postalCode: '', phone: '' })
+      setForm({ label: '', fullName: '', phone: '', addressLine: '', city: '', area: '', postalCode: '' })
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.error || 'Failed'),
@@ -44,11 +44,22 @@ export default function AddressesPage() {
 
   const setDefaultMutation = useMutation({
     mutationFn: (id: number) => apiClient.put(`/api/addresses/${id}/default`),
-    onSuccess: () => {
-      toast.success('Set as default')
-      queryClient.invalidateQueries({ queryKey: ['addresses'] })
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['addresses'] })
+      const prev = queryClient.getQueryData<any[]>(['addresses'])
+      if (prev) {
+        queryClient.setQueryData(['addresses'], prev.map(a => ({
+          ...a, isDefault: a.id === id
+        })))
+      }
+      return { prev }
     },
-    onError: () => toast.error('Failed'),
+    onSuccess: () => toast.success('Set as default'),
+    onError: (_e, _id, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['addresses'], ctx.prev)
+      toast.error('Failed')
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
   })
 
   return (
@@ -62,10 +73,24 @@ export default function AddressesPage() {
         </div>
         {showForm && (
           <div className="mt-6 space-y-3 rounded-2xl border border-[#e4d6c8] bg-white p-6">
-            {(['label', 'addressLine1', 'addressLine2', 'city', 'district', 'postalCode', 'phone'] as const).map(k => (
-              <input key={k} value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })}
-                placeholder={k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}
-                className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+            {([
+              { key: 'label', label: 'Label (Home, Office)', placeholder: 'Home' },
+              { key: 'fullName', label: 'Full Name', placeholder: 'Your name' },
+              { key: 'phone', label: 'Phone', placeholder: '01XXXXXXXXX' },
+              { key: 'addressLine', label: 'Street Address', placeholder: 'House, road, area' },
+              { key: 'city', label: 'City', placeholder: 'Dhaka' },
+              { key: 'area', label: 'Area / District', placeholder: 'Dhanmondi' },
+              { key: 'postalCode', label: 'Postal Code', placeholder: '1205' },
+            ] as const).map(field => (
+              <div key={field.key}>
+                <label className="text-xs font-semibold text-[#221b16]">{field.label}</label>
+                <input
+                  value={form[field.key]}
+                  onChange={e => setForm({ ...form, [field.key]: e.target.value })}
+                  placeholder={field.placeholder}
+                  className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
+                />
+              </div>
             ))}
             <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
               {saveMutation.isPending ? 'Saving...' : 'Save Address'}
@@ -83,8 +108,9 @@ export default function AddressesPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold text-[#221b16]">{a.label} {a.isDefault && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Default</span>}</p>
-                    <p className="mt-1 text-sm text-[#6c5b4f]">{a.addressLine1}{a.addressLine2 ? `, ${a.addressLine2}` : ''}</p>
-                    <p className="text-sm text-[#6c5b4f]">{a.city}, {a.district} {a.postalCode}</p>
+                    {a.fullName && <p className="text-sm font-medium text-[#221b16]">{a.fullName}</p>}
+                    <p className="mt-1 text-sm text-[#6c5b4f]">{a.addressLine}</p>
+                    <p className="text-sm text-[#6c5b4f]">{a.city}{a.area ? `, ${a.area}` : ''} {a.postalCode}</p>
                     {a.phone && <p className="text-sm text-[#8c7564]">📞 {a.phone}</p>}
                   </div>
                   <div className="flex gap-2">
