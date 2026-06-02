@@ -43,12 +43,12 @@ public class CartService {
     public Cart getActiveCart(Long userId) {
         return cartRepository.findByUserIdAndStatus(userId, "ACTIVE")
             .orElseGet(() -> {
-                Cart expanded = cartRepository.findByUserIdAndStatus(userId, "EXPIRED")
-                    .orElse(null);
-                if (expanded != null) {
-                    expanded.setStatus("ACTIVE");
-                    expanded.getItems().clear();
-                    return cartRepository.save(expanded);
+                // Try to find any existing cart and reset it
+                Cart existing = cartRepository.findByUserId(userId);
+                if (existing != null) {
+                    existing.setStatus("ACTIVE");
+                    existing.getItems().clear();
+                    return cartRepository.save(existing);
                 }
                 User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -84,6 +84,9 @@ public class CartService {
         if (productId != null) {
             Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            if (product.getVendor() != null && product.getVendor().getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot add your own product to cart");
+            }
             item.setProduct(product);
         }
 
@@ -96,6 +99,9 @@ public class CartService {
         if (usedListingId != null) {
             UsedListing usedListing = usedListingRepository.findById(usedListingId)
                 .orElseThrow(() -> new IllegalArgumentException("Used listing not found"));
+            if (usedListing.getSeller() != null && usedListing.getSeller().getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot add your own listing to cart");
+            }
             item.setUsedListing(usedListing);
         }
 
@@ -157,6 +163,16 @@ public class CartService {
             .orElseThrow(() -> new IllegalArgumentException("No pending checkout cart"));
         cart.setStatus("ACTIVE");
         return cartRepository.save(cart);
+    }
+
+    @Transactional
+    public Cart resetCartToActive(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId);
+        if (cart != null) {
+            cart.setStatus("ACTIVE");
+            return cartRepository.save(cart);
+        }
+        return null;
     }
 
     @Transactional

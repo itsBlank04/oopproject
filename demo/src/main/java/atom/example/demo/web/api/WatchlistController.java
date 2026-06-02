@@ -8,6 +8,7 @@ import atom.example.demo.repository.AuctionLotRepository;
 import atom.example.demo.repository.AuctionWatchlistRepository;
 import atom.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,11 +41,25 @@ public class WatchlistController {
         return auctionWatchlistRepository.findByUserId(userId);
     }
 
+    @GetMapping("/{lotId}")
+    public Map<String, Object> status(@PathVariable Long lotId, HttpSession session) {
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        return Map.of(
+                "lotId", lotId,
+                "watched", auctionWatchlistRepository.existsByUserIdAndLotId(userId, lotId),
+                "watchers", auctionWatchlistRepository.countByLotId(lotId)
+        );
+    }
+
     @PostMapping("/{lotId}")
     public AuctionWatchlist add(@PathVariable Long lotId, HttpSession session) {
         if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        var existing = auctionWatchlistRepository.findByUserIdAndLotId(userId, lotId);
+        if (existing.isPresent()) return existing.get();
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         AuctionLot lot = auctionLotRepository.findById(lotId).orElseThrow(() -> new IllegalArgumentException("Lot not found"));
         AuctionWatchlist entry = new AuctionWatchlist();
@@ -54,6 +69,7 @@ public class WatchlistController {
     }
 
     @DeleteMapping("/{lotId}")
+    @Transactional
     public Map<String, String> remove(@PathVariable Long lotId, HttpSession session) {
         if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         Long userId = SecurityConfig.getSessionUserId();

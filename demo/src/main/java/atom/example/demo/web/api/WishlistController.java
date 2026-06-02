@@ -8,6 +8,7 @@ import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.WishlistRepository;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,6 +60,7 @@ public class WishlistController {
     }
 
     @DeleteMapping("/{productId}")
+    @Transactional
     public String removeFromWishlist(@PathVariable Long productId, HttpSession session) {
         if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         Long userId = SecurityConfig.getSessionUserId();

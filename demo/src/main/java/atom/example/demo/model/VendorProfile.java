@@ -3,8 +3,9 @@ package atom.example.demo.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "vendor_profiles")
@@ -16,6 +17,7 @@ public class VendorProfile {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private User user;
 
     @Column(name = "shop_name")
@@ -40,11 +42,11 @@ public class VendorProfile {
     private String websiteUrl;
 
     @Column(name = "social_links")
-    @JdbcTypeCode(SqlTypes.JSON)
+    @ColumnTransformer(write = "?::jsonb")
     private String socialLinks;
 
     @Column(name = "verification_status")
-    private String verificationStatus = "PENDING";
+    private String verificationStatus = "VERIFIED";
 
     @Column(name = "response_rate")
     private BigDecimal responseRate = BigDecimal.ZERO;

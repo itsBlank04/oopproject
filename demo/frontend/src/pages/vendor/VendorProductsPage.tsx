@@ -4,6 +4,7 @@ import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { Link } from 'react-router-dom'
 import MediaUploader from '../../components/MediaUploader'
+import ImageLightbox from '../../components/ImageLightbox'
 import toast from 'react-hot-toast'
 
 type Category = { id: number; name: string }
@@ -19,6 +20,7 @@ export default function VendorProductsPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
   const [stockCache, setStockCache] = useState<Record<number, { stockQty: number; lowStockThreshold: number }>>({})
+  const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
 
   const { data: products = [], isFetching: productsFetching } = useQuery<Product[]>({
     queryKey: ['vendor-products'],
@@ -71,6 +73,7 @@ export default function VendorProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       resetForm()
       toast.success('Product created')
     },
@@ -90,6 +93,7 @@ export default function VendorProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       resetForm()
       toast.success('Product updated')
     },
@@ -102,6 +106,7 @@ export default function VendorProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       setDeleteConfirmId(null)
       toast.success('Product removed')
     },
@@ -373,7 +378,12 @@ export default function VendorProductsPage() {
                   </div>
 
                   {/* Image */}
-                  <div className="aspect-[4/3] overflow-hidden rounded-t-2xl bg-[#f9f5f0]">
+                  <button type="button" onClick={() => setLightbox({
+                    images: (p.images || []).map((i: any) => ({ url: i.imageUrl })),
+                    index: 0
+                  })}
+                    className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-[#f9f5f0]"
+                  >
                     {p.images?.[0] ? (
                       <img src={p.images[0].imageUrl} alt={p.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                     ) : (
@@ -381,7 +391,7 @@ export default function VendorProductsPage() {
                         <svg className="h-10 w-10 text-[#d7c7b8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                       </div>
                     )}
-                  </div>
+                  </button>
 
                   {/* Content */}
                   <div className="p-5">
@@ -487,6 +497,13 @@ export default function VendorProductsPage() {
           animation: slide-in-from-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
       `}</style>
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   )
 }

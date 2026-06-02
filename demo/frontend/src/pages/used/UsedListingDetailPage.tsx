@@ -1,16 +1,29 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
+import ImageLightbox from '../../components/ImageLightbox'
 
 export default function UsedListingDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [offerAmount, setOfferAmount] = useState('')
   const [offerMsg, setOfferMsg] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
+  const handleChat = async () => {
+    if (!user) { toast.error('Please sign in first'); return }
+    try {
+      await apiClient.post('/api/chat/conversations/used', { listingId: parseInt(id!) })
+      navigate('/messages')
+    } catch (err: any) {
+      toast.error(err.response?.data?.error ?? 'Could not start conversation')
+    }
+  }
 
   const { data: item, isLoading } = useQuery<any>({
     queryKey: ['used-listing', id],
@@ -47,10 +60,12 @@ export default function UsedListingDetailPage() {
           <div>
             <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
               {allMedia.length > 0 ? (
-                allMedia[selectedImage]?.type === 'video' ? (
+                  allMedia[selectedImage]?.type === 'video' ? (
                   <video src={allMedia[selectedImage]?.url} controls className="h-full w-full object-cover rounded-2xl" />
                 ) : (
-                  <img src={allMedia[selectedImage]?.url} alt={item.title} loading="lazy" className="h-full w-full object-cover" />
+                  <button type="button" onClick={() => setLightboxIndex(selectedImage)} className="h-full w-full">
+                    <img src={allMedia[selectedImage]?.url} alt={item.title} loading="lazy" className="h-full w-full object-cover" />
+                  </button>
                 )
               ) : (
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
@@ -89,8 +104,18 @@ export default function UsedListingDetailPage() {
             <p className="mt-4 text-3xl font-bold text-[#221b16]">৳{item.askingPriceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
             <p className="mt-4 text-sm leading-relaxed text-[#6c5b4f]">{item.description}</p>
             <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
-              <p className="text-sm font-semibold text-[#221b16]">Sold by {item.seller?.displayName}</p>
-              <p className="text-xs text-[#8c7564]">Listed {new Date(item.createdAt).toLocaleDateString()}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#221b16]">Sold by {item.seller?.displayName}</p>
+                  <p className="text-xs text-[#8c7564]">Listed {new Date(item.createdAt).toLocaleDateString()}</p>
+                </div>
+                {user && item.seller?.id !== user.id && (
+                  <button onClick={handleChat}
+                    className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f0e8df]">
+                    Chat with Seller
+                  </button>
+                )}
+              </div>
             </div>
             {user && item.seller?.id !== user.id && item.status === 'ACTIVE' && (
               <div className="mt-6 space-y-3 rounded-2xl border border-[#e4d6c8] bg-white p-5">
@@ -107,8 +132,15 @@ export default function UsedListingDetailPage() {
               </div>
             )}
           </div>
+          </div>
         </div>
-      </div>
+        {lightboxIndex !== null && (
+        <ImageLightbox
+          images={allMedia.map((m: any) => ({ url: m.url, name: m.name, type: m.type }))}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   )
 }

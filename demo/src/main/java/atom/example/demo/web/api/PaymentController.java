@@ -57,10 +57,6 @@ public class PaymentController {
             throw new SecurityException("Not your order");
         }
 
-        if (!"APPROVED".equals(order.getStatus())) {
-            throw new IllegalArgumentException("Order must be approved by vendor before payment");
-        }
-
         String method = body.containsKey("method") ? body.get("method").toString() : "BKASH";
         BigDecimal amount = order.getTotalBdt();
         if (body.containsKey("amountBdt")) {

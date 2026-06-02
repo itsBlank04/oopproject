@@ -1,6 +1,8 @@
 package atom.example.demo.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -18,6 +20,7 @@ public class Return {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private User customer;
 
     @Column(columnDefinition = "TEXT")
@@ -127,3 +130,4 @@ public class Return {
         this.updatedAt = updatedAt;
     }
 }
+

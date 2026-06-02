@@ -1,5 +1,6 @@
 package atom.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,10 +24,12 @@ public class Bid {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lot_id")
+    @JsonIgnoreProperties({"auction", "images", "hibernateLazyInitializer", "handler"})
     private AuctionLot lot;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bidder_id")
+    @JsonIgnoreProperties({"passwordHash", "roles", "addresses", "hibernateLazyInitializer", "handler"})
     private User bidder;
 
     @Column(name = "amount_bdt", nullable = false)

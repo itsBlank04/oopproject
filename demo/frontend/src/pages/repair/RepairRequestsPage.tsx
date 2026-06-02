@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
+import ImageLightbox from '../../components/ImageLightbox'
 import toast from 'react-hot-toast'
 
 export default function RepairRequestsPage() {
@@ -12,6 +13,7 @@ export default function RepairRequestsPage() {
   const [showForm, setShowForm] = useState(false)
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
   const [form, setForm] = useState({ title: '', description: '', deviceType: '', categoryId: '' })
+  const [lightbox, setLightbox] = useState<{ images: { url: string; type?: string }[]; index: number } | null>(null)
 
   const { data: requests = [], isLoading } = useQuery<any[]>({
     queryKey: ['repair-requests'],
@@ -164,24 +166,35 @@ export default function RepairRequestsPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor(r.status)}`}>{r.status}</span>
                 </div>
                 <p className="mt-2 text-sm text-[#6c5b4f]">{r.description}</p>
-                {r.media?.length > 0 && (
-                  <div className="mt-3 flex gap-2">
-                    {r.media.map((m: any, i: number) => (
-                      <div key={i} className="h-16 w-16 overflow-hidden rounded-lg border border-[#e4d6c8]">
-                        {m.mediaUrl?.includes('.mp4') || m.mediaUrl?.includes('.webm')
-                          ? <video src={m.mediaUrl} className="h-full w-full object-cover" />
-                          : <img src={m.mediaUrl} className="h-full w-full object-cover" />
-                        }
+                    {r.media?.length > 0 && (
+                      <div className="mt-3 flex gap-2">
+                        {r.media.map((m: any, i: number) => (
+                          <button key={i} type="button" onClick={() => setLightbox({
+                            images: r.media.map((mm: any) => ({ url: mm.mediaUrl, type: mm.mediaUrl?.includes('.mp4') || mm.mediaUrl?.includes('.webm') ? 'video' : 'image' })),
+                            index: i
+                          })}
+                            className="h-16 w-16 overflow-hidden rounded-lg border border-[#e4d6c8]">
+                            {m.mediaUrl?.includes('.mp4') || m.mediaUrl?.includes('.webm')
+                              ? <video src={m.mediaUrl} className="h-full w-full object-cover" />
+                              : <img src={m.mediaUrl} className="h-full w-full object-cover" />
+                            }
+                          </button>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
                 <p className="mt-2 text-xs text-[#8c7564]">Created {new Date(r.createdAt).toLocaleDateString()}</p>
               </div>
             ))}
           </div>
         )}
       </div>
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   )
 }

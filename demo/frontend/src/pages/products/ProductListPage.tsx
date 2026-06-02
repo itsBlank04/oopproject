@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
+import ImageLightbox from '../../components/ImageLightbox'
+import ProductCard from '../../components/ProductCard'
 
 type Product = {
   id: number
@@ -21,6 +23,7 @@ type PageResponse = {
 }
 
 export default function ProductListPage() {
+  const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
   const { data, isLoading, error } = useQuery<PageResponse>({
     queryKey: ['products'],
     queryFn: () => apiClient.get('/api/products').then((r) => r.data),
@@ -43,35 +46,21 @@ export default function ProductListPage() {
       {data && (
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {data.content.map((product) => (
-            <Link
+            <ProductCard
               key={product.id}
-              to={`/products/${product.id}`}
-              className="group rounded-2xl border border-[#e4d6c8] bg-white p-5 shadow-sm transition hover:shadow-md"
-            >
-              {product.images.length > 0 ? (
-                <img
-                  src={product.images[0].imageUrl}
-                  alt={product.name}
-                  loading="lazy"
-                  className="h-48 w-full rounded-xl object-cover"
-                />
-              ) : (
-                <div className="flex h-48 items-center justify-center rounded-xl bg-[#f9f5f0] text-[#a28672]">
-                  No image
-                </div>
-              )}
-              <p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#a28672]">
-                {product.category?.name}
-              </p>
-              <p className="mt-1 font-semibold text-[#221b16] group-hover:underline">
-                {product.name}
-              </p>
-              <p className="mt-1 font-[Fraunces] text-xl">
-                ৳{product.priceBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}
-              </p>
-            </Link>
+              product={product}
+              onImageClick={(images, index) => setLightbox({ images, index })}
+              priceFractionDigits={2}
+            />
           ))}
         </div>
+      )}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   )

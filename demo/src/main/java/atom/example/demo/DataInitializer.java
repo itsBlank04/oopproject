@@ -1,31 +1,45 @@
 package atom.example.demo;
 
+import atom.example.demo.auth.AuthService;
 import atom.example.demo.category.Category;
 import atom.example.demo.category.CategoryRepository;
 import atom.example.demo.model.ConditionLevel;
 import atom.example.demo.model.PlatformSetting;
 import atom.example.demo.model.Role;
+import atom.example.demo.model.User;
 import atom.example.demo.repository.ConditionLevelRepository;
 import atom.example.demo.repository.PlatformSettingRepository;
 import atom.example.demo.repository.RoleRepository;
+import atom.example.demo.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    private static final String ADMIN_EMAIL = "admin@login.com";
+    private static final String ADMIN_PASSWORD = "88888888";
 
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
     private final ConditionLevelRepository conditionLevelRepository;
     private final PlatformSettingRepository platformSettingRepository;
+    private final UserRepository userRepository;
+    private final AuthService authService;
 
     public DataInitializer(RoleRepository roleRepository, CategoryRepository categoryRepository,
                            ConditionLevelRepository conditionLevelRepository,
-                           PlatformSettingRepository platformSettingRepository) {
+                           PlatformSettingRepository platformSettingRepository,
+                           UserRepository userRepository,
+                           AuthService authService) {
         this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
         this.conditionLevelRepository = conditionLevelRepository;
         this.platformSettingRepository = platformSettingRepository;
+        this.userRepository = userRepository;
+        this.authService = authService;
     }
 
     @Override
@@ -34,6 +48,11 @@ public class DataInitializer implements CommandLineRunner {
             if (roleRepository.findByName(name).isEmpty()) {
                 roleRepository.save(new Role(name));
             }
+        }
+
+        // Auto-create primary admin account
+        if (userRepository.findByEmail(ADMIN_EMAIL).isEmpty()) {
+            authService.register(ADMIN_EMAIL, ADMIN_PASSWORD, "System Admin", List.of(Role.ROLE_ADMIN));
         }
 
         if (categoryRepository.count() == 0) {

@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,5 +54,13 @@ public class OrderController {
         List<Order> orders = orderRepository.findByIdAndCustomerId(id, userId);
         if (orders.isEmpty()) throw new IllegalArgumentException("Order not found");
         return orders.get(0);
+    }
+
+    @PutMapping("/{id}/cancel")
+    public Order cancelOrder(@PathVariable Long id, HttpSession session) {
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        return orderService.cancelOrder(id, userId);
     }
 }

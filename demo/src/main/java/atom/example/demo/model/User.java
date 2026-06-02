@@ -50,6 +50,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE";
 
+    @Column(name = "red_flag_count", nullable = false)
+    private int redFlagCount = 0;
+
+    @Column(name = "red_flag_notes", columnDefinition = "TEXT")
+    private String redFlagNotes;
+
     @JsonIgnore
     @Column(name = "deleted_at")
     private Instant deletedAt;
@@ -99,6 +105,10 @@ public class User {
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public int getRedFlagCount() { return redFlagCount; }
+    public void setRedFlagCount(int redFlagCount) { this.redFlagCount = redFlagCount; }
+    public String getRedFlagNotes() { return redFlagNotes; }
+    public void setRedFlagNotes(String redFlagNotes) { this.redFlagNotes = redFlagNotes; }
     public Instant getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
     public Instant getCreatedAt() { return createdAt; }

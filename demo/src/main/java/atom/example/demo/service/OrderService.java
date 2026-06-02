@@ -1,22 +1,33 @@
 package atom.example.demo.service;
 
 import atom.example.demo.model.Address;
+import atom.example.demo.model.BanHistory;
 import atom.example.demo.model.Cart;
 import atom.example.demo.model.CartItem;
+import atom.example.demo.model.Conversation;
+import atom.example.demo.model.ConversationMember;
 import atom.example.demo.model.Coupon;
 import atom.example.demo.model.Inventory;
 import atom.example.demo.model.Notification;
 import atom.example.demo.model.Order;
 import atom.example.demo.model.OrderItem;
+import atom.example.demo.model.TrustEvent;
+import atom.example.demo.model.TrustScore;
 import atom.example.demo.model.User;
 import atom.example.demo.model.VendorCommission;
 import atom.example.demo.repository.AddressRepository;
+import atom.example.demo.repository.BanHistoryRepository;
 import atom.example.demo.repository.CartItemRepository;
+import atom.example.demo.repository.ConversationMemberRepository;
+import atom.example.demo.repository.ConversationRepository;
 import atom.example.demo.repository.CouponRepository;
 import atom.example.demo.repository.InventoryRepository;
 import atom.example.demo.repository.NotificationRepository;
 import atom.example.demo.repository.OrderItemRepository;
 import atom.example.demo.repository.OrderRepository;
+import atom.example.demo.repository.PlatformSettingRepository;
+import atom.example.demo.repository.TrustEventRepository;
+import atom.example.demo.repository.TrustScoreRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.VendorCommissionRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,8 +53,14 @@ public class OrderService {
     private final AddressRepository addressRepository;
     private final VendorCommissionRepository vendorCommissionRepository;
     private final NotificationRepository notificationRepository;
+    private final ConversationRepository conversationRepository;
+    private final ConversationMemberRepository conversationMemberRepository;
+    private final TrustScoreRepository trustScoreRepository;
+    private final TrustEventRepository trustEventRepository;
+    private final BanHistoryRepository banHistoryRepository;
+    private final PlatformSettingRepository platformSettingRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository, VendorCommissionRepository vendorCommissionRepository, NotificationRepository notificationRepository) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository, VendorCommissionRepository vendorCommissionRepository, NotificationRepository notificationRepository, ConversationRepository conversationRepository, ConversationMemberRepository conversationMemberRepository, TrustScoreRepository trustScoreRepository, TrustEventRepository trustEventRepository, BanHistoryRepository banHistoryRepository, PlatformSettingRepository platformSettingRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
@@ -52,6 +71,12 @@ public class OrderService {
         this.addressRepository = addressRepository;
         this.vendorCommissionRepository = vendorCommissionRepository;
         this.notificationRepository = notificationRepository;
+        this.conversationRepository = conversationRepository;
+        this.conversationMemberRepository = conversationMemberRepository;
+        this.trustScoreRepository = trustScoreRepository;
+        this.trustEventRepository = trustEventRepository;
+        this.banHistoryRepository = banHistoryRepository;
+        this.platformSettingRepository = platformSettingRepository;
     }
 
     @Transactional
@@ -64,6 +89,19 @@ public class OrderService {
 
         if (cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cart is empty");
+        }
+
+        for (CartItem cartItem : cartItems) {
+            if (cartItem.getProduct() != null
+                && cartItem.getProduct().getVendor() != null
+                && cartItem.getProduct().getVendor().getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot purchase your own product");
+            }
+            if (cartItem.getUsedListing() != null
+                && cartItem.getUsedListing().getSeller() != null
+                && cartItem.getUsedListing().getSeller().getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot purchase your own listing");
+            }
         }
 
         Address shippingAddress = addressRepository.findById(shippingAddressId)
@@ -183,9 +221,9 @@ public class OrderService {
                     commission.setOrderItem(orderItem);
                     commission.setVendor(vendor);
                     commission.setSaleAmountBdt(unitPrice.multiply(BigDecimal.valueOf(cartItem.getQty())));
-                    commission.setCommissionRate(new BigDecimal("10.00"));
-                    commission.setCommissionBdt(commission.getSaleAmountBdt().multiply(commission.getCommissionRate()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-                    commission.setNetPayoutBdt(commission.getSaleAmountBdt().subtract(commission.getCommissionBdt()));
+                    commission.setCommissionRate(BigDecimal.ZERO);
+                    commission.setCommissionBdt(BigDecimal.ZERO);
+                    commission.setNetPayoutBdt(commission.getSaleAmountBdt());
                     commission.setStatus("PENDING");
                     vendorCommissionRepository.save(commission);
 
@@ -199,6 +237,38 @@ public class OrderService {
                     notification.setEntityId(savedOrder.getId());
                     notificationRepository.save(notification);
                 }
+            }
+        }
+
+        // Auto-create order conversations (buyer ↔ each vendor)
+        for (CartItem cartItem : cartItems) {
+            User vendor = resolveVendor(cartItem);
+            if (vendor == null || vendor.getId().equals(userId)) continue;
+            final User finalVendor = vendor;
+
+            // Check if conversation already exists for this order+vendor
+            boolean existingConv = conversationMemberRepository.findByUserId(userId).stream()
+                .anyMatch(m -> "ORDER".equals(m.getConversation().getType())
+                    && savedOrder.getId().equals(m.getConversation().getEntityId())
+                    && conversationMemberRepository.existsByConversationIdAndUserId(m.getConversation().getId(), finalVendor.getId()));
+            if (!existingConv) {
+                Conversation conv = new Conversation();
+                conv.setType("ORDER");
+                conv.setEntityType("ORDER");
+                conv.setEntityId(savedOrder.getId());
+                conv.setTitle("Order #" + savedOrder.getId());
+                conv.setStatus("OPEN");
+                conv = conversationRepository.save(conv);
+                ConversationMember buyerMember = new ConversationMember();
+                buyerMember.setConversation(conv);
+                buyerMember.setUser(user);
+                buyerMember.setRole("BUYER");
+                conversationMemberRepository.save(buyerMember);
+                ConversationMember sellerMember = new ConversationMember();
+                sellerMember.setConversation(conv);
+                sellerMember.setUser(finalVendor);
+                sellerMember.setRole("SELLER");
+                conversationMemberRepository.save(sellerMember);
             }
         }
 
@@ -235,23 +305,78 @@ public class OrderService {
         if (!isVendorOrder) throw new SecurityException("Not your order");
 
         String current = order.getStatus();
-        if ("PLACED".equals(current) && "PROCESSING".equals(newStatus)) {
-            // Vendor approved
+
+        // PLACED → APPROVED (vendor approves)
+        if ("PLACED".equals(current) && "APPROVED".equals(newStatus)) {
             order.setStatus("APPROVED");
             Order saved = orderRepository.save(order);
             Notification n = new Notification();
             n.setUser(order.getCustomer());
             n.setType("ORDER_APPROVED");
             n.setTitle("Order #" + orderId + " approved");
-            n.setBody("Your order #" + orderId + " has been approved by the vendor. You can now proceed to payment.");
+            n.setBody("Your order #" + orderId + " has been approved by the vendor.");
             n.setEntityType("ORDER");
             n.setEntityId(orderId);
             notificationRepository.save(n);
             return saved;
         }
 
+        // APPROVED → PACKED (vendor packs)
+        if ("APPROVED".equals(current) && "PACKED".equals(newStatus)) {
+            order.setStatus("PACKED");
+            Order saved = orderRepository.save(order);
+            Notification n = new Notification();
+            n.setUser(order.getCustomer());
+            n.setType("ORDER_PACKED");
+            n.setTitle("Order #" + orderId + " packed");
+            n.setBody("Your order #" + orderId + " has been packed and is ready for shipping.");
+            n.setEntityType("ORDER");
+            n.setEntityId(orderId);
+            notificationRepository.save(n);
+            return saved;
+        }
+
+        // PACKED → SHIPPED (vendor ships)
+        if ("PACKED".equals(current) && "SHIPPED".equals(newStatus)) {
+            order.setStatus("SHIPPED");
+            Order saved = orderRepository.save(order);
+            Notification n = new Notification();
+            n.setUser(order.getCustomer());
+            n.setType("ORDER_SHIPPED");
+            n.setTitle("Order #" + orderId + " shipped");
+            n.setBody("Your order #" + orderId + " has been shipped.");
+            n.setEntityType("ORDER");
+            n.setEntityId(orderId);
+            notificationRepository.save(n);
+            return saved;
+        }
+
+        // SHIPPED → DELIVERED (vendor marks delivered)
+        if ("SHIPPED".equals(current) && "DELIVERED".equals(newStatus)) {
+            order.setStatus("DELIVERED");
+            Order saved = orderRepository.save(order);
+            Notification n = new Notification();
+            n.setUser(order.getCustomer());
+            n.setType("ORDER_DELIVERED");
+            n.setTitle("Order #" + orderId + " delivered");
+            n.setBody("Your order #" + orderId + " has been marked as delivered.");
+            n.setEntityType("ORDER");
+            n.setEntityId(orderId);
+            notificationRepository.save(n);
+
+            // Mark COD commissions as PAID so vendor analytics update
+            List<VendorCommission> commissions = vendorCommissionRepository.findByOrderId(orderId);
+            for (VendorCommission c : commissions) {
+                if (!"PAID".equals(c.getStatus())) {
+                    c.setStatus("PAID");
+                    vendorCommissionRepository.save(c);
+                }
+            }
+            return saved;
+        }
+
+        // PLACED → CANCELLED (vendor rejects)
         if ("PLACED".equals(current) && "CANCELLED".equals(newStatus)) {
-            // Vendor rejected
             order.setStatus("REJECTED");
             Order saved = orderRepository.save(order);
             Notification n = new Notification();
@@ -265,16 +390,100 @@ public class OrderService {
             return saved;
         }
 
-        order.setStatus(newStatus);
+        throw new IllegalArgumentException("Invalid status transition: " + current + " → " + newStatus);
+    }
+
+    @Transactional
+    public Order cancelOrder(Long orderId, Long customerId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        if (!order.getCustomer().getId().equals(customerId)) {
+            throw new SecurityException("Not your order");
+        }
+
+        String status = order.getStatus();
+        if ("SHIPPED".equals(status) || "DELIVERED".equals(status)) {
+            throw new IllegalArgumentException("Cannot cancel order after it has been shipped");
+        }
+
+        // Time limit: cannot cancel if more than 24 hours have passed since creation
+        Instant now = Instant.now();
+        long hoursSinceCreation = Duration.between(order.getCreatedAt(), now).toHours();
+        if (hoursSinceCreation > 24) {
+            throw new IllegalArgumentException("Cancellation window has expired (24 hours from order placement)");
+        }
+
+        // If cancelling before vendor approval → negative trust score impact
+        boolean beforeApproval = "PLACED".equals(status);
+        if (beforeApproval) {
+            TrustScore trustScore = trustScoreRepository.findByUserId(customerId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(customerId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                    TrustScore ts = new TrustScore();
+                    ts.setUser(user);
+                    ts.setScore(new BigDecimal("50"));
+                    return trustScoreRepository.save(ts);
+                });
+
+            BigDecimal penalty = new BigDecimal("-5");
+            BigDecimal newScore = trustScore.getScore().add(penalty).max(BigDecimal.ZERO);
+            trustScore.setScore(newScore);
+            trustScoreRepository.save(trustScore);
+
+            TrustEvent event = new TrustEvent();
+            event.setUser(trustScore.getUser());
+            event.setEventType("ORDER_CANCELLED_BEFORE_APPROVAL");
+            event.setDelta(penalty);
+            event.setNote("Cancelled order #" + orderId + " before vendor approval");
+            trustEventRepository.save(event);
+
+            // Check ban threshold
+            String thresholdStr = platformSettingRepository.findById("trust.ban_threshold")
+                .map(s -> s.getValue()).orElse("10");
+            BigDecimal threshold = new BigDecimal(thresholdStr);
+            if (newScore.compareTo(threshold) <= 0) {
+                // Auto-suspend
+                BanHistory ban = new BanHistory();
+                ban.setUser(trustScore.getUser());
+                ban.setAction("SUSPENDED");
+                ban.setReason("Trust score dropped to " + newScore + " due to repeated order cancellations before vendor approval");
+                ban.setExpiresAt(now.plus(java.time.Duration.ofDays(7)));
+                banHistoryRepository.save(ban);
+
+                // Set user status to SUSPENDED
+                User user = trustScore.getUser();
+                user.setStatus("SUSPENDED");
+                userRepository.save(user);
+            }
+        }
+
+        order.setStatus("CANCELLED");
         Order saved = orderRepository.save(order);
+
+        // Reset cart to ACTIVE so customer can shop again
+        cartService.resetCartToActive(customerId);
+
         Notification n = new Notification();
         n.setUser(order.getCustomer());
-        n.setType("ORDER_STATUS");
-        n.setTitle("Order #" + orderId + " updated");
-        n.setBody("Your order #" + orderId + " status is now: " + newStatus);
+        n.setType("ORDER_CANCELLED");
+        n.setTitle("Order #" + orderId + " cancelled");
+        n.setBody("Your order #" + orderId + " has been cancelled.");
         n.setEntityType("ORDER");
         n.setEntityId(orderId);
         notificationRepository.save(n);
+
         return saved;
+    }
+
+    private User resolveVendor(CartItem cartItem) {
+        if (cartItem.getProduct() != null && cartItem.getProduct().getVendor() != null) {
+            return cartItem.getProduct().getVendor();
+        }
+        if (cartItem.getUsedListing() != null && cartItem.getUsedListing().getSeller() != null) {
+            return cartItem.getUsedListing().getSeller();
+        }
+        return null;
     }
 }

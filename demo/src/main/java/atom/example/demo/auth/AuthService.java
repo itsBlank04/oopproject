@@ -41,10 +41,32 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Always assign CUSTOMER only; upgrades handled via paid flow
         Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.findByName(Role.ROLE_CUSTOMER)
-            .orElseGet(() -> roleRepository.save(new Role(Role.ROLE_CUSTOMER))));
+        // Allow ADMIN role for the primary admin account
+        boolean isAdminRegistration = requestedRoles != null && requestedRoles.stream()
+                .map(String::toUpperCase)
+                .anyMatch(r -> r.equals(Role.ROLE_ADMIN));
+        if (isAdminRegistration) {
+            for (String roleName : requestedRoles) {
+                String upper = roleName.toUpperCase();
+                if (Set.of(Role.ROLE_CUSTOMER, Role.ROLE_VENDOR, Role.ROLE_TECHNICIAN, Role.ROLE_ADMIN).contains(upper)) {
+                    roles.add(roleRepository.findByName(upper)
+                            .orElseGet(() -> roleRepository.save(new Role(upper))));
+                }
+            }
+        } else {
+            for (String roleName : requestedRoles != null ? requestedRoles : List.<String>of()) {
+                String upper = roleName.toUpperCase();
+                if (Set.of(Role.ROLE_CUSTOMER, Role.ROLE_VENDOR, Role.ROLE_TECHNICIAN).contains(upper)) {
+                    roles.add(roleRepository.findByName(upper)
+                            .orElseGet(() -> roleRepository.save(new Role(upper))));
+                }
+            }
+            if (roles.isEmpty()) {
+                roles.add(roleRepository.findByName(Role.ROLE_CUSTOMER)
+                    .orElseGet(() -> roleRepository.save(new Role(Role.ROLE_CUSTOMER))));
+            }
+        }
 
         User user = new User();
         user.setEmail(email);

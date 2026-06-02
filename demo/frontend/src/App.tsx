@@ -7,6 +7,7 @@ import ProductListPage from './pages/products/ProductListPage'
 import ProductDetailPage from './pages/products/ProductDetailPage'
 import CartPage from './pages/cart/CartPage'
 import CheckoutPage from './pages/cart/CheckoutPage'
+import OrderSuccessPage from './pages/cart/OrderSuccessPage'
 import AccountOrdersPage from './pages/account/AccountOrdersPage'
 import ProfilePage from './pages/account/ProfilePage'
 import WishlistPage from './pages/account/WishlistPage'
@@ -25,6 +26,7 @@ import AuctionsPage from './pages/auctions/AuctionsPage'
 import AuctionDetailPage from './pages/auctions/AuctionDetailPage'
 import TechniciansPage from './pages/repair/TechniciansPage'
 import RepairRequestsPage from './pages/repair/RepairRequestsPage'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 
 export default function App() {
@@ -43,6 +45,7 @@ export default function App() {
         {/* Shopping */}
         <Route path="/cart" element={<><Navbar /><CartPage /></>} />
         <Route path="/checkout" element={<><Navbar /><CheckoutPage /></>} />
+        <Route path="/order-success/:id" element={<><Navbar /><OrderSuccessPage /></>} />
 
         {/* Used Items */}
         <Route path="/used-listings" element={<><Navbar /><UsedListingsPage /></>} />
@@ -70,6 +73,9 @@ export default function App() {
         <Route path="/vendor/products" element={<><Navbar /><VendorProductsPage /></>} />
         <Route path="/vendor/orders" element={<><Navbar /><VendorOrdersPage /></>} />
         <Route path="/vendor/auctions" element={<><Navbar /><VendorAuctionsPage /></>} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<><Navbar /><AdminDashboardPage /></>} />
 
         {/* Home: vendors see dashboard, customers/guests see marketplace */}
         <Route path="*" element={<HomeRouter />} />

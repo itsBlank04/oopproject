@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { uploadFiles, validateFile, getFileType } from '../lib/supabaseStorage'
 import toast from 'react-hot-toast'
 
@@ -37,7 +37,18 @@ export default function MediaUploader({
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState({ uploaded: 0, total: 0 })
   const [dragOver, setDragOver] = useState(false)
+  const [successFlash, setSuccessFlash] = useState(false)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!lightboxUrl) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxUrl(null)
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [lightboxUrl])
 
   const acceptTypes = accept || (allowVideo
     ? 'image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm'
@@ -75,6 +86,8 @@ export default function MediaUploader({
       const updated = [...media, ...newItems]
       setMedia(updated)
       onUpload(updated.map(m => m.url))
+      setSuccessFlash(true)
+      setTimeout(() => setSuccessFlash(false), 2000)
       toast.success(`${urls.length} file${urls.length > 1 ? 's' : ''} uploaded`)
     } catch (e: any) {
       toast.error(e.message || 'Upload failed')
@@ -126,13 +139,14 @@ export default function MediaUploader({
           )}
         </div>
         <input ref={inputRef} type="file" multiple accept={acceptTypes} className="hidden"
-          onChange={e => e.target.files && handleFiles(e.target.files)} />
+          onChange={e => { if (e.target.files) { handleFiles(e.target.files); e.target.value = '' } }} />
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
+      <style>{`@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }`}</style>
       <label className="text-sm font-semibold text-[#221b16]">{label}</label>
 
       {/* Drop zone */}
@@ -141,23 +155,47 @@ export default function MediaUploader({
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         onClick={() => !uploading && inputRef.current?.click()}
-        className={`relative cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition
-          ${dragOver ? 'border-[#221b16] bg-[#f0e8df]' : 'border-[#d7c7b8] bg-[#faf6f1] hover:border-[#b8a494]'}
-          ${uploading ? 'pointer-events-none opacity-60' : ''}`}
+        className={`relative cursor-pointer rounded-2xl border-2 text-center transition
+          ${dragOver ? 'border-[#221b16] bg-[#f0e8df] border-dashed' : media.length > 0 ? 'border-emerald-300 bg-emerald-50/40 hover:border-emerald-400 p-5' : 'border-dashed border-[#d7c7b8] bg-[#faf6f1] hover:border-[#b8a494] p-8'}
+          ${uploading ? 'pointer-events-none opacity-60' : ''}
+          ${successFlash ? '!border-emerald-500 !bg-emerald-50' : ''}`}
       >
         <div className="space-y-3">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#221b16] text-2xl text-[#f9f5f0]">
-            📷
+          <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-[#f9f5f0] transition-colors ${media.length > 0 ? 'bg-emerald-600' : 'bg-[#221b16]'}`}>
+            {successFlash ? '✓' : '📷'}
           </div>
           <div>
-            <p className="font-semibold text-[#221b16]">
-              {uploading ? `Uploading ${progress.uploaded}/${progress.total}...` : 'Drop files here or click to browse'}
-            </p>
-            <p className="mt-1 text-xs text-[#8c7564]">
-              {allowVideo ? 'Images (JPG, PNG, WebP, GIF) & Videos (MP4, WebM)' : 'Images (JPG, PNG, WebP, GIF)'}
-              {' '} · Max {maxSizeMB}MB each · Up to {maxFiles} files
-            </p>
+            {uploading ? (
+              <p className="font-semibold text-[#221b16]">
+                Uploading {progress.uploaded}/{progress.total}...
+              </p>
+            ) : media.length > 0 ? (
+              <>
+                <p className="font-semibold text-emerald-800">
+                  {media.length} file{media.length > 1 ? 's' : ''} uploaded
+                </p>
+                <p className="mt-1 text-xs text-emerald-600">
+                  Drag or click to add more · up to {maxFiles} files
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-[#221b16]">Drop files here or click to browse</p>
+                <p className="mt-1 text-xs text-[#8c7564]">
+                  {allowVideo ? 'Images (JPG, PNG, WebP, GIF) & Videos (MP4, WebM)' : 'Images (JPG, PNG, WebP, GIF)'}
+                  {' '}· Max {maxSizeMB}MB each · Up to {maxFiles} files
+                </p>
+              </>
+            )}
           </div>
+          {media.length > 0 && !uploading && (
+            <div className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3">
+                <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+              </svg>
+              {media.length}/{maxFiles}
+            </div>
+          )}
         </div>
 
         {/* Upload progress bar */}
@@ -180,23 +218,78 @@ export default function MediaUploader({
               {m.type === 'video' ? (
                 <video src={m.url} controls className="aspect-square w-full object-cover" />
               ) : (
-                <img src={m.url} alt={m.name} className="aspect-square w-full object-cover" />
+                <button type="button" onClick={() => setLightboxUrl(m.url)} className="w-full">
+                  <img src={m.url} alt={m.name} className="aspect-square w-full object-cover" />
+                </button>
               )}
               <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition">
-                <div className="flex w-full items-center justify-between p-2">
-                  <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs text-[#221b16] truncate max-w-[60%]">
-                    {m.type === 'video' ? '🎬' : '🖼️'} {m.name}
-                  </span>
-                  <button onClick={(e) => { e.stopPropagation(); handleRemove(m.url) }}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600 transition">
-                    ✕
-                  </button>
-                </div>
+                <button type="button" onClick={() => setLightboxUrl(m.url)} className="flex h-full w-full items-end">
+                  <div className="flex w-full items-center justify-between p-2">
+                    <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs text-[#221b16] truncate max-w-[60%]">
+                      {m.type === 'video' ? '🎬' : '🖼️'} {m.name}
+                    </span>
+                    <span onClick={(e) => { e.stopPropagation(); handleRemove(m.url) }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600 transition cursor-pointer">
+                      ✕
+                    </span>
+                  </div>
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Lightbox */}
+      {lightboxUrl && (() => {
+        const item = media.find(m => m.url === lightboxUrl)
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <div
+              className="relative w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5"
+              style={{ animation: 'scaleIn 0.2s ease-out' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative flex items-center justify-center bg-[#111]">
+                {item?.type === 'video' ? (
+                  <video src={item.url} controls className="max-h-[80vh] w-full" />
+                ) : (
+                  <img src={lightboxUrl} alt="" className="max-h-[80vh] w-full object-contain" />
+                )}
+              </div>
+              <div className="flex items-center justify-between px-5 py-3">
+                <p className="text-xs text-[#8c7564]">Click outside or press Esc to close</p>
+                <div className="flex items-center gap-2">
+                  {item && (
+                    <button
+                      type="button"
+                      onClick={() => { handleRemove(item.url); setLightboxUrl(null) }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:border-red-300 hover:bg-red-50"
+                    >
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                        <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c-.84 0-1.673.025-2.5.075V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25v.325C11.673 4.025 10.84 4 10 4ZM8.58 7.72a.75.75 0 0 1 .7.53l.67 2.68.67-2.68a.75.75 0 0 1 1.44.422l-1.12 4.48a.75.75 0 0 1-1.44 0l-1.12-4.48a.75.75 0 0 1 .7-.952Z" clipRule="evenodd" />
+                      </svg>
+                      Delete
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setLightboxUrl(null)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f0e8df] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

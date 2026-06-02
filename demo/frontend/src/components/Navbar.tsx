@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
+import ImageLightbox from '../components/ImageLightbox'
+import toast from 'react-hot-toast'
 
 
 function PrefetchLink({ to, queryKey, queryFn, children, className }: { to: string; queryKey: string[]; queryFn: () => Promise<any>; children: ReactNode; className?: string }) {
@@ -17,7 +19,9 @@ function PrefetchLink({ to, queryKey, queryFn, children, className }: { to: stri
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [lightboxAvatar, setLightboxAvatar] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const { data: notifications = [] } = useQuery({
@@ -40,6 +44,7 @@ export default function Navbar() {
   }, [menuOpen])
 
   return (
+    <>
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8] bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-5">
@@ -63,10 +68,17 @@ export default function Navbar() {
                       onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['vendor-dashboard'], queryFn: () => apiClient.get('/api/vendor/dashboard').then(r => r.data), staleTime: 120_000 })}>Dashboard</Link>
                     <Link to="/vendor/products" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
                       onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['vendor-products'], queryFn: () => apiClient.get('/api/vendor/products').then(r => Array.isArray(r.data) ? r.data : []), staleTime: 120_000 })}>Sell</Link>
+                    <Link to="/vendor/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
+                      onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['vendor-auctions'], queryFn: () => apiClient.get('/api/vendor/auctions').then(r => Array.isArray(r.data) ? r.data : []), staleTime: 120_000 })}>Auctions</Link>
                     <PrefetchLink to="/vendor/orders" queryKey={['vendor-orders-list']}
                       queryFn={() => apiClient.get('/api/vendor/orders/list').then(r => Array.isArray(r.data) ? r.data : [])}
                       className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</PrefetchLink>
                   </>
+                )}
+                {hasRole('ADMIN') && (
+                  <Link to="/admin" className="rounded-full bg-[#221b16] px-3 py-1.5 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a3028]">
+                    Admin
+                  </Link>
                 )}
                 {hasRole('CUSTOMER') && (
                   <>
@@ -85,9 +97,12 @@ export default function Navbar() {
                 </Link>
               </div>
               <div className="relative" ref={menuRef}>
-                  <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
+                  <button onClick={() => { setMenuOpen(!menuOpen); }} className="flex items-center gap-2 rounded-full border border-[#d7c7b8] px-3 py-1.5 text-sm text-[#221b16] hover:bg-[#f9f5f0]">
                   {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="" loading="lazy" className="h-6 w-6 rounded-full object-cover" />
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setLightboxAvatar(true) }}
+                      className="h-6 w-6 overflow-hidden rounded-full">
+                      <img src={user.avatarUrl} alt="" loading="lazy" className="h-full w-full rounded-full object-cover" />
+                    </button>
                   ) : (
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#221b16] text-xs font-bold text-[#f9f5f0]">{user.displayName?.[0]}</span>
                   )}
@@ -115,8 +130,11 @@ export default function Navbar() {
                     {hasRole('VENDOR') && (
                       <Link to="/vendor/auctions" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Auctions</Link>
                     )}
+                    {hasRole('ADMIN') && (
+                      <Link to="/admin" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Admin Console</Link>
+                    )}
                     <hr className="my-1 border-[#e4d6c8]" />
-                    <button onClick={() => { setMenuOpen(false); logout() }} className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                    <button onClick={async () => { setMenuOpen(false); await logout(); toast.success('Logged out successfully'); navigate('/'); }} className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
                       Logout
                     </button>
                   </div>
@@ -133,5 +151,13 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+      {lightboxAvatar && user?.avatarUrl && (
+        <ImageLightbox
+          images={[{ url: user.avatarUrl }]}
+          initialIndex={0}
+          onClose={() => setLightboxAvatar(false)}
+        />
+      )}
+    </>
   )
 }

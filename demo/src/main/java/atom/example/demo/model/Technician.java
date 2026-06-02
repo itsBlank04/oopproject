@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,6 +44,7 @@ public class Technician {
     private String websiteUrl;
 
     @Column(name = "social_links", columnDefinition = "JSONB")
+    @ColumnTransformer(write = "?::jsonb")
     private String socialLinks;
 
     @Column(nullable = false)

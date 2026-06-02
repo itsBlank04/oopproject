@@ -8,7 +8,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.Instant;
 
@@ -22,6 +26,7 @@ public class AuditLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private User actor;
 
     @Column(nullable = false)
@@ -34,9 +39,11 @@ public class AuditLog {
     private Long entityId;
 
     @Column(name = "old_data", columnDefinition = "JSONB")
+    @ColumnTransformer(write = "?::jsonb")
     private String oldData;
 
     @Column(name = "new_data", columnDefinition = "JSONB")
+    @ColumnTransformer(write = "?::jsonb")
     private String newData;
 
     @Column(name = "ip_address")
@@ -44,6 +51,11 @@ public class AuditLog {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

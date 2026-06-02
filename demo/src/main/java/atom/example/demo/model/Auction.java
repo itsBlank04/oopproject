@@ -1,5 +1,6 @@
 package atom.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,10 +9,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.Instant;
 
 @Entity
@@ -24,6 +30,7 @@ public class Auction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private User vendor;
 
     @Column(nullable = false)
@@ -41,8 +48,18 @@ public class Auction {
     @Column(name = "end_time")
     private Instant endTime;
 
+    @Column(name = "preparation_duration_minutes")
+    private Integer preparationDurationMinutes = 10;
+
+    @Column(name = "active_duration_minutes")
+    private Integer activeDurationMinutes = 60;
+
     @Column(name = "terms_accepted", nullable = false)
     private boolean termsAccepted = false;
+
+    @OneToMany(mappedBy = "auction", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"auction", "hibernateLazyInitializer", "handler"})
+    private List<AuctionLot> lots = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -75,8 +92,16 @@ public class Auction {
     public void setStartTime(Instant startTime) { this.startTime = startTime; }
     public Instant getEndTime() { return endTime; }
     public void setEndTime(Instant endTime) { this.endTime = endTime; }
+    public Integer getPreparationDurationMinutes() { return preparationDurationMinutes; }
+    public void setPreparationDurationMinutes(Integer preparationDurationMinutes) { this.preparationDurationMinutes = preparationDurationMinutes; }
+    public Integer getActiveDurationMinutes() { return activeDurationMinutes; }
+    public void setActiveDurationMinutes(Integer activeDurationMinutes) { this.activeDurationMinutes = activeDurationMinutes; }
     public boolean isTermsAccepted() { return termsAccepted; }
     public void setTermsAccepted(boolean termsAccepted) { this.termsAccepted = termsAccepted; }
+    public List<AuctionLot> getLots() { return lots; }
+    public void setLots(List<AuctionLot> lots) { this.lots = lots; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
+
+

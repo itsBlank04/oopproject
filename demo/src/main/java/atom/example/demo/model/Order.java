@@ -1,6 +1,8 @@
 package atom.example.demo.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private User customer;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -3,6 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 
+const labelIcons: Record<string, string> = {
+  Home: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21',
+  Office: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21',
+  Other: 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+}
+
+function getLabelIcon(label: string) {
+  const key = Object.keys(labelIcons).find(k => label.toLowerCase().includes(k.toLowerCase()))
+  return labelIcons[key || 'Other']
+}
+
 export default function AddressesPage() {
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
@@ -54,7 +65,7 @@ export default function AddressesPage() {
       }
       return { prev }
     },
-    onSuccess: () => toast.success('Set as default'),
+    onSuccess: () => toast.success('Default address updated'),
     onError: (_e, _id, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(['addresses'], ctx.prev)
       toast.error('Failed')
@@ -62,60 +73,201 @@ export default function AddressesPage() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
   })
 
+  const defaultAddress = addresses.find((a: any) => a.isDefault)
+  const otherAddresses = addresses.filter((a: any) => !a.isDefault)
+
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-center justify-between">
-          <h1 className="font-[Fraunces] text-3xl text-[#221b16]">My Addresses</h1>
-          <button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0]">
-            {showForm ? 'Cancel' : '+ Add Address'}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Account</p>
+            <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Addresses</h1>
+            <p className="mt-1 text-sm text-[#8c7564]">{addresses.length} address{addresses.length !== 1 ? 'es' : ''} on file</p>
+          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
+              showForm
+                ? 'border border-[#d7c7b8] bg-white text-[#221b16]'
+                : 'bg-[#221b16] text-[#f9f5f0] hover:bg-[#3a2f28]'
+            }`}
+          >
+            {showForm ? (
+              <>Cancel</>
+            ) : (
+              <>
+                <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                  <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                </svg>
+                Add Address
+              </>
+            )}
           </button>
         </div>
+
         {showForm && (
-          <div className="mt-6 space-y-3 rounded-2xl border border-[#e4d6c8] bg-white p-6">
-            {([
-              { key: 'label', label: 'Label (Home, Office)', placeholder: 'Home' },
-              { key: 'fullName', label: 'Full Name', placeholder: 'Your name' },
-              { key: 'phone', label: 'Phone', placeholder: '01XXXXXXXXX' },
-              { key: 'addressLine', label: 'Street Address', placeholder: 'House, road, area' },
-              { key: 'city', label: 'City', placeholder: 'Dhaka' },
-              { key: 'area', label: 'Area / District', placeholder: 'Dhanmondi' },
-              { key: 'postalCode', label: 'Postal Code', placeholder: '1205' },
-            ] as const).map(field => (
-              <div key={field.key}>
-                <label className="text-xs font-semibold text-[#221b16]">{field.label}</label>
-                <input
-                  value={form[field.key]}
-                  onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-                  placeholder={field.placeholder}
-                  className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
-                />
-              </div>
-            ))}
-            <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
-              {saveMutation.isPending ? 'Saving...' : 'Save Address'}
-            </button>
+          <div className="mt-6 rounded-2xl border border-[#e4d6c8] bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold text-[#221b16]">New Address</p>
+            <p className="mt-1 text-xs text-[#8c7564]">Add a delivery or service address to your account.</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              {([
+                { key: 'label', label: 'Label (Home, Office)', placeholder: 'Home', sm: 'col-span-2' },
+                { key: 'fullName', label: 'Full Name', placeholder: 'Your name', sm: 'col-span-2' },
+                { key: 'phone', label: 'Phone Number', placeholder: '01XXXXXXXXX', sm: '' },
+                { key: 'postalCode', label: 'Postal Code', placeholder: '1205', sm: '' },
+                { key: 'addressLine', label: 'Street Address', placeholder: 'House, road, area', sm: 'col-span-2' },
+                { key: 'city', label: 'City', placeholder: 'Dhaka', sm: '' },
+                { key: 'area', label: 'Area / District', placeholder: 'Dhanmondi', sm: '' },
+              ] as const).map(field => (
+                <div key={field.key} className={field.sm}>
+                  <label className="text-xs font-semibold text-[#221b16]">{field.label}</label>
+                  <input
+                    value={form[field.key]}
+                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
+                    placeholder={field.placeholder}
+                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-2.5 text-sm outline-none transition focus:border-[#221b16] focus:bg-white"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <p className="text-xs text-[#8c7564]">This address will be available for checkout and service requests.</p>
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2f28] disabled:opacity-50"
+              >
+                {saveMutation.isPending ? 'Saving...' : 'Save Address'}
+              </button>
+            </div>
           </div>
         )}
+
         {isLoading ? (
-          <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
+          <div className="mt-16 text-center text-sm text-[#8c7564]">Loading addresses...</div>
         ) : addresses.length === 0 ? (
-          <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center text-[#8c7564]">No addresses yet</div>
+          <div className="mt-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f0e8df]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-[#a28672]">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+            </div>
+            <p className="mt-4 font-semibold text-[#221b16]">No addresses yet</p>
+            <p className="mt-1 text-sm text-[#8c7564]">Add one to get started with faster checkout.</p>
+          </div>
         ) : (
-          <div className="mt-8 space-y-4">
-            {addresses.map((a: any) => (
-              <div key={a.id} className="rounded-2xl border border-[#e4d6c8] bg-white p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold text-[#221b16]">{a.label} {a.isDefault && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Default</span>}</p>
-                    {a.fullName && <p className="text-sm font-medium text-[#221b16]">{a.fullName}</p>}
-                    <p className="mt-1 text-sm text-[#6c5b4f]">{a.addressLine}</p>
-                    <p className="text-sm text-[#6c5b4f]">{a.city}{a.area ? `, ${a.area}` : ''} {a.postalCode}</p>
-                    {a.phone && <p className="text-sm text-[#8c7564]">📞 {a.phone}</p>}
+          <div className="mt-8 space-y-5">
+            {defaultAddress && (
+              <div className="overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)]">
+                <div className="relative flex items-center gap-2.5 bg-gradient-to-r from-emerald-50 to-emerald-50/60 px-5 py-2.5">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600">
+                    <svg viewBox="0 0 16 16" fill="white" className="h-3 w-3">
+                      <path d="M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2.5-2.5a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z" />
+                    </svg>
                   </div>
-                  <div className="flex gap-2">
-                    {!a.isDefault && <button onClick={() => setDefaultMutation.mutate(a.id)} className="text-xs text-[#221b16] hover:underline">Set Default</button>}
-                    <button onClick={() => removeMutation.mutate(a.id)} className="text-xs text-red-600 hover:underline">Delete</button>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Default</span>
+                  <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-emerald-50/40 to-transparent" />
+                </div>
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#221b16] shadow-inner">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-[#f9f5f0]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d={getLabelIcon(defaultAddress.label)} />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2.5">
+                          <p className="text-base font-semibold text-[#221b16]">{defaultAddress.label || 'Address'}</p>
+                          <span className="hidden rounded-full bg-[#221b16]/5 px-2 py-0.5 text-[10px] font-medium text-[#221b16] sm:inline">Primary</span>
+                        </div>
+                        {defaultAddress.fullName && <p className="mt-0.5 text-sm font-medium text-[#6c5b4f]">{defaultAddress.fullName}</p>}
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-sm leading-relaxed text-[#6c5b4f]">{defaultAddress.addressLine}</p>
+                          {(defaultAddress.city || defaultAddress.area || defaultAddress.postalCode) && (
+                            <p className="text-sm leading-relaxed text-[#6c5b4f]">
+                              {[defaultAddress.city, defaultAddress.area, defaultAddress.postalCode].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          {defaultAddress.phone && (
+                            <p className="mt-1 flex items-center gap-1.5 text-sm text-[#8c7564]">
+                              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                                <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
+                              </svg>
+                              {defaultAddress.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-start gap-2">
+                      <button
+                        onClick={() => removeMutation.mutate(defaultAddress.id)}
+                        className="group/btn inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-red-500 shadow-sm transition hover:border-red-300 hover:bg-red-50 hover:shadow"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-red-400 transition group-hover/btn:text-red-500">
+                          <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c-.84 0-1.673.025-2.5.075V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25v.325C11.673 4.025 10.84 4 10 4ZM8.58 7.72a.75.75 0 0 1 .7.53l.67 2.68.67-2.68a.75.75 0 0 1 1.44.422l-1.12 4.48a.75.75 0 0 1-1.44 0l-1.12-4.48a.75.75 0 0 1 .7-.952Z" clipRule="evenodd" />
+                        </svg>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {otherAddresses.map((a: any) => (
+              <div key={a.id} className="group/card overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white transition hover:border-[#c8b8a8] hover:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.1)]">
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f0e8df]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-[#a28672]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d={getLabelIcon(a.label)} />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-[#221b16]">{a.label}</p>
+                        {a.fullName && <p className="mt-0.5 text-sm font-medium text-[#6c5b4f]">{a.fullName}</p>}
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-sm leading-relaxed text-[#6c5b4f]">{a.addressLine}</p>
+                          {(a.city || a.area || a.postalCode) && (
+                            <p className="text-sm leading-relaxed text-[#6c5b4f]">
+                              {[a.city, a.area, a.postalCode].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          {a.phone && (
+                            <p className="mt-1 flex items-center gap-1.5 text-sm text-[#8c7564]">
+                              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                                <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
+                              </svg>
+                              {a.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-2 opacity-0 transition group-hover/card:opacity-100">
+                      <button
+                        onClick={() => setDefaultMutation.mutate(a.id)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#e4d6c8] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#6c5b4f] shadow-sm transition hover:border-[#221b16] hover:text-[#221b16] hover:shadow"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                          <path fillRule="evenodd" d="M16.403 12.652a3 3 0 0 0 0-5.304 3 3 0 0 0-3.75-3.751 3 3 0 0 0-5.305 0 3 3 0 0 0-3.751 3.75 3 3 0 0 0 0 5.305 3 3 0 0 0 3.75 3.751 3 3 0 0 0 5.305 0 3 3 0 0 0 3.751-3.75Zm-2.546-4.46a.75.75 0 0 1 .216 1.082l-4.5 6a.75.75 0 0 1-1.079.262l-2.25-1.5a.75.75 0 1 1 .832-1.248l1.654 1.102 4.044-5.392a.75.75 0 0 1 1.083-.306Z" clipRule="evenodd" />
+                        </svg>
+                        Set Default
+                      </button>
+                      <button
+                        onClick={() => removeMutation.mutate(a.id)}
+                        className="group/btn inline-flex items-center gap-1.5 rounded-lg border border-transparent bg-white px-3 py-1.5 text-[11px] font-semibold text-[#8c7564] transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                          <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c-.84 0-1.673.025-2.5.075V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25v.325C11.673 4.025 10.84 4 10 4ZM8.58 7.72a.75.75 0 0 1 .7.53l.67 2.68.67-2.68a.75.75 0 0 1 1.44.422l-1.12 4.48a.75.75 0 0 1-1.44 0l-1.12-4.48a.75.75 0 0 1 .7-.952Z" clipRule="evenodd" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

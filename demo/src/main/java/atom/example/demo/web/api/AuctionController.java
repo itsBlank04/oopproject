@@ -1,12 +1,12 @@
 package atom.example.demo.web.api;
 
+import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Auction;
-import atom.example.demo.model.User;
-import atom.example.demo.repository.AuctionRepository;
-import atom.example.demo.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
+import atom.example.demo.service.AuctionRealtimeService;
+import atom.example.demo.service.AuctionService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,71 +16,94 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/auctions")
 public class AuctionController {
 
-    private final AuctionRepository auctionRepository;
-    private final UserRepository userRepository;
+    private static final Set<String> VALID_TYPES = Set.of("STANDARD", "FLASH", "REVERSE", "RESERVE");
 
-    public AuctionController(AuctionRepository auctionRepository, UserRepository userRepository) {
-        this.auctionRepository = auctionRepository;
-        this.userRepository = userRepository;
+    private final AuctionService auctionService;
+    private final AuctionRealtimeService auctionRealtimeService;
+
+    public AuctionController(AuctionService auctionService, AuctionRealtimeService auctionRealtimeService) {
+        this.auctionService = auctionService;
+        this.auctionRealtimeService = auctionRealtimeService;
     }
 
     @GetMapping
     public List<Auction> list(@RequestParam(required = false) String status,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) Long category) {
-        if (status != null && type != null) return auctionRepository.findByStatusAndType(status, type);
-        if (status != null) return auctionRepository.findByStatus(status);
-        return auctionRepository.findAll();
+            @RequestParam(required = false) String type) {
+        if (status != null) status = status.toUpperCase();
+        if (type != null) type = type.toUpperCase();
+        return auctionService.listAuctions(status, type);
     }
 
     @GetMapping("/{id}")
     public Auction getOne(@PathVariable Long id) {
-        return auctionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+        return auctionService.getAuction(id);
+    }
+
+    @GetMapping("/{id}/events")
+    public SseEmitter events(@PathVariable Long id) {
+        return auctionRealtimeService.subscribe(id);
     }
 
     @PostMapping
-    public Auction create(@RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+    public Auction create(@RequestBody Map<String, Object> body) {
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        User vendor = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Auction auction = new Auction();
-        auction.setVendor(vendor);
-        auction.setTitle((String) body.get("title"));
-        auction.setType((String) body.get("type"));
-        if (body.containsKey("startTime")) auction.setStartTime(java.time.Instant.parse((String) body.get("startTime")));
-        if (body.containsKey("endTime")) auction.setEndTime(java.time.Instant.parse((String) body.get("endTime")));
-        if (body.containsKey("termsAccepted")) auction.setTermsAccepted(Boolean.parseBoolean(body.get("termsAccepted").toString()));
-        return auctionRepository.save(auction);
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        String title = (String) body.get("title");
+        String type = (String) body.get("type");
+        if (type != null) type = type.toUpperCase();
+        Integer preparationDurationMinutes = parseInteger(body.get("preparationDurationMinutes"));
+        Integer activeDurationMinutes = parseInteger(body.get("activeDurationMinutes"));
+        boolean termsAccepted = body.containsKey("termsAccepted") && Boolean.parseBoolean(body.get("termsAccepted").toString());
+        if (title == null || type == null || preparationDurationMinutes == null || activeDurationMinutes == null)
+            throw new IllegalArgumentException("title, type, preparationDurationMinutes, and activeDurationMinutes are required");
+        if (!VALID_TYPES.contains(type))
+            throw new IllegalArgumentException("Invalid auction type. Use STANDARD, FLASH, REVERSE, or RESERVE");
+        return auctionService.createAuction(userId, title, type, preparationDurationMinutes, activeDurationMinutes, termsAccepted);
     }
 
     @PutMapping("/{id}")
-    public Auction update(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+    public Auction update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        Auction auction = auctionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Auction not found"));
-        if (!auction.getVendor().getId().equals(userId)) throw new IllegalArgumentException("Not your auction");
-        if (!"CREATED".equals(auction.getStatus())) throw new IllegalArgumentException("Can only edit CREATED auctions");
-        if (body.containsKey("title")) auction.setTitle((String) body.get("title"));
-        if (body.containsKey("type")) auction.setType((String) body.get("type"));
-        if (body.containsKey("startTime")) auction.setStartTime(java.time.Instant.parse((String) body.get("startTime")));
-        if (body.containsKey("endTime")) auction.setEndTime(java.time.Instant.parse((String) body.get("endTime")));
-        if (body.containsKey("termsAccepted")) auction.setTermsAccepted(Boolean.parseBoolean(body.get("termsAccepted").toString()));
-        return auctionRepository.save(auction);
+        String title = (String) body.get("title");
+        String type = (String) body.get("type");
+        if (type != null) {
+            type = type.toUpperCase();
+            if (!VALID_TYPES.contains(type))
+                throw new IllegalArgumentException("Invalid auction type. Use STANDARD, FLASH, REVERSE, or RESERVE");
+        }
+        Integer preparationDurationMinutes = body.containsKey("preparationDurationMinutes")
+                ? parseInteger(body.get("preparationDurationMinutes")) : null;
+        Integer activeDurationMinutes = body.containsKey("activeDurationMinutes")
+                ? parseInteger(body.get("activeDurationMinutes")) : null;
+        Boolean termsAccepted = body.containsKey("termsAccepted") ? Boolean.parseBoolean(body.get("termsAccepted").toString()) : null;
+        return auctionService.updateAuction(id, userId, title, type, preparationDurationMinutes, activeDurationMinutes, termsAccepted);
+    }
+
+    @PostMapping("/{id}/publish")
+    public Auction publish(@PathVariable Long id) {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        return auctionService.publishAuction(id, userId);
     }
 
     @DeleteMapping("/{id}")
-    public Map<String, String> delete(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+    public Map<String, String> delete(@PathVariable Long id) {
+        Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        Auction auction = auctionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Auction not found"));
-        if (!auction.getVendor().getId().equals(userId)) throw new IllegalArgumentException("Not your auction");
-        if (!"CREATED".equals(auction.getStatus())) throw new IllegalArgumentException("Can only delete CREATED auctions");
-        auctionRepository.delete(auction);
+        auctionService.deleteAuction(id, userId);
         return Map.of("message", "Deleted");
+    }
+
+    private Integer parseInteger(Object value) {
+        return value == null ? null : Integer.parseInt(value.toString());
     }
 }

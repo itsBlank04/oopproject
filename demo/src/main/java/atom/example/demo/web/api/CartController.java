@@ -11,6 +11,8 @@ import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.service.CartService;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,6 +52,39 @@ public class CartController {
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
         return cartService.getActiveCart(userId);
+    }
+
+    @GetMapping("/stock-check")
+    public List<Map<String, Object>> stockCheck() {
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        if (!SecurityConfig.hasRole("CUSTOMER")) throw new SecurityException("Customer access required");
+
+        Cart cart = cartService.getCartByUser(userId);
+        if (cart == null) return List.of();
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (CartItem item : cart.getItems()) {
+            if (item.getProduct() != null) {
+                Long variantId = item.getProductVariant() != null ? item.getProductVariant().getId() : null;
+                Inventory inv = variantId != null
+                    ? inventoryRepository.findByProductIdAndProductVariantId(item.getProduct().getId(), variantId).orElse(null)
+                    : inventoryRepository.findByProductIdAndProductVariantIdIsNull(item.getProduct().getId()).orElse(null);
+
+                int stockQty = inv != null ? inv.getStockQty() : 0;
+                boolean sufficient = stockQty >= item.getQty();
+
+                results.add(Map.of(
+                    "cartItemId", item.getId(),
+                    "productId", item.getProduct().getId(),
+                    "productName", item.getProduct().getName(),
+                    "requestedQty", item.getQty(),
+                    "availableStock", stockQty,
+                    "sufficient", sufficient
+                ));
+            }
+        }
+        return results;
     }
 
     @GetMapping("/status")

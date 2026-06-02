@@ -51,7 +51,7 @@ public class VendorPublicController {
         result.put("logoUrl", profile != null && profile.getLogoUrl() != null ? profile.getLogoUrl() : "");
         result.put("bio", profile != null && profile.getBio() != null ? profile.getBio() : "");
         result.put("location", profile != null && profile.getLocation() != null ? profile.getLocation() : "");
-        result.put("verificationStatus", profile != null ? profile.getVerificationStatus() : "PENDING");
+        result.put("verificationStatus", profile != null ? profile.getVerificationStatus() : "VERIFIED");
         result.put("productCount", productCount);
         result.put("reviewCount", reviews.size());
         result.put("avgRating", Math.round(avgRating * 10.0) / 10.0);

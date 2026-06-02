@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
+import ImageLightbox from '../../components/ImageLightbox'
+import ProductCard from '../../components/ProductCard'
 
 type VendorProfile = {
   id: number
@@ -48,6 +51,7 @@ function StarRating({ value }: { value: number }) {
 
 export default function VendorShopPage() {
   const { slug } = useParams<{ slug: string }>()
+  const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
 
   const { data: vendor, isLoading: vendorLoading } = useQuery<VendorProfile>({
     queryKey: ['vendor-by-slug', slug],
@@ -154,23 +158,15 @@ export default function VendorShopPage() {
           ) : (
             <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((p) => (
-                <Link key={p.id} to={`/products/${p.id}`}
-                  className="group rounded-xl border border-[#e4d6c8] bg-white overflow-hidden transition hover:shadow-md">
-                  <div className="aspect-square overflow-hidden bg-[#f0e8df]">
-                    {p.images?.[0] ? (
-                      <img src={p.images[0].imageUrl} alt={p.name} loading="lazy"
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-[#a28672]">No image</div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <p className="text-sm font-semibold text-[#221b16] truncate">{p.name}</p>
-                    <p className="mt-1 font-[Fraunces] text-lg text-[#221b16]">
-                      ৳{p.priceBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </Link>
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  onImageClick={(images, index) => setLightbox({ images, index })}
+                  aspectSquare
+                  showCategory={false}
+                  priceFractionDigits={2}
+                  truncateName
+                />
               ))}
             </div>
           )}
@@ -214,6 +210,13 @@ export default function VendorShopPage() {
           </div>
         )}
       </div>
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   )
 }

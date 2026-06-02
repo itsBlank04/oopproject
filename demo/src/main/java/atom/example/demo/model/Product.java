@@ -17,6 +17,8 @@ import jakarta.persistence.Table;
 import atom.example.demo.category.Category;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -35,6 +37,7 @@ public class Product {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vendor_id", nullable = false)
     @JsonIgnoreProperties({"passwordHash", "roles", "deletedAt", "createdAt", "updatedAt", "phone", "avatarUrl", "status", "hibernateLazyInitializer", "handler"})
+    @NotFound(action = NotFoundAction.IGNORE)
     private User vendor;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -104,3 +107,5 @@ public class Product {
     public List<ProductImage> getImages() { return images; }
     public void setImages(List<ProductImage> images) { this.images = images; }
 }
+
+

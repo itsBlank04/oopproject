@@ -6,4 +6,5 @@ public interface ConversationMemberRepository extends JpaRepository<Conversation
     List<ConversationMember> findByUserId(Long userId);
     List<ConversationMember> findByConversationId(Long conversationId);
     boolean existsByConversationIdAndUserId(Long conversationId, Long userId);
+    boolean existsByConversationIdAndUserIdAndRole(Long conversationId, Long userId, String role);
 }

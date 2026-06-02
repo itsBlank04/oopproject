@@ -2,6 +2,8 @@ package atom.example.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -21,10 +23,12 @@ public class OrderItem {
     private String itemType = "PRODUCT";
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "used_listing_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private atom.example.demo.model.UsedListing usedListing;
 
     @ManyToOne(fetch = FetchType.LAZY)

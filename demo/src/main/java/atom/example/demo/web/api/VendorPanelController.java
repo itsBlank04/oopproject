@@ -242,7 +242,7 @@ public class VendorPanelController {
             p.setUser(user);
             p.setShopName(user.getDisplayName() + "'s Shop");
             p.setShopSlug("shop-" + userId + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
-            p.setVerificationStatus("PENDING");
+            p.setVerificationStatus("VERIFIED");
             return vendorProfileRepository.save(p);
         });
     }

@@ -12,6 +12,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,6 +30,7 @@ public class AuctionLot {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id")
+    @JsonIgnoreProperties({"lots", "hibernateLazyInitializer", "handler"})
     private Auction auction;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,6 +76,10 @@ public class AuctionLot {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"lot", "hibernateLazyInitializer", "handler"})
+    private List<AuctionImage> images = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
@@ -112,4 +121,6 @@ public class AuctionLot {
     public void setStatus(String status) { this.status = status; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public List<AuctionImage> getImages() { return images; }
+    public void setImages(List<AuctionImage> images) { this.images = images; }
 }

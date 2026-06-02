@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
+import ImageLightbox from '../../components/ImageLightbox'
 import toast from 'react-hot-toast'
 
 type CartItemType = {
@@ -10,6 +11,15 @@ type CartItemType = {
   itemType: string
   product: { id: number; name: string; priceBdt: number; shippingType: string; images: { imageUrl: string }[]; vendor?: { id: number; shopName?: string } }
   qty: number
+}
+
+type StockItem = {
+  cartItemId: number
+  productId: number
+  productName: string
+  requestedQty: number
+  availableStock: number
+  sufficient: boolean
 }
 
 type Cart = {
@@ -115,13 +125,26 @@ export default function CartPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
-  const { data: cart, isLoading } = useQuery<Cart>({
+  const { data: cart } = useQuery<Cart>({
     queryKey: ['cart'],
     queryFn: () => apiClient.get('/api/cart').then((r) => r.data),
     enabled: !!user,
-    placeholderData: (prev) => prev,
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: () => ({ id: 0, status: 'ACTIVE', items: [], createdAt: '', updatedAt: '' }),
   })
+
+  const { data: stockCheck } = useQuery<StockItem[]>({
+    queryKey: ['cart-stock'],
+    queryFn: () => apiClient.get('/api/cart/stock-check').then(r => r.data),
+    enabled: !!user && (cart?.items?.length ?? 0) > 0,
+    refetchInterval: 30_000,
+  })
+
+  const stockByItem = new Map(stockCheck?.map(s => [s.cartItemId, s]))
+  const hasStockIssues = stockCheck?.some(s => !s.sufficient) ?? false
 
   const updateQty = useMutation({
     mutationFn: ({ id, qty }: { id: number; qty: number }) =>
@@ -180,26 +203,6 @@ export default function CartPage() {
             Sign in
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
           </Link>
-        </div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#faf6f2]">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="h-8 w-48 rounded-lg bg-[#e4d6c8]/60 animate-pulse mb-6" />
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex items-center gap-4 rounded-2xl bg-white p-4 mb-3 animate-pulse">
-              <div className="h-20 w-20 shrink-0 rounded-xl bg-[#f5f0eb]" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-1/3 rounded bg-[#f5f0eb]" />
-                <div className="h-3 w-1/4 rounded bg-[#f5f0eb]" />
-              </div>
-              <div className="h-8 w-24 rounded-lg bg-[#f5f0eb]" />
-            </div>
-          ))}
         </div>
       </div>
     )
@@ -286,7 +289,8 @@ export default function CartPage() {
                     className="group flex items-center gap-3 sm:gap-4 rounded-2xl bg-white p-3 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md"
                     style={{ animationDelay: `${idx * 0.04}s` }}>
                     {/* Image */}
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-[#f0e8df]">
+                    <button type="button" onClick={() => { const u = item.product?.images?.[0]?.imageUrl; if (u) setLightboxUrl(u) }}
+                      className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-[#f0e8df]">
                       {item.product?.images?.[0]?.imageUrl ? (
                         <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                       ) : (
@@ -296,14 +300,18 @@ export default function CartPage() {
                           </svg>
                         </div>
                       )}
-                    </div>
-
-                    {/* Details */}
+                    </button>
                     <div className="min-w-0 flex-1">
                       <Link to={`/products/${item.product?.id}`} className="text-sm font-semibold text-[#1a1512] hover:underline truncate block">
                         {item.product?.name || 'Product'}
                       </Link>
                       <p className="text-xs text-[#8c7564] mt-0.5">৳{unitPrice.toLocaleString('en-BD', { minimumFractionDigits: 2 })} each</p>
+                      {stockByItem.get(item.id) && !stockByItem.get(item.id)!.sufficient && (
+                        <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-red-600">
+                          <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                          Only {stockByItem.get(item.id)!.availableStock} in stock — reduce quantity
+                        </p>
+                      )}
                     </div>
 
                     {/* Quantity */}
@@ -412,6 +420,12 @@ export default function CartPage() {
                   </div>
                 </div>
 
+                {hasStockIssues && (
+                  <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 ring-1 ring-red-200/60">
+                    <p className="text-xs font-semibold text-red-700">Some items are out of stock</p>
+                    <p className="text-xs text-red-600 mt-0.5">Reduce quantities or remove out-of-stock items to proceed.</p>
+                  </div>
+                )}
                 <button
                   onClick={() => {
                     if (hasPaidShipping && !shippingOption) {
@@ -420,7 +434,12 @@ export default function CartPage() {
                     }
                     navigate(hasPaidShipping ? `/checkout?shipping=${shippingOption}` : '/checkout')
                   }}
-                  className="mt-5 w-full rounded-xl bg-[#1a1512] py-3 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e] active:scale-[0.98]">
+                  disabled={hasStockIssues}
+                  className={`mt-5 w-full rounded-xl py-3 text-sm font-semibold transition active:scale-[0.98] ${
+                    hasStockIssues
+                      ? 'bg-[#e4d6c8] text-[#8c7564] cursor-not-allowed'
+                      : 'bg-[#1a1512] text-[#faf6f2] hover:bg-[#2d241e]'
+                  }`}>
                   Proceed to Checkout
                 </button>
 
@@ -441,6 +460,13 @@ export default function CartPage() {
           </div>
         )}
       </div>
+      {lightboxUrl && (
+        <ImageLightbox
+          images={[{ url: lightboxUrl }]}
+          initialIndex={0}
+          onClose={() => setLightboxUrl(null)}
+        />
+      )}
     </div>
   )
 }

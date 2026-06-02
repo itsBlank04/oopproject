@@ -1,19 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useState } from 'react'
 import apiClient from '../../lib/apiClient'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
-
-type ProductQuestion = {
-  id: number
-  question: string
-  answer: string | null
-  asker: { id: number; displayName: string }
-  answeredBy: { id: number; displayName: string } | null
-  answeredAt: string | null
-  createdAt: string
-}
+import ImageLightbox from '../../components/ImageLightbox'
 
 type Product = {
   id: number
@@ -106,9 +97,9 @@ function ReviewCard({ review }: { review: Review }) {
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const [selectedImage, setSelectedImage] = useState(0)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewComment, setReviewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -141,18 +132,6 @@ export default function ProductDetailPage() {
     enabled: !!id,
     placeholderData: (prev) => prev ?? [],
   })
-
-  const { data: questions = [], refetch: refetchQuestions } = useQuery<ProductQuestion[]>({
-    queryKey: ['product-questions', id],
-    queryFn: () => apiClient.get(`/api/products/${id}/questions`).then((r) => r.data),
-    enabled: !!id,
-    placeholderData: (prev) => prev ?? [],
-  })
-
-  const [newQuestion, setNewQuestion] = useState('')
-  const [asking, setAsking] = useState(false)
-  const [answering, setAnswering] = useState<Record<number, string>>({})
-  const [submittingAnswer, setSubmittingAnswer] = useState<Record<number, boolean>>({})
 
   const [showReportModal, setShowReportModal] = useState(false)
   const [reportType, setReportType] = useState<'PRODUCT' | 'VENDOR'>('PRODUCT')
@@ -187,6 +166,7 @@ export default function ProductDetailPage() {
 
   const images = product.images || []
   const inStock = stock ? stock.stockQty > 0 : true
+  const isOwner = !!user && product.vendor?.id === user.id
   const lowStock = stock ? stock.stockQty > 0 && stock.stockQty <= stock.lowStockThreshold : false
 
   const handleSubmitReview = async () => {
@@ -210,17 +190,6 @@ export default function ProductDetailPage() {
     }
   }
 
-  const handleMessageVendor = async () => {
-    if (!user) { toast.error('Please sign in first'); return }
-    if (user.id === product.vendor.id) { toast.error('You cannot message yourself'); return }
-    try {
-      await apiClient.post('/api/chat/conversations', { otherUserId: product.vendor.id })
-      navigate('/messages')
-    } catch (err: any) {
-      toast.error(err.response?.data?.error ?? 'Could not start conversation')
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#f9f5f0]">
       <div className="mx-auto max-w-5xl px-6 py-10">
@@ -230,8 +199,10 @@ export default function ProductDetailPage() {
           <div>
             <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
               {images.length > 0 ? (
-                <img src={images[selectedImage]?.imageUrl} alt={product.name} loading="lazy"
-                  className="h-full w-full object-cover transition-all duration-300" />
+                <button type="button" onClick={() => setLightboxIndex(selectedImage)} className="h-full w-full">
+                  <img src={images[selectedImage]?.imageUrl} alt={product.name} loading="lazy"
+                    className="h-full w-full object-cover transition-all duration-300" />
+                </button>
               ) : (
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
               )}
@@ -289,6 +260,10 @@ export default function ProductDetailPage() {
               <button
                 onClick={async () => {
                   try {
+                    if (isOwner) {
+                      toast.error('You cannot buy your own product')
+                      return
+                    }
                     await apiClient.post('/api/cart/items', { productId: product.id, qty: 1 })
                     queryClient.invalidateQueries({ queryKey: ['cart'] })
                     toast.success('Added to cart')
@@ -300,16 +275,18 @@ export default function ProductDetailPage() {
                     }
                   }
                 }}
-                disabled={!inStock}
+                disabled={!inStock || isOwner}
                 className={`flex-1 rounded-xl py-3 font-semibold transition ${
-                  inStock
+                  inStock && !isOwner
                     ? 'bg-[#221b16] text-[#f9f5f0] hover:bg-[#3a3028]'
                     : 'cursor-not-allowed bg-[#d7c7b8] text-[#8c7564]'
                 }`}
               >
-                {inStock
-                  ? `Add to Cart — ৳${product.priceBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`
-                  : 'Out of Stock'}
+                {isOwner
+                  ? 'Your product'
+                  : inStock
+                    ? `Add to Cart — ৳${product.priceBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`
+                    : 'Out of Stock'}
               </button>
               <button
                 onClick={async () => {
@@ -357,10 +334,6 @@ export default function ProductDetailPage() {
                     )}
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <button onClick={handleMessageVendor}
-                      className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] hover:bg-[#f0e8df] transition">
-                      Message
-                    </button>
                     <button onClick={() => { setReportType('VENDOR'); setShowReportModal(true) }}
                       className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition">
                       Report
@@ -413,105 +386,7 @@ export default function ProductDetailPage() {
             )}
           </div>
         </div>
-        {/* Q&A section */}
-        <div className="mt-12">
-          <h2 className="font-[Fraunces] text-2xl text-[#221b16]">
-            Questions & Answers ({questions.length})
-          </h2>
-          {/* Ask question */}
-          {user ? (
-            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
-              <textarea value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}
-                placeholder="Ask a question about this product..."
-                rows={2}
-                className="w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
-              <div className="mt-3 flex justify-end">
-                <button onClick={async () => {
-                  if (!newQuestion.trim()) { toast.error('Please enter a question'); return }
-                  setAsking(true)
-                  try {
-                    await apiClient.post(`/api/products/${product.id}/questions`, { question: newQuestion })
-                    toast.success('Question submitted')
-                    setNewQuestion('')
-                    refetchQuestions()
-                  } catch { toast.error('Failed to submit question') }
-                  finally { setAsking(false) }
-                }} disabled={asking}
-                  className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
-                  {asking ? 'Submitting...' : 'Ask Question'}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4 text-center text-sm text-[#8c7564]">
-              <Link to="/auth/login" className="font-semibold text-[#221b16] underline">Sign in</Link> to ask a question
-            </div>
-          )}
-          {/* Questions list */}
-          <div className="mt-6 space-y-3">
-            {questions.length === 0 ? (
-              <p className="text-sm text-[#8c7564]">No questions yet.</p>
-            ) : (
-              questions.map((q) => {
-                const date = new Date(q.createdAt).toLocaleDateString('en-BD', {
-                  year: 'numeric', month: 'short', day: 'numeric'
-                })
-                const isVendor = user && vendorId === user.id
-                return (
-                  <div key={q.id} className="rounded-xl border border-[#e4d6c8] bg-white p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-[#221b16]">{q.asker?.displayName}</p>
-                        <p className="mt-1 text-sm text-[#4f4035]">{q.question}</p>
-                        <p className="mt-1 text-xs text-[#8c7564]">{date}</p>
-                      </div>
-                    </div>
-                    {q.answer ? (
-                      <div className="mt-3 ml-4 border-l-2 border-[#221b16] pl-3">
-                        <p className="text-xs font-semibold text-[#221b16]">
-                          {q.answeredBy?.displayName || 'Vendor'} replied
-                        </p>
-                        <p className="mt-1 text-sm text-[#4f4035]">{q.answer}</p>
-                        {q.answeredAt && (
-                          <p className="mt-1 text-xs text-[#8c7564]">
-                            {new Date(q.answeredAt).toLocaleDateString('en-BD', {
-                              year: 'numeric', month: 'short', day: 'numeric'
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    ) : isVendor && (
-                      <div className="mt-3 ml-4 border-l-2 border-[#d7c7b8] pl-3">
-                        <textarea value={answering[q.id] || ''}
-                          onChange={(e) => setAnswering(prev => ({ ...prev, [q.id]: e.target.value }))}
-                          placeholder="Write your answer..."
-                          rows={2}
-                          className="w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
-                        <div className="mt-2 flex justify-end">
-                          <button onClick={async () => {
-                            const answer = answering[q.id]
-                            if (!answer?.trim()) { toast.error('Please enter an answer'); return }
-                            setSubmittingAnswer(prev => ({ ...prev, [q.id]: true }))
-                            try {
-                              await apiClient.put(`/api/products/${product.id}/questions/${q.id}/answer`, { answer })
-                              toast.success('Answer submitted')
-                              setAnswering(prev => { const n = { ...prev }; delete n[q.id]; return n })
-                              refetchQuestions()
-                            } catch { toast.error('Failed to submit answer') }
-                            finally { setSubmittingAnswer(prev => ({ ...prev, [q.id]: false })) }
-                          }} disabled={submittingAnswer[q.id]}
-                            className="rounded-lg bg-[#221b16] px-4 py-2 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
-                            {submittingAnswer[q.id] ? 'Submitting...' : 'Answer'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
+
         {/* Report product button */}
         {user && (
           <div className="mt-8 flex justify-end">
@@ -523,6 +398,13 @@ export default function ProductDetailPage() {
         )}
       </div>
       {/* Report modal */}
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={images.map(i => ({ url: i.imageUrl }))}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
       {showReportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setShowReportModal(false)}>

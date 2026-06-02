@@ -2,14 +2,17 @@ package atom.example.demo.service;
 
 import atom.example.demo.model.Role;
 import atom.example.demo.model.RoleUpgrade;
+import atom.example.demo.model.Technician;
 import atom.example.demo.model.UpgradePayment;
 import atom.example.demo.model.User;
 import atom.example.demo.repository.RoleRepository;
 import atom.example.demo.repository.RoleUpgradeRepository;
+import atom.example.demo.repository.TechnicianRepository;
 import atom.example.demo.repository.UpgradePaymentRepository;
 import atom.example.demo.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -24,15 +27,18 @@ public class UpgradeService {
     private final UpgradePaymentRepository upgradePaymentRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final TechnicianRepository technicianRepository;
 
     public UpgradeService(RoleUpgradeRepository roleUpgradeRepository,
                           UpgradePaymentRepository upgradePaymentRepository,
                           UserRepository userRepository,
-                          RoleRepository roleRepository) {
+                          RoleRepository roleRepository,
+                          TechnicianRepository technicianRepository) {
         this.roleUpgradeRepository = roleUpgradeRepository;
         this.upgradePaymentRepository = upgradePaymentRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.technicianRepository = technicianRepository;
     }
 
     @Transactional
@@ -51,8 +57,14 @@ public class UpgradeService {
 
         RoleUpgrade existing = roleUpgradeRepository.findByUserIdAndRole(userId, normalized).orElse(null);
         if (existing != null) {
-            if (List.of("PENDING_PAYMENT", "PAID", "ACTIVE").contains(existing.getStatus())) {
+            if (List.of("PENDING_PAYMENT", "PAID").contains(existing.getStatus())) {
                 return existing;
+            }
+            if ("ACTIVE".equals(existing.getStatus())) {
+                boolean roleGranted = user.getRoles().stream().anyMatch(r -> r.getName().equals(normalized));
+                if (roleGranted) {
+                    throw new IllegalArgumentException("Role already granted");
+                }
             }
             existing.setAmountBdt(UPGRADE_FEE);
             existing.setStatus("PENDING_PAYMENT");
@@ -91,9 +103,12 @@ public class UpgradeService {
             return roleUpgradeRepository.save(upgrade);
         }
 
-        if (!"ACTIVE".equals(upgrade.getStatus())) {
+        boolean alreadyHasRole = upgrade.getUser().getRoles().stream()
+            .anyMatch(r -> r.getName().equals(upgrade.getRole()));
+        if (!alreadyHasRole) {
             upgrade.setStatus("PAID");
             grantRole(upgrade.getUser(), upgrade.getRole());
+            ensureRoleProfile(upgrade.getUser(), upgrade.getRole());
             upgrade.setStatus("ACTIVE");
             upgrade.setActivatedAt(Instant.now());
         }
@@ -108,10 +123,20 @@ public class UpgradeService {
     private void grantRole(User user, String roleName) {
         Role role = roleRepository.findByName(roleName)
             .orElseGet(() -> roleRepository.save(new Role(roleName)));
-        Set<Role> roles = user.getRoles();
+        Set<Role> roles = new HashSet<>(user.getRoles());
         roles.add(role);
         user.setRoles(roles);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
+    }
+
+    private void ensureRoleProfile(User user, String roleName) {
+        if (Role.ROLE_TECHNICIAN.equals(roleName) && technicianRepository.findByUserId(user.getId()).isEmpty()) {
+            Technician technician = new Technician();
+            technician.setUser(user);
+            technician.setSpecialization("Electronics");
+            technician.setStatus("active");
+            technicianRepository.save(technician);
+        }
     }
 
     private String normalizeRole(String role) {

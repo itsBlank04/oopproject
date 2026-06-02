@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
+import ImageLightbox from '../components/ImageLightbox'
+import ProductCard from '../components/ProductCard'
 
 type Category = {
   id: number
@@ -14,6 +15,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(200000)
+  const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [dragging, setDragging] = useState<'min' | 'max' | null>(null)
 
@@ -208,36 +210,23 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {filtered.map(product => (
-                <Link
-                  to={`/products/${product.id}`}
+                <ProductCard
                   key={product.id}
-                  className="group bg-white rounded-2xl border border-gray-100 p-4 flex flex-col hover:shadow-md hover:border-gray-200 transition-all duration-300"
-                >
-                  <div className="bg-gray-50 rounded-xl h-48 mb-4 flex items-center justify-center p-4 overflow-hidden">
-                    {product.images?.length > 0 ? (
-                      <img
-                        src={product.images[0].imageUrl}
-                        alt={product.name}
-                        loading="lazy"
-                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <span className="text-gray-300 text-xs">No image</span>
-                    )}
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1">{product.category?.name}</p>
-                    <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1 line-clamp-2">{product.name}</h3>
-                    <div className="mt-auto pt-3 flex items-center justify-between">
-                      <span className="font-bold text-gray-900">৳{product.priceBdt.toLocaleString('en-BD')}</span>
-                    </div>
-                  </div>
-                </Link>
+                  product={product}
+                  onImageClick={(images, index) => setLightbox({ images, index })}
+                />
               ))}
             </div>
           )}
         </main>
       </div>
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   )
 }

@@ -8,4 +8,5 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     Optional<Cart> findByUserIdAndStatus(Long userId, String status);
     List<Cart> findByStatusAndUpdatedAtBefore(String status, Instant before);
     List<Cart> findByStatus(String status);
+    Cart findByUserId(Long userId);
 }

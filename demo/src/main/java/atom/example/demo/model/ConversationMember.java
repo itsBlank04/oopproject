@@ -32,6 +32,9 @@ public class ConversationMember {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "role", length = 20)
+    private String role;
+
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt;
 
@@ -46,6 +49,8 @@ public class ConversationMember {
     public void setConversation(Conversation conversation) { this.conversation = conversation; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
     public Instant getJoinedAt() { return joinedAt; }
     public void setJoinedAt(Instant joinedAt) { this.joinedAt = joinedAt; }
 }

@@ -5,9 +5,11 @@ import atom.example.demo.model.Notification;
 import atom.example.demo.model.Order;
 import atom.example.demo.model.Payment;
 import atom.example.demo.model.VendorCommission;
+import atom.example.demo.model.OrderStatusLog;
 import atom.example.demo.repository.InvoiceRepository;
 import atom.example.demo.repository.NotificationRepository;
 import atom.example.demo.repository.OrderRepository;
+import atom.example.demo.repository.OrderStatusLogRepository;
 import atom.example.demo.repository.PaymentRepository;
 import atom.example.demo.repository.VendorCommissionRepository;
 import jakarta.transaction.Transactional;
@@ -28,19 +30,22 @@ public class PaymentService {
     private final VendorCommissionRepository vendorCommissionRepository;
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final OrderStatusLogRepository orderStatusLogRepository;
 
     public PaymentService(PaymentRepository paymentRepository,
                           OrderRepository orderRepository,
                           InvoiceRepository invoiceRepository,
                           VendorCommissionRepository vendorCommissionRepository,
                           NotificationRepository notificationRepository,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          OrderStatusLogRepository orderStatusLogRepository) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.invoiceRepository = invoiceRepository;
         this.vendorCommissionRepository = vendorCommissionRepository;
         this.notificationRepository = notificationRepository;
         this.emailService = emailService;
+        this.orderStatusLogRepository = orderStatusLogRepository;
     }
 
     @Transactional
@@ -48,7 +53,7 @@ public class PaymentService {
         boolean isCod = "COD".equalsIgnoreCase(method);
         boolean isOnline = !isCod && List.of("BKASH", "NAGAD", "CARD").contains(method.toUpperCase());
 
-        String status = isCod ? "PENDING" : "COMPLETED";
+        String status = isCod ? "PENDING" : "PAID";
 
         Payment payment = new Payment();
         payment.setOrder(order);
@@ -83,9 +88,6 @@ public class PaymentService {
             notifyVendorsPayment(order, amount, commissions);
             notifyCustomer(order, amount, invoice, method);
 
-            order.setStatus("PAID");
-            orderRepository.save(order);
-
             Notification cn = new Notification();
             cn.setUser(order.getCustomer());
             cn.setType("PAYMENT_CONFIRMED");
@@ -94,10 +96,18 @@ public class PaymentService {
             cn.setEntityType("ORDER");
             cn.setEntityId(order.getId());
             notificationRepository.save(cn);
-        } else {
-            order.setStatus("PROCESSING");
+
+            order.setStatus("APPROVED");
             orderRepository.save(order);
 
+            OrderStatusLog statusLog = new OrderStatusLog();
+            statusLog.setOrder(order);
+            statusLog.setOldStatus("PLACED");
+            statusLog.setNewStatus("APPROVED");
+            statusLog.setNote("Payment confirmed — order automatically approved");
+            statusLog.setChangedAt(Instant.now());
+            orderStatusLogRepository.save(statusLog);
+        } else {
             for (VendorCommission c : vendorCommissionRepository.findByOrderId(order.getId())) {
                 Notification n = new Notification();
                 n.setUser(c.getVendor());
@@ -120,6 +130,7 @@ public class PaymentService {
         }
 
         emailService.sendInvoiceEmail(order.getCustomer(), order, invoice, method.toUpperCase());
+        emailService.sendOrderConfirmation(order.getCustomer(), order, method.toUpperCase(), invoice.getInvoiceNumber());
 
         return Map.of(
             "paymentId", payment.getId(),

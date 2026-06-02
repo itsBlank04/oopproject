@@ -48,7 +48,6 @@ public class ProductService {
         if (updated.getDescription() != null) existing.setDescription(updated.getDescription());
         if (updated.getPriceBdt() != null) existing.setPriceBdt(updated.getPriceBdt());
         if (updated.getCategory() != null) existing.setCategory(updated.getCategory());
-        if (updated.getStatus() != null) existing.setStatus(updated.getStatus());
         return productRepository.save(existing);
     }
 

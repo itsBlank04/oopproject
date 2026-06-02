@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
+import ImageLightbox from '../../components/ImageLightbox'
 import toast from 'react-hot-toast'
 
 type OrderItem = {
@@ -29,28 +30,24 @@ type Order = {
 const STATUS_FLOW: Record<string, { next: { status: string; label: string; variant: 'primary' | 'danger' | 'ghost' }[]; label: string; color: string; dot: string }> = {
   PLACED: {
     next: [
-      { status: 'PROCESSING', label: 'Approve', variant: 'primary' },
+      { status: 'APPROVED', label: 'Approve', variant: 'primary' },
       { status: 'CANCELLED', label: 'Reject', variant: 'danger' },
     ],
     label: 'Pending', color: 'bg-amber-50 text-amber-700', dot: 'bg-amber-400',
   },
   APPROVED: {
-    next: [],
-    label: 'Approved', color: 'bg-blue-50 text-blue-700', dot: 'bg-blue-500',
-  },
-  PAID: {
     next: [
-      { status: 'PROCESSING', label: 'Start Processing', variant: 'primary' },
+      { status: 'PACKED', label: 'Mark Packed', variant: 'primary' },
       { status: 'CANCELLED', label: 'Cancel', variant: 'danger' },
     ],
-    label: 'Paid', color: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500',
+    label: 'Approved', color: 'bg-blue-50 text-blue-700', dot: 'bg-blue-500',
   },
-  PROCESSING: {
+  PACKED: {
     next: [
       { status: 'SHIPPED', label: 'Mark Shipped', variant: 'primary' },
       { status: 'CANCELLED', label: 'Cancel', variant: 'danger' },
     ],
-    label: 'Processing', color: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500',
+    label: 'Packed', color: 'bg-indigo-50 text-indigo-700', dot: 'bg-indigo-500',
   },
   SHIPPED: {
     next: [
@@ -72,13 +69,14 @@ const STATUS_FLOW: Record<string, { next: { status: string; label: string; varia
   },
 }
 
-const ALL_STATUSES = ['ALL', 'PLACED', 'APPROVED', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REJECTED']
+const ALL_STATUSES = ['ALL', 'PLACED', 'APPROVED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REJECTED']
 
 export default function VendorOrdersPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [filter, setFilter] = useState('ALL')
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ['vendor-orders-list'],
@@ -224,13 +222,14 @@ export default function VendorOrdersPage() {
                     {/* Header */}
                     <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 cursor-pointer select-none"
                       onClick={() => setExpandedId(isExpanded ? null : order.id)}>
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f0e8df]">
+                      <button type="button" onClick={() => order.customer?.avatarUrl ? setLightboxUrl(order.customer.avatarUrl) : null}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f0e8df]">
                         {order.customer?.avatarUrl ? (
                           <img src={order.customer.avatarUrl} alt="" loading="lazy" className="h-full w-full rounded-full object-cover" />
                         ) : (
                           <span className="text-sm font-bold text-[#6c5b4f]">{order.customer?.displayName?.[0] || '?'}</span>
                         )}
-                      </div>
+                      </button>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-[#1a1512]">#{order.id}</span>
@@ -252,7 +251,8 @@ export default function VendorOrdersPage() {
                         <div className="mt-4 space-y-2">
                           {(order.items || []).map(item => (
                             <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
-                              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
+                              <button type="button" onClick={() => { const u = item.product?.images?.[0]?.imageUrl; if (u) setLightboxUrl(u) }}
+                                className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
                                 {item.product?.images?.[0]?.imageUrl ? (
                                   <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                                 ) : (
@@ -260,7 +260,7 @@ export default function VendorOrdersPage() {
                                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                                   </div>
                                 )}
-                              </div>
+                              </button>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-[#1a1512] truncate">{item.product?.name || 'Product'}</p>
                                 <p className="text-xs text-[#8c7564]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
@@ -303,7 +303,7 @@ export default function VendorOrdersPage() {
                             </button>
                           ))}
                           <div className="ml-auto flex gap-2">
-                            <Link to={`/messages?userId=${order.customer?.id}`}
+                            <Link to={`/messages?orderId=${order.id}`}
                               className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3.5 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-[#faf6f2]">
                               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
                               Chat
@@ -319,6 +319,13 @@ export default function VendorOrdersPage() {
           )}
         </div>
       </div>
+      {lightboxUrl && (
+        <ImageLightbox
+          images={[{ url: lightboxUrl }]}
+          initialIndex={0}
+          onClose={() => setLightboxUrl(null)}
+        />
+      )}
     </div>
   )
 }

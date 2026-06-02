@@ -1,8 +1,10 @@
 package atom.example.demo.web.api;
 
 import atom.example.demo.config.SecurityConfig;
+import atom.example.demo.model.OrderItem;
 import atom.example.demo.model.Return;
 import atom.example.demo.model.User;
+import atom.example.demo.repository.OrderItemRepository;
 import atom.example.demo.repository.ReturnRepository;
 import atom.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -21,10 +23,13 @@ public class ReturnController {
 
     private final ReturnRepository returnRepository;
     private final UserRepository userRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public ReturnController(ReturnRepository returnRepository, UserRepository userRepository) {
+    public ReturnController(ReturnRepository returnRepository, UserRepository userRepository,
+            OrderItemRepository orderItemRepository) {
         this.returnRepository = returnRepository;
         this.userRepository = userRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @PostMapping
@@ -33,8 +38,16 @@ public class ReturnController {
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         User customer = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (!body.containsKey("orderItemId")) throw new IllegalArgumentException("orderItemId is required");
+        OrderItem orderItem = orderItemRepository.findById(Long.valueOf(body.get("orderItemId").toString()))
+                .orElseThrow(() -> new IllegalArgumentException("Order item not found"));
+        if (orderItem.getOrder() == null || orderItem.getOrder().getCustomer() == null
+                || !orderItem.getOrder().getCustomer().getId().equals(userId)) {
+            throw new SecurityException("Not your order item");
+        }
         Return returnRequest = new Return();
         returnRequest.setCustomer(customer);
+        returnRequest.setOrderItem(orderItem);
         returnRequest.setReason((String) body.get("reason"));
         return returnRepository.save(returnRequest);
     }

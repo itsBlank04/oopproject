@@ -7,5 +7,6 @@ public interface AuctionWatchlistRepository extends JpaRepository<AuctionWatchli
     List<AuctionWatchlist> findByUserId(Long userId);
     Optional<AuctionWatchlist> findByUserIdAndLotId(Long userId, Long lotId);
     boolean existsByUserIdAndLotId(Long userId, Long lotId);
+    long countByLotId(Long lotId);
     void deleteByUserIdAndLotId(Long userId, Long lotId);
 }

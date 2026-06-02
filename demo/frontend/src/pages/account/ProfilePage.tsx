@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
+import ImageLightbox from '../../components/ImageLightbox'
 import toast from 'react-hot-toast'
 
 type ProfileForm = {
@@ -45,6 +46,7 @@ export default function ProfilePage() {
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview')
+  const [lightboxAvatar, setLightboxAvatar] = useState(false)
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get('/api/profile').then(r => r.data),
@@ -219,25 +221,29 @@ export default function ProfilePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Account</p>
             <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Profile</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#8c7564]">
-              <span className="rounded-full bg-[#f0e8df] px-2.5 py-1 font-semibold text-[#6c5b4f]">New</span>
-              <span>Unlock Merchant or Craftsman tools from your profile.</span>
-              <button onClick={scrollToUpgrade} className="text-xs font-semibold text-[#221b16] underline">
-                Explore upgrades
-              </button>
-            </div>
+            {(!user?.roles?.includes('VENDOR') || !user?.roles?.includes('TECHNICIAN')) && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#8c7564]">
+                <span className="rounded-full bg-[#f0e8df] px-2.5 py-1 font-semibold text-[#6c5b4f]">New</span>
+                <span>Unlock Merchant or Craftsman tools from your profile.</span>
+                <button onClick={scrollToUpgrade} className="text-xs font-semibold text-[#221b16] underline">
+                  Explore upgrades
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={scrollToUpgrade}
-              className="hidden items-center gap-2 rounded-full border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#221b16] sm:inline-flex"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-[#a28672]">
-                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-11.75a.75.75 0 0 0-1.5 0V10c0 .414.336.75.75.75h3.5a.75.75 0 0 0 0-1.5h-2.75V6.25Z" clipRule="evenodd" />
-              </svg>
-              Upgrade Roles
-            </button>
+            {(!user?.roles?.includes('VENDOR') || !user?.roles?.includes('TECHNICIAN')) && (
+              <button
+                type="button"
+                onClick={scrollToUpgrade}
+                className="hidden items-center gap-2 rounded-full border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#221b16] sm:inline-flex"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-[#a28672]">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-11.75a.75.75 0 0 0-1.5 0V10c0 .414.336.75.75.75h3.5a.75.75 0 0 0 0-1.5h-2.75V6.25Z" clipRule="evenodd" />
+                </svg>
+                Upgrade Roles
+              </button>
+            )}
           </div>
         </div>
 
@@ -270,7 +276,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
+                  <button type="button" onClick={() => setLightboxAvatar(true)} className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
                     {savedAvatar ? (
                       <img src={savedAvatar} alt="Avatar" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
@@ -278,7 +284,7 @@ export default function ProfilePage() {
                         {savedInitial}
                       </div>
                     )}
-                  </div>
+                  </button>
                   <div>
                     <p className="text-sm font-semibold text-[#221b16]">{savedName || 'Your name'}</p>
                     <p className="text-xs text-[#8c7564]">{user?.email}</p>
@@ -330,94 +336,118 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f0e8df]">
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-[#a28672]">
-                      <path d="M10.362 1.093a.75.75 0 0 0-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925ZM18 6.443l-7.25 4v8.25l6.862-3.786A.75.75 0 0 0 18 14.25V6.443ZM9.25 18.693v-8.25l-7.25-4v7.807a.75.75 0 0 0 .388.657l6.862 3.786Z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Upgrade</p>
-                    <p className="text-sm font-semibold text-[#221b16]">Unlock more capabilities</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid gap-3">
-                  {[
-                    {
-                      key: 'VENDOR',
-                      label: 'Merchant',
-                      desc: 'Sell products, run auctions, manage your shop',
-                      benefits: ['List products', 'Run auctions', 'Manage orders', 'Shop page'],
-                      owned: user?.roles?.includes('VENDOR'),
-                    },
-                    {
-                      key: 'TECHNICIAN',
-                      label: 'Craftsman',
-                      desc: 'Offer repair services, accept bookings',
-                      benefits: ['List services', 'Accept bookings', 'Set pricing', 'Build reputation'],
-                      owned: user?.roles?.includes('TECHNICIAN'),
-                    },
-                  ].map(({ key, label, desc, benefits, owned }) => (
-                    <div
-                      key={key}
-                      className={`rounded-xl border p-4 transition ${owned ? 'border-emerald-200 bg-emerald-50/50' : 'border-[#e4d6c8] bg-[#f9f5f0] hover:border-[#d0c0b0]'}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-[#221b16]">{label}</p>
-                          <p className="mt-0.5 text-xs text-[#8c7564]">{desc}</p>
-                        </div>
-                        {owned ? (
-                          <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Active</span>
-                        ) : (
-                          <span className="shrink-0 rounded-full bg-[#f0e8df] px-2.5 py-1 text-[11px] font-semibold text-[#6c5b4f]">99 TK</span>
-                        )}
-                      </div>
-                      {!owned && (
-                        <>
-                          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-                            {benefits.map((b) => (
-                              <div key={b} className="flex items-center gap-1.5 text-[11px] text-[#6c5b4f]">
-                                <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-emerald-600">
-                                  <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
-                                </svg>
-                                {b}
-                              </div>
-                            ))}
-                          </div>
-                          <button
-                            onClick={scrollToUpgrade}
-                            className="mt-3 w-full rounded-xl bg-[#221b16] py-2 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
-                          >
-                            Upgrade to {label} — 99 TK
-                          </button>
-                        </>
-                      )}
+              {(!user?.roles?.includes('VENDOR') || !user?.roles?.includes('TECHNICIAN')) && (
+                <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f0e8df]">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-[#a28672]">
+                        <path d="M10.362 1.093a.75.75 0 0 0-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925ZM18 6.443l-7.25 4v8.25l6.862-3.786A.75.75 0 0 0 18 14.25V6.443ZM9.25 18.693v-8.25l-7.25-4v7.807a.75.75 0 0 0 .388.657l6.862 3.786Z" />
+                      </svg>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Upgrade</p>
+                      <p className="text-sm font-semibold text-[#221b16]">Unlock more capabilities</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-3">
+                    {[
+                      {
+                        key: 'VENDOR',
+                        label: 'Merchant',
+                        desc: 'Sell products, run auctions, manage your shop',
+                        benefits: ['List products', 'Run auctions', 'Manage orders', 'Shop page'],
+                        owned: user?.roles?.includes('VENDOR'),
+                      },
+                      {
+                        key: 'TECHNICIAN',
+                        label: 'Craftsman',
+                        desc: 'Offer repair services, accept bookings',
+                        benefits: ['List services', 'Accept bookings', 'Set pricing', 'Build reputation'],
+                        owned: user?.roles?.includes('TECHNICIAN'),
+                      },
+                    ].filter(r => !r.owned).map(({ key, label, desc, benefits }) => (
+                      <div
+                        key={key}
+                        className="rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-4 transition hover:border-[#d0c0b0]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-[#221b16]">{label}</p>
+                            <p className="mt-0.5 text-xs text-[#8c7564]">{desc}</p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-[#f0e8df] px-2.5 py-1 text-[11px] font-semibold text-[#6c5b4f]">99 TK</span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                          {benefits.map((b) => (
+                            <div key={b} className="flex items-center gap-1.5 text-[11px] text-[#6c5b4f]">
+                              <svg viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-emerald-600">
+                                <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+                              </svg>
+                              {b}
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          onClick={scrollToUpgrade}
+                          className="mt-3 w-full rounded-xl bg-[#221b16] py-2 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a2f28]"
+                        >
+                          Upgrade to {label} — 99 TK
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
-                <p className="text-sm font-semibold text-[#221b16]">Primary Address</p>
-                <p className="mt-1 text-xs text-[#8c7564]">Use this for fast checkout and service requests.</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Address</p>
+                    <p className="mt-1 text-sm font-semibold text-[#221b16]">Primary Address</p>
+                  </div>
+                  <Link to="/addresses" className="rounded-xl border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]">
+                    Manage
+                  </Link>
+                </div>
+                <p className="mt-1 text-xs text-[#8c7564]">Used for checkout and service requests.</p>
                 <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
                   {defaultAddress ? (
-                    <>
-                      <p className="text-sm font-semibold text-[#221b16]">{defaultAddress.label || 'Address'}</p>
-                      {defaultAddress.fullName && <p className="text-xs text-[#6c5b4f]">{defaultAddress.fullName}</p>}
-                      <p className="mt-1 text-xs text-[#6c5b4f]">{defaultAddress.addressLine}</p>
-                      <p className="text-xs text-[#6c5b4f]">{defaultAddress.city}{defaultAddress.area ? `, ${defaultAddress.area}` : ''} {defaultAddress.postalCode}</p>
-                      {defaultAddress.phone && <p className="text-xs text-[#8c7564]">{defaultAddress.phone}</p>}
-                    </>
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#221b16]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 text-[#f9f5f0]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-[#221b16]">{defaultAddress.label || 'Address'}</p>
+                          {defaultAddress.isDefault && (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Default</span>
+                          )}
+                        </div>
+                        {defaultAddress.fullName && <p className="mt-0.5 text-xs text-[#6c5b4f]">{defaultAddress.fullName}</p>}
+                        <div className="mt-1 space-y-0.5">
+                          <p className="text-xs text-[#6c5b4f]">{defaultAddress.addressLine}</p>
+                          {defaultAddress.city && (
+                            <p className="text-xs text-[#6c5b4f]">{defaultAddress.city}{defaultAddress.area ? `, ${defaultAddress.area}` : ''}{defaultAddress.postalCode ? ` ${defaultAddress.postalCode}` : ''}</p>
+                          )}
+                          {defaultAddress.phone && <p className="text-xs text-[#8c7564]">{defaultAddress.phone}</p>}
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <p className="text-xs text-[#8c7564]">No address on file yet.</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0e8df]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 text-[#a28672]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-[#8c7564]">No address on file yet.</p>
+                    </div>
                   )}
                 </div>
-                <Link to="/addresses" className="mt-4 inline-flex items-center text-xs font-semibold text-[#221b16] underline">
-                  Manage addresses
-                </Link>
               </div>
             </div>
 
@@ -497,7 +527,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               <div className="rounded-3xl border border-[#e4d6c8] bg-white p-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
+                  <button type="button" onClick={() => setLightboxAvatar(true)} className="h-16 w-16 overflow-hidden rounded-2xl border border-[#e4d6c8] bg-[#f0e8df]">
                     {form.avatarUrl ? (
                       <img src={form.avatarUrl} alt="Avatar" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
@@ -505,7 +535,7 @@ export default function ProfilePage() {
                         {user?.displayName?.[0] || '?'}
                       </div>
                     )}
-                  </div>
+                  </button>
                   <div>
                     <p className="text-sm font-semibold text-[#221b16]">{form.displayName || 'Your name'}</p>
                     <p className="text-xs text-[#8c7564]">{user?.email}</p>
@@ -554,7 +584,7 @@ export default function ProfilePage() {
                     maxSizeMB={5}
                     allowVideo={false}
                     compact
-                    onUpload={(urls) => setForm({ ...form, avatarUrl: urls[0] || '' })}
+                    onUpload={(urls) => setForm(prev => ({ ...prev, avatarUrl: urls[0] || '' }))}
                     existingMedia={form.avatarUrl ? [{ url: form.avatarUrl, type: 'image', name: 'avatar' }] : []}
                   />
                 </div>
@@ -589,6 +619,7 @@ export default function ProfilePage() {
                       onChange={e => setForm({ ...form, gender: e.target.value })}
                       className="mt-1 w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm outline-none focus:border-[#221b16]"
                     >
+                      {!form.gender && <option value="" disabled>Select gender</option>}
                       {genders.map(g => (
                         <option key={g.value} value={g.value}>{g.label}</option>
                       ))}
@@ -680,6 +711,13 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+      {lightboxAvatar && (
+        <ImageLightbox
+          images={[{ url: savedAvatar || form.avatarUrl || '' }]}
+          initialIndex={0}
+          onClose={() => setLightboxAvatar(false)}
+        />
+      )}
     </div>
   )
 }
