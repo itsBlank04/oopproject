@@ -6,6 +6,7 @@ import { Search } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
 import ImageLightbox from '../components/ImageLightbox'
+import { cartEvents } from '../lib/cartEvents'
 import toast from 'react-hot-toast'
 
 
@@ -27,6 +28,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [lightboxAvatar, setLightboxAvatar] = useState(false)
+  const [cartBump, setCartBump] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -61,6 +63,14 @@ export default function Navbar() {
   }, [searchOpen])
 
   const searchContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const unsub = cartEvents.subscribe(() => {
+      setCartBump(true)
+      setTimeout(() => setCartBump(false), 400)
+    })
+    return unsub
+  }, [])
 
   useEffect(() => {
     if (!searchOpen) return
@@ -173,7 +183,7 @@ export default function Navbar() {
                 )}
                 {hasRole('CUSTOMER') && (
                   <>
-                    <Link to="/cart" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Cart</Link>
+                    <Link to="/cart" className={`text-sm text-[#6c5b4f] hover:text-[#221b16] transition-all duration-300 ${cartBump ? 'scale-125 text-[#E07B3F]' : ''}`}>Cart</Link>
                     <Link to="/account/orders" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</Link>
                     <Link to="/wishlist" className="text-sm text-[#6c5b4f] hover:text-[#221b16]">♡</Link>
                   </>
