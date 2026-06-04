@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useAuthModal } from '../contexts/AuthModalContext'
 import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { Search } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
 import ImageLightbox from '../components/ImageLightbox'
@@ -23,8 +24,11 @@ export default function Navbar() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [lightboxAvatar, setLightboxAvatar] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
@@ -45,6 +49,37 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [menuOpen])
 
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus()
+    }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSearchOpen(false)
+    }
+    if (searchOpen) window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [searchOpen])
+
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!searchOpen) return
+    const handler = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [searchOpen])
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return
+    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+    setSearchOpen(false)
+    setSearchQuery('')
+  }
+
   return (
     <>
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8] bg-white/90 backdrop-blur-md">
@@ -59,8 +94,47 @@ export default function Navbar() {
             <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
             <Link to="/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Auctions</Link>
           </div>
+          <div className="ml-6 hidden md:block" />
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex items-center" ref={searchContainerRef}>
+            <div
+              className="overflow-hidden transition-all duration-300 ease-out"
+              style={{ width: searchOpen ? '260px' : '0px', opacity: searchOpen ? 1 : 0 }}
+            >
+              <div className="flex w-[260px] flex-shrink-0 items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a7a6a]" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
+                    placeholder="Search..."
+                    className="w-full rounded-full border border-[#d7c7b8] bg-[#f9f5f0] py-1.5 pl-9 pr-3 text-sm text-[#221b16] placeholder:text-[#8a7a6a] outline-none transition-colors focus:border-[#a28672] focus:bg-white"
+                  />
+                </div>
+                <button
+                  onClick={handleSearch}
+                  disabled={!searchQuery.trim()}
+                  className="flex-shrink-0 rounded-full bg-[#221b16] px-4 py-1.5 text-xs font-semibold text-[#f9f5f0] transition-all hover:bg-[#3a3028] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => { setSearchOpen(!searchOpen); setSearchQuery('') }}
+              className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                searchOpen
+                  ? 'bg-[#f9f5f0] text-[#221b16]'
+                  : 'text-[#6c5b4f] hover:bg-[#f9f5f0] hover:text-[#221b16]'
+              }`}
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </div>
           {user ? (
             <>
               <div className="hidden items-center gap-3 md:flex">
@@ -157,6 +231,7 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+
       {lightboxAvatar && user?.avatarUrl && (
         <ImageLightbox
           images={[{ url: user.avatarUrl }]}
