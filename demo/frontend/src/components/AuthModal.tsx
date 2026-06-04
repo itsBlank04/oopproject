@@ -92,11 +92,11 @@ export default function AuthModal() {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
         onClick={closeModal}
       />
 
@@ -239,7 +239,7 @@ export default function AuthModal() {
                 <input
                   {...registerForm.register('displayName')}
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Your full name"
                   autoComplete="name"
                   className={`auth-field ${registerForm.formState.errors.displayName ? 'auth-field--error' : ''}`}
                 />
