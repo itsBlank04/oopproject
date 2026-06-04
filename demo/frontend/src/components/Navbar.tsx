@@ -82,19 +82,34 @@ export default function Navbar() {
 
   return (
     <>
-    <nav className="sticky top-0 z-50 border-b border-[#e4d6c8] bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-5">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#221b16] text-sm font-semibold text-[#f9f5f0]">AD</span>
-            <span className="font-[Fraunces] text-lg font-semibold text-[#221b16]">AtomDrops</span>
+    <nav className="sticky top-0 z-50 border-b border-[#e4d6c8]/60 bg-white/95 shadow-[0_1px_0_0_rgba(255,255,255,0.5)_inset] backdrop-blur-lg">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5 lg:px-8">
+        <div className="flex items-center gap-10">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#2a221c] to-[#1a1410] shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
+              <span className="text-[11px] font-bold tracking-tight text-[#f5ede4]">AD</span>
+            </div>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[15px] font-bold tracking-tight text-[#221b16]">Atom</span>
+              <span className="text-[15px] font-light tracking-wide text-[#8a7a6a]">Drops</span>
+            </div>
           </Link>
-          <div className="hidden items-center gap-4 md:flex">
-            <Link to="/used-listings" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Used Items</Link>
-            <Link to="/repair/technicians" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Repairs</Link>
-            <Link to="/auctions" className="text-sm text-[#6c5b4f] hover:text-[#221b16] transition">Auctions</Link>
+          <div className="hidden items-center gap-0.5 md:flex">
+            {[
+              { to: '/used-listings', label: 'Used Items' },
+              { to: '/repair/technicians', label: 'Repairs' },
+              { to: '/auctions', label: 'Auctions' },
+            ].map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="group relative rounded-lg px-3 py-1.5 text-[13px] font-medium text-[#6c5b4f] transition-all duration-200 hover:text-[#221b16]"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-[#221b16] transition-transform duration-200 group-hover:scale-x-100" />
+              </Link>
+            ))}
           </div>
-          <div className="ml-6 hidden md:block" />
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center" ref={searchContainerRef}>
@@ -231,7 +246,6 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-
       {lightboxAvatar && user?.avatarUrl && (
         <ImageLightbox
           images={[{ url: user.avatarUrl }]}

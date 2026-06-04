@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
-import Navbar from './components/Navbar'
 import AuthModal from './components/AuthModal'
+import SiteLayout from './components/SiteLayout'
 import { useAuthModal } from './contexts/AuthModalContext'
 import HomePage from './pages/HomePage'
 import ProductListPage from './pages/products/ProductListPage'
@@ -52,52 +52,48 @@ export default function App() {
         <Route path="/auth/register" element={<AuthRedirect tab="register" />} />
 
         {/* Products */}
-        <Route path="/products" element={<><Navbar /><ProductListPage /></>} />
-        <Route path="/products/:id" element={<><Navbar /><ProductDetailPage /></>} />
-        <Route path="/shop/:slug" element={<><Navbar /><VendorShopPage /></>} />
+        <Route path="/products" element={<SiteLayout><ProductListPage /></SiteLayout>} />
+        <Route path="/products/:id" element={<SiteLayout><ProductDetailPage /></SiteLayout>} />
+        <Route path="/shop/:slug" element={<SiteLayout><VendorShopPage /></SiteLayout>} />
 
         {/* Shopping */}
-        <Route path="/cart" element={<><Navbar /><CartPage /></>} />
-        <Route path="/checkout" element={<><Navbar /><CheckoutPage /></>} />
-        <Route path="/order-success/:id" element={<><Navbar /><OrderSuccessPage /></>} />
+        <Route path="/cart" element={<SiteLayout><CartPage /></SiteLayout>} />
+        <Route path="/checkout" element={<SiteLayout><CheckoutPage /></SiteLayout>} />
+        <Route path="/order-success/:id" element={<SiteLayout><OrderSuccessPage /></SiteLayout>} />
 
         {/* Used Items */}
-        <Route path="/used-listings" element={<><Navbar /><UsedListingsPage /></>} />
-        <Route path="/used-listings/new" element={<><Navbar /><CreateUsedListingPage /></>} />
-        <Route path="/used-listings/:id" element={<><Navbar /><UsedListingDetailPage /></>} />
+        <Route path="/used-listings" element={<SiteLayout><UsedListingsPage /></SiteLayout>} />
+        <Route path="/used-listings/new" element={<SiteLayout><CreateUsedListingPage /></SiteLayout>} />
+        <Route path="/used-listings/:id" element={<SiteLayout><UsedListingDetailPage /></SiteLayout>} />
 
         {/* Auctions */}
-        <Route path="/auctions" element={<><Navbar /><AuctionsPage /></>} />
-        <Route path="/auctions/:id" element={<><Navbar /><AuctionDetailPage /></>} />
+        <Route path="/auctions" element={<SiteLayout><AuctionsPage /></SiteLayout>} />
+        <Route path="/auctions/:id" element={<SiteLayout><AuctionDetailPage /></SiteLayout>} />
 
         {/* Repair */}
-        <Route path="/repair/technicians" element={<><Navbar /><TechniciansPage /></>} />
-        <Route path="/repair/requests" element={<><Navbar /><RepairRequestsPage /></>} />
+        <Route path="/repair/technicians" element={<SiteLayout><TechniciansPage /></SiteLayout>} />
+        <Route path="/repair/requests" element={<SiteLayout><RepairRequestsPage /></SiteLayout>} />
 
         {/* Account */}
-        <Route path="/account/orders" element={<><Navbar /><AccountOrdersPage /></>} />
-        <Route path="/profile" element={<><Navbar /><ProfilePage /></>} />
-        <Route path="/wishlist" element={<><Navbar /><WishlistPage /></>} />
-        <Route path="/addresses" element={<><Navbar /><AddressesPage /></>} />
-        <Route path="/notifications" element={<><Navbar /><NotificationsPage /></>} />
-        <Route path="/messages" element={<><Navbar /><MessagesPage /></>} />
+        <Route path="/account/orders" element={<SiteLayout><AccountOrdersPage /></SiteLayout>} />
+        <Route path="/profile" element={<SiteLayout><ProfilePage /></SiteLayout>} />
+        <Route path="/wishlist" element={<SiteLayout><WishlistPage /></SiteLayout>} />
+        <Route path="/addresses" element={<SiteLayout><AddressesPage /></SiteLayout>} />
+        <Route path="/notifications" element={<SiteLayout><NotificationsPage /></SiteLayout>} />
+        <Route path="/messages" element={<SiteLayout><MessagesPage /></SiteLayout>} />
 
         {/* Vendor */}
-        <Route path="/vendor/dashboard" element={<><Navbar /><VendorDashboardPage /></>} />
-        <Route path="/vendor/products" element={<><Navbar /><VendorProductsPage /></>} />
-        <Route path="/vendor/orders" element={<><Navbar /><VendorOrdersPage /></>} />
-        <Route path="/vendor/auctions" element={<><Navbar /><VendorAuctionsPage /></>} />
+        <Route path="/vendor/dashboard" element={<SiteLayout><VendorDashboardPage /></SiteLayout>} />
+        <Route path="/vendor/products" element={<SiteLayout><VendorProductsPage /></SiteLayout>} />
+        <Route path="/vendor/orders" element={<SiteLayout><VendorOrdersPage /></SiteLayout>} />
+        <Route path="/vendor/auctions" element={<SiteLayout><VendorAuctionsPage /></SiteLayout>} />
 
         {/* Admin */}
-        <Route path="/admin" element={<><Navbar /><AdminDashboardPage /></>} />
+        <Route path="/admin" element={<SiteLayout><AdminDashboardPage /></SiteLayout>} />
 
-        {/* Home: vendors see dashboard, customers/guests see marketplace */}
-        <Route path="*" element={<HomeRouter />} />
+        {/* Home */}
+        <Route path="*" element={<SiteLayout><HomePage /></SiteLayout>} />
       </Routes>
     </>
   )
-}
-
-function HomeRouter() {
-  return <><Navbar /><HomePage /></>
 }

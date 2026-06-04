@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
+import HeroSection from '../components/HeroSection'
+import CategoryGrid from '../components/CategoryGrid'
+import AuctionHighlight from '../components/AuctionHighlight'
 import ImageLightbox from '../components/ImageLightbox'
 import ProductCard from '../components/ProductCard'
 
@@ -68,7 +71,11 @@ export default function HomePage() {
   const filtered = products.filter(p => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] py-3 px-2 sm:py-2 sm:px-4">
+    <>
+      <HeroSection />
+      <CategoryGrid />
+      <AuctionHighlight />
+      <div className="min-h-screen bg-[#f9f5f0] px-2 py-3 sm:px-4 sm:py-2">
       <div className="mx-auto max-w-[1800px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] min-h-[calc(100vh-3rem)] flex overflow-hidden">
         {/* Sidebar */}
         {/* Mobile filter backdrop */}
@@ -227,6 +234,7 @@ export default function HomePage() {
           onClose={() => setLightbox(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   )
 }
