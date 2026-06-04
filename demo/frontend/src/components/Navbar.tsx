@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useAuthModal } from '../contexts/AuthModalContext'
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../lib/apiClient'
@@ -18,6 +19,7 @@ function PrefetchLink({ to, queryKey, queryFn, children, className }: { to: stri
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
+  const { openModal } = useAuthModal()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -142,10 +144,14 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <>
-              <Link to="/auth/login" className="rounded-full px-4 py-1.5 text-sm text-[#6c5b4f] hover:text-[#221b16]">Sign in</Link>
-              <Link to="/auth/register" className="rounded-full bg-[#221b16] px-4 py-1.5 text-sm font-semibold text-[#f9f5f0]">Register</Link>
-            </>
+            <button
+              onClick={() => openModal('signin')}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#6c5b4f] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+            </button>
           )}
           <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-[#221b16]">☰</button>
         </div>

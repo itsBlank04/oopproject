@@ -6,6 +6,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
+import { AuthModalProvider } from './contexts/AuthModalContext'
 import App from './App'
 import './index.css'
 
@@ -30,8 +31,10 @@ createRoot(document.getElementById('root')!).render(
         persistOptions={{ persister }}
       >
         <AuthProvider>
-          <App />
-          <Toaster position="top-right" />
+          <AuthModalProvider>
+            <App />
+            <Toaster position="top-right" />
+          </AuthModalProvider>
         </AuthProvider>
       </PersistQueryClientProvider>
     </BrowserRouter>

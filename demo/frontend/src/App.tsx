@@ -1,8 +1,9 @@
-import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import AuthModal from './components/AuthModal'
+import { useAuthModal } from './contexts/AuthModalContext'
 import HomePage from './pages/HomePage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
 import ProductListPage from './pages/products/ProductListPage'
 import ProductDetailPage from './pages/products/ProductDetailPage'
 import CartPage from './pages/cart/CartPage'
@@ -29,13 +30,26 @@ import RepairRequestsPage from './pages/repair/RepairRequestsPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 
+function AuthRedirect({ tab }: { tab: 'signin' | 'register' }) {
+  const { openModal } = useAuthModal()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    openModal(tab)
+    navigate('/', { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return null
+}
+
 export default function App() {
   return (
     <>
+      <AuthModal />
       <Routes>
-        {/* Auth */}
-        <Route path="/auth/login" element={<><Navbar /><LoginPage /></>} />
-        <Route path="/auth/register" element={<><Navbar /><RegisterPage /></>} />
+        <Route path="/auth/login" element={<AuthRedirect tab="signin" />} />
+        <Route path="/auth/register" element={<AuthRedirect tab="register" />} />
 
         {/* Products */}
         <Route path="/products" element={<><Navbar /><ProductListPage /></>} />
