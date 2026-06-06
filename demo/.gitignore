@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Runtime artifacts
+*.log
+*.err
+hs_err_pid*.log
+dogfood-output/
+cookies.txt
+agent-browser
+
+# Test credentials
+reg-*.json
+temp-reg.json
+
+# Stray / one-off
+"New folder/"
+demo.zip
+"demo (*).zip"
