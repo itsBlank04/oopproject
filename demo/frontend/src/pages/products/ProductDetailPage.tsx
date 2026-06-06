@@ -197,12 +197,57 @@ export default function ProductDetailPage() {
         <div className="mt-6 grid gap-10 lg:grid-cols-2">
           {/* Image gallery */}
           <div>
-            <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
+            <div
+              className="group relative aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (images.length <= 1) return
+                if (e.key === 'ArrowLeft') setSelectedImage(i => (i > 0 ? i - 1 : images.length - 1))
+                if (e.key === 'ArrowRight') setSelectedImage(i => (i < images.length - 1 ? i + 1 : 0))
+              }}
+            >
               {images.length > 0 ? (
-                <button type="button" onClick={() => setLightboxIndex(selectedImage)} className="h-full w-full">
-                  <img src={images[selectedImage]?.imageUrl} alt={product.name} loading="lazy"
-                    className="h-full w-full object-cover transition-all duration-300" />
-                </button>
+                <>
+                  <button type="button" onClick={() => setLightboxIndex(selectedImage)}
+                    aria-label="Open image fullscreen"
+                    className="absolute inset-0 flex items-center justify-center">
+                    <img src={images[selectedImage]?.imageUrl} alt={product.name} loading="lazy"
+                      className="max-h-full max-w-full object-contain transition-all duration-300" />
+                  </button>
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Previous image"
+                        onClick={(e) => { e.stopPropagation(); setSelectedImage(i => (i > 0 ? i - 1 : images.length - 1)) }}
+                        className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white shadow-lg backdrop-blur-md transition hover:scale-110 hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5"><path fillRule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clipRule="evenodd" /></svg>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Next image"
+                        onClick={(e) => { e.stopPropagation(); setSelectedImage(i => (i < images.length - 1 ? i + 1 : 0)) }}
+                        className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white shadow-lg backdrop-blur-md transition hover:scale-110 hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clipRule="evenodd" /></svg>
+                      </button>
+                      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 rounded-full border border-white/30 bg-black/20 px-2.5 py-1.5 backdrop-blur-md">
+                        {images.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            aria-label={`Go to image ${i + 1}`}
+                            onClick={(e) => { e.stopPropagation(); setSelectedImage(i) }}
+                            className={`h-1.5 rounded-full transition-all ${
+                              selectedImage === i ? 'w-5 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/90'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
               )}
