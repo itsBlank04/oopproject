@@ -69,7 +69,7 @@ export default function ProductListPage() {
     queryKey: ['products', selectedCategory],
     queryFn: () => {
       const params: any = { size: 50 }
-      if (selectedCategory) params.categoryId = selectedCategory
+      if (selectedCategory) params.category = selectedCategory
       return apiClient.get('/api/products', { params }).then(r => {
         const list = r.data?.content ?? r.data ?? []
         return Array.isArray(list) ? list : []
