@@ -101,7 +101,7 @@ export default function Navbar() {
           <div className="hidden items-center gap-0.5 md:flex">
             {[
               { to: '/used-listings', label: 'Used Items' },
-              { to: '/repair/technicians', label: 'Repairs' },
+              { to: '/repair', label: 'Repairs' },
               { to: '/auctions', label: 'Auctions' },
             ].map(link => (
               <Link
@@ -156,7 +156,7 @@ export default function Navbar() {
           </div>
           {user ? (
             <>
-              <div className="hidden items-center gap-3 md:flex">
+               <div className="hidden items-center gap-3 md:flex">
                 {hasRole('VENDOR') && (
                   <>
                     <Link to="/vendor/dashboard" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
@@ -169,6 +169,10 @@ export default function Navbar() {
                       queryFn={() => apiClient.get('/api/vendor/orders/list').then(r => Array.isArray(r.data) ? r.data : [])}
                       className="text-sm text-[#6c5b4f] hover:text-[#221b16]">Orders</PrefetchLink>
                   </>
+                )}
+                {hasRole('TECHNICIAN') && (
+                  <Link to="/repair/dashboard" className="text-sm text-[#6c5b4f] hover:text-[#221b16]"
+                    onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['technician-dashboard'], queryFn: () => apiClient.get('/api/technician/dashboard').then(r => r.data), staleTime: 120_000 })}>Repair Dashboard</Link>
                 )}
                 {hasRole('ADMIN') && (
                   <Link to="/admin" className="rounded-full bg-[#221b16] px-3 py-1.5 text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a3028]">
@@ -221,6 +225,9 @@ export default function Navbar() {
                     )}
                     {hasRole('CUSTOMER') && (
                       <Link to="/repair/requests" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Repairs</Link>
+                    )}
+                    {hasRole('TECHNICIAN') && (
+                      <Link to="/repair/dashboard" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">Repair Dashboard</Link>
                     )}
                     {hasRole('VENDOR') && (
                       <Link to="/vendor/auctions" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#221b16] hover:bg-[#f9f5f0]">My Auctions</Link>

@@ -25,13 +25,25 @@ public class TechnicianController {
     private final TechnicianRepository technicianRepository;
     private final TechnicianAvailabilityRepository technicianAvailabilityRepository;
     private final TechnicianEarningRepository technicianEarningRepository;
+    private final RepairReviewRepository repairReviewRepository;
+    private final ServiceListingRepository serviceListingRepository;
+    private final RepairBookingRepository repairBookingRepository;
+    private final RepairRequestRepository repairRequestRepository;
 
     public TechnicianController(TechnicianRepository technicianRepository,
             TechnicianAvailabilityRepository technicianAvailabilityRepository,
-            TechnicianEarningRepository technicianEarningRepository) {
+            TechnicianEarningRepository technicianEarningRepository,
+            RepairReviewRepository repairReviewRepository,
+            ServiceListingRepository serviceListingRepository,
+            RepairBookingRepository repairBookingRepository,
+            RepairRequestRepository repairRequestRepository) {
         this.technicianRepository = technicianRepository;
         this.technicianAvailabilityRepository = technicianAvailabilityRepository;
         this.technicianEarningRepository = technicianEarningRepository;
+        this.repairReviewRepository = repairReviewRepository;
+        this.serviceListingRepository = serviceListingRepository;
+        this.repairBookingRepository = repairBookingRepository;
+        this.repairRequestRepository = repairRequestRepository;
     }
 
     @GetMapping("/technicians")
@@ -46,6 +58,16 @@ public class TechnicianController {
     @GetMapping("/technicians/{id}")
     public Technician getPublicProfile(@PathVariable Long id) {
         return technicianRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Technician not found"));
+    }
+
+    @GetMapping("/technicians/{id}/reviews")
+    public List<atom.example.demo.model.RepairReview> getTechnicianReviews(@PathVariable Long id) {
+        return repairReviewRepository.findByTechnicianId(id);
+    }
+
+    @GetMapping("/technicians/{id}/services")
+    public List<atom.example.demo.model.ServiceListing> getTechnicianServices(@PathVariable Long id) {
+        return serviceListingRepository.findByTechnicianId(id);
     }
 
     @PutMapping("/technician/profile")
@@ -112,8 +134,18 @@ public class TechnicianController {
         int totalJobs = earnings.size();
         int pendingPayouts = (int) earnings.stream().filter(e -> "PENDING".equals(e.getStatus())).count();
         double totalEarned = earnings.stream().filter(e -> "PAID".equals(e.getStatus())).mapToDouble(e -> e.getNetAmountBdt().doubleValue()).sum();
+
+        // Get count of active bookings (scheduled, in_progress, awaiting_parts)
+        long activeJobs = repairBookingRepository.findByTechnicianId(tech.getId()).stream()
+                .filter(b -> List.of("CONFIRMED", "SCHEDULED", "IN_PROGRESS", "AWAITING_PARTS").contains(b.getStatus()))
+                .count();
+
+        // Get count of open/quoted requests they can bid on
+        long incomingRequests = repairRequestRepository.findByStatusOrderByIsEmergencyDescCreatedAtDesc("OPEN").size();
+
         return Map.of("technicianId", tech.getId(), "level", tech.getLevel(), "ratingAvg", tech.getRatingAvg(),
                 "completionRate", tech.getCompletionRate(), "status", tech.getStatus(), "totalJobs", totalJobs,
-                "pendingPayouts", pendingPayouts, "totalEarned", totalEarned);
+                "pendingPayouts", pendingPayouts, "totalEarned", totalEarned, "activeJobs", activeJobs,
+                "incomingRequests", incomingRequests);
     }
 }

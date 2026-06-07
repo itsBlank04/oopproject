@@ -1,5 +1,6 @@
 package atom.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,12 +24,13 @@ public class RepairMedia {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
+    @JsonBackReference("request-media")
     private RepairRequest request;
 
     @Column(name = "media_url", columnDefinition = "TEXT", nullable = false)
     private String mediaUrl;
 
-    @Column(name = "media_type", nullable = false)
+    @Column(name = "media_type")
     private String mediaType;
 
     @Column(name = "created_at", nullable = false)

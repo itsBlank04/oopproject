@@ -7,4 +7,7 @@ public interface RepairBookingRepository extends JpaRepository<RepairBooking, Lo
     Optional<RepairBooking> findByRequestId(Long requestId);
     List<RepairBooking> findByTechnicianId(Long technicianId);
     List<RepairBooking> findByTechnicianIdAndStatus(Long technicianId, String status);
+    List<RepairBooking> findByRequestCustomerId(Long customerId);
+    Optional<RepairBooking> findByWorkOrderId(String workOrderId);
+    long countByTechnicianIdAndStatus(Long technicianId, String status);
 }

@@ -27,6 +27,10 @@ import AuctionsPage from './pages/auctions/AuctionsPage'
 import AuctionDetailPage from './pages/auctions/AuctionDetailPage'
 import TechniciansPage from './pages/repair/TechniciansPage'
 import RepairRequestsPage from './pages/repair/RepairRequestsPage'
+import RepairMarketplacePage from './pages/repair/RepairMarketplacePage'
+import RepairRequestDetailPage from './pages/repair/RepairRequestDetailPage'
+import TechnicianDetailPage from './pages/repair/TechnicianDetailPage'
+import TechnicianDashboardPage from './pages/repair/TechnicianDashboardPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 
@@ -71,8 +75,12 @@ export default function App() {
         <Route path="/auctions/:id" element={<SiteLayout><AuctionDetailPage /></SiteLayout>} />
 
         {/* Repair */}
+        <Route path="/repair" element={<SiteLayout><RepairMarketplacePage /></SiteLayout>} />
         <Route path="/repair/technicians" element={<SiteLayout><TechniciansPage /></SiteLayout>} />
+        <Route path="/repair/technicians/:id" element={<SiteLayout><TechnicianDetailPage /></SiteLayout>} />
         <Route path="/repair/requests" element={<SiteLayout><RepairRequestsPage /></SiteLayout>} />
+        <Route path="/repair/requests/:id" element={<SiteLayout><RepairRequestDetailPage /></SiteLayout>} />
+        <Route path="/repair/dashboard" element={<SiteLayout><TechnicianDashboardPage /></SiteLayout>} />
 
         {/* Account */}
         <Route path="/account/orders" element={<SiteLayout><AccountOrdersPage /></SiteLayout>} />

@@ -5,4 +5,8 @@ import java.util.List;
 public interface RepairRequestRepository extends JpaRepository<RepairRequest, Long> {
     List<RepairRequest> findByCustomerId(Long customerId);
     List<RepairRequest> findByStatus(String status);
+    List<RepairRequest> findByCategoryId(Long categoryId);
+    List<RepairRequest> findByStatusIn(List<String> statuses);
+    List<RepairRequest> findByIsEmergencyTrueAndStatus(String status);
+    List<RepairRequest> findByStatusOrderByIsEmergencyDescCreatedAtDesc(String status);
 }

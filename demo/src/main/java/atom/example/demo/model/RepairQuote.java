@@ -37,8 +37,20 @@ public class RepairQuote {
     @Column(columnDefinition = "TEXT")
     private String plan;
 
-    @Column(nullable = false)
-    private String status = "SENT";
+    @Column(name = "estimated_duration", length = 100)
+    private String estimatedDuration; // e.g. "2-3 hours"
+
+    @Column(name = "visit_charge")
+    private BigDecimal visitCharge;
+
+    @Column(name = "required_parts", columnDefinition = "TEXT")
+    private String requiredParts; // JSON array of parts needed
+
+    @Column(name = "service_notes", columnDefinition = "TEXT")
+    private String serviceNotes;
+
+    @Column(nullable = false, length = 20)
+    private String status = "SENT"; // SENT, ACCEPTED, REJECTED, EXPIRED
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -67,6 +79,14 @@ public class RepairQuote {
     public void setQuoteBdt(BigDecimal quoteBdt) { this.quoteBdt = quoteBdt; }
     public String getPlan() { return plan; }
     public void setPlan(String plan) { this.plan = plan; }
+    public String getEstimatedDuration() { return estimatedDuration; }
+    public void setEstimatedDuration(String estimatedDuration) { this.estimatedDuration = estimatedDuration; }
+    public BigDecimal getVisitCharge() { return visitCharge; }
+    public void setVisitCharge(BigDecimal visitCharge) { this.visitCharge = visitCharge; }
+    public String getRequiredParts() { return requiredParts; }
+    public void setRequiredParts(String requiredParts) { this.requiredParts = requiredParts; }
+    public String getServiceNotes() { return serviceNotes; }
+    public void setServiceNotes(String serviceNotes) { this.serviceNotes = serviceNotes; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Instant getCreatedAt() { return createdAt; }
