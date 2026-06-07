@@ -21,17 +21,6 @@ const registerSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 type RegisterForm = z.infer<typeof registerSchema>
 
-function Diamond() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-full w-full">
-      <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" stroke="none" />
-      <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-
 export default function AuthModal() {
   const { open, tab, setTab, closeModal } = useAuthModal()
   const { login, register: registerUser } = useAuth()
@@ -136,11 +125,8 @@ export default function AuthModal() {
           </button>
 
           {/* Mobile brand mark */}
-          <div className="mb-4 flex items-center gap-2 md:hidden">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#1a1a1a] text-[#f9f5f0]">
-              <Diamond />
-            </div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">AtomDrops</span>
+          <div className="mb-4 flex items-center md:hidden">
+            <img src="/logo.png" alt="AtomDrops" className="h-16 w-16" />
           </div>
 
           {/* Title */}

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import MediaUploader from '../../components/MediaUploader'
-import toast from 'react-hot-toast'
+import { useConfirmAction } from '../../hooks/useConfirmAction'
 
 type Auction = {
   id: number
@@ -36,6 +36,7 @@ type Category = { id: number; name: string }
 
 export default function VendorAuctionsPage() {
   const queryClient = useQueryClient()
+  const { askConfirm, showResult, Dialogs } = useConfirmAction()
   const [showForm, setShowForm] = useState(false)
   const [editingAuction, setEditingAuction] = useState<Auction | null>(null)
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null)
@@ -84,12 +85,12 @@ export default function VendorAuctionsPage() {
       return apiClient.post('/api/auctions', body).then(r => r.data)
     },
     onSuccess: (created) => {
-      toast.success('Auction created')
       setEditingAuction(created)
       setSelectedAuctionId(created.id)
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
+      showResult('Auction created', 'success')
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to create auction'),
+    onError: (e: any) => showResult(e.response?.data?.error || 'Failed to create auction', 'error'),
   })
 
   const updateAuction = useMutation({
@@ -105,20 +106,19 @@ export default function VendorAuctionsPage() {
       return apiClient.put(`/api/auctions/${editingAuction.id}`, body)
     },
     onSuccess: () => {
-      toast.success('Auction updated')
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
+      showResult('Auction created', 'success')
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to update auction'),
+    onError: (e: any) => showResult(e.response?.data?.error || 'Failed to create auction', 'error'),
   })
 
   const publishAuction = useMutation({
     mutationFn: (auctionId: number) => apiClient.post(`/api/auctions/${auctionId}/publish`),
     onSuccess: () => {
-      toast.success('Auction published')
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
-      queryClient.invalidateQueries({ queryKey: ['auctions'] })
+      showResult('Auction updated', 'success')
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to publish'),
+    onError: (e: any) => showResult(e.response?.data?.error || 'Failed to update auction', 'error'),
   })
 
   const createLot = useMutation({
@@ -142,35 +142,31 @@ export default function VendorAuctionsPage() {
       return created
     },
     onSuccess: (_, auctionId) => {
-      toast.success('Lot created')
       setLotForm({
         title: '', description: '', conditionNote: 'Used', startingPriceBdt: '', reservePriceBdt: '',
         minBidIncrementBdt: '50', extensionDurationMinutes: '5', maxExtensions: '3', categoryId: '',
       })
       setLotImages(prev => { const next = { ...prev }; delete next[auctionId]; return next })
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
+      showResult('Lot created', 'success')
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to add lot'),
+    onError: (e: any) => showResult(e.response?.data?.error || 'Failed to add lot', 'error'),
   })
 
   const deleteLot = useMutation({
     mutationFn: (lotId: number) => apiClient.delete(`/api/auction-lots/${lotId}`),
     onSuccess: () => {
-      toast.success('Lot deleted')
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to delete lot'),
   })
 
   const deleteAuction = useMutation({
     mutationFn: (auctionId: number) => apiClient.delete(`/api/auctions/${auctionId}`),
     onSuccess: () => {
-      toast.success('Auction deleted')
       setEditingAuction(null)
       setSelectedAuctionId(null)
       queryClient.invalidateQueries({ queryKey: ['vendor-auctions'] })
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to delete auction'),
   })
 
   const openCreate = () => {
@@ -206,15 +202,15 @@ export default function VendorAuctionsPage() {
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
       <div className="mx-auto max-w-6xl">
-        <div className="overflow-hidden rounded-[2rem] border border-[#221b16]/10 bg-[#17120c] p-6 text-[#fff8e8] shadow-[0_24px_70px_rgba(34,27,22,0.22)]">
+        <div className="overflow-hidden rounded-[2rem] border border-[#e4d6c8] bg-white p-6 text-[#221b16] shadow-[0_24px_70px_rgba(34,27,22,0.08)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#f2b84b]">Seller Auction Studio</p>
-              <h1 className="mt-3 font-[Fraunces] text-4xl md:text-5xl">Build a live bidding event</h1>
-              <p className="mt-3 text-sm leading-7 text-[#cbbda8]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#ee5a24]">Seller Auction Studio</p>
+              <h1 className="mt-3 font-[Fraunces] text-4xl text-[#221b16] md:text-5xl">Build a live bidding event</h1>
+              <p className="mt-3 text-sm leading-7 text-[#6c5b4f]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
             </div>
             <button onClick={openCreate}
-              className="rounded-2xl bg-[#f2b84b] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#1b1308] transition hover:bg-[#ffd36d]">
+              className="rounded-2xl bg-[#ee5a24] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#d94d1a]">
               + New Auction
             </button>
           </div>
@@ -249,10 +245,21 @@ export default function VendorAuctionsPage() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button onClick={() => openEdit(a)} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">Edit</button>
                   {a.status === 'CREATED' && (
-                    <button onClick={() => publishAuction.mutate(a.id)} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs text-white">Publish</button>
+                    <button onClick={() => askConfirm({
+                      title: 'Publish auction',
+                      description: `Publish "${a.title}"? Once live, lots cannot be edited.`,
+                      label: 'Auction published',
+                      request: () => publishAuction.mutateAsync(a.id),
+                    })} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs text-white">Publish</button>
                   )}
                   {a.status === 'CREATED' && (
-                    <button onClick={() => deleteAuction.mutate(a.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600">Delete</button>
+                    <button onClick={() => askConfirm({
+                      title: 'Delete auction',
+                      description: `Delete "${a.title}" and all its lots? Cannot be undone.`,
+                      tone: 'danger',
+                      label: 'Auction deleted',
+                      request: () => deleteAuction.mutateAsync(a.id),
+                    })} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600">Delete</button>
                   )}
                   <Link to={`/auctions/${a.id}`} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">View</Link>
                 </div>
@@ -419,7 +426,13 @@ export default function VendorAuctionsPage() {
                           <p className="text-xs text-[#8c7564]">৳{lot.startingPriceBdt} · {lot.status}</p>
                         </div>
                         {selectedAuction.status === 'CREATED' && (
-                          <button onClick={() => deleteLot.mutate(lot.id)} className="text-xs text-red-600">Remove</button>
+                          <button onClick={() => askConfirm({
+                            title: 'Delete lot',
+                            description: `Delete lot "${lot.title}"? Active bidders will be notified.`,
+                            tone: 'danger',
+                            label: 'Lot deleted',
+                            request: () => deleteLot.mutateAsync(lot.id),
+                          })} className="text-xs text-red-600">Remove</button>
                         )}
                       </div>
                     ))}
@@ -430,15 +443,16 @@ export default function VendorAuctionsPage() {
           </div>
         )}
       </div>
+      {Dialogs}
     </div>
   )
 }
 
 function StudioMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a99a85]">{label}</p>
-      <p className="mt-1 font-[Fraunces] text-3xl text-[#fff8e8]">{value}</p>
+    <div className="rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8c7564]">{label}</p>
+      <p className="mt-1 font-[Fraunces] text-3xl text-[#221b16]">{value}</p>
     </div>
   )
 }

@@ -60,16 +60,6 @@ function SocialIcon({ href, label, children }: { href: string; label: string; ch
   )
 }
 
-function Diamond() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-full w-full">
-      <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" stroke="none" />
-      <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 export default function Footer() {
   const { user, logout } = useAuth()
   const { openModal } = useAuthModal()
@@ -93,14 +83,8 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 lg:px-8">
         {/* Brand row */}
         <div className="mb-12 flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#3a3028] to-[#2a221c] text-[#f5ede4] shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-              <Diamond />
-            </div>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-[15px] font-bold tracking-tight text-[#f5ede4]">Atom</span>
-              <span className="text-[15px] font-light tracking-wide text-[#a89a85]">Drops</span>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img src="/logo-white.png" alt="AtomDrops" className="h-16 w-16" />
           </Link>
 
           <p className="max-w-xs text-xs leading-relaxed text-[#a89a85]">

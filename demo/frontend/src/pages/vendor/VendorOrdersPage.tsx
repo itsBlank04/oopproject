@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import ImageLightbox from '../../components/ImageLightbox'
-import toast from 'react-hot-toast'
+import { useConfirmAction } from '../../hooks/useConfirmAction'
 
 type OrderItem = {
   id: number
@@ -74,6 +74,7 @@ const ALL_STATUSES = ['ALL', 'PLACED', 'APPROVED', 'PACKED', 'SHIPPED', 'DELIVER
 export default function VendorOrdersPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const { askConfirm, Dialogs } = useConfirmAction()
   const [filter, setFilter] = useState('ALL')
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -97,13 +98,6 @@ export default function VendorOrdersPage() {
         ))
       }
       return { prev }
-    },
-    onSuccess: (_data, { orderId, status }) => {
-      toast.success(`Order #${orderId} updated to ${status.toLowerCase()}`)
-    },
-    onError: (e: any, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['vendor-orders-list'], ctx.prev)
-      toast.error(e.response?.data?.error || 'Failed to update')
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['vendor-orders-list'] }),
   })
@@ -274,7 +268,18 @@ export default function VendorOrdersPage() {
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                           {flow.next.map(action => (
                             <button key={action.status}
-                              onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: action.status })}
+                              onClick={() => {
+                                const isCancel = action.status === 'CANCELLED'
+                                askConfirm({
+                                  title: isCancel ? 'Cancel order' : 'Update order status',
+                                  description: isCancel
+                                    ? `Cancel Order #${order.id}? Customer will be notified. Reversal requires admin override.`
+                                    : `Set Order #${order.id} status to ${action.status}?`,
+                                  tone: isCancel ? 'danger' : 'default',
+                                  label: `Order #${order.id} updated`,
+                                  request: () => updateStatusMutation.mutateAsync({ orderId: order.id, status: action.status }),
+                                })
+                              }}
                               disabled={updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id}
                               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition active:scale-[0.97] disabled:opacity-50 ${
                                 action.variant === 'primary'
@@ -326,6 +331,7 @@ export default function VendorOrdersPage() {
           onClose={() => setLightboxUrl(null)}
         />
       )}
+      {Dialogs}
     </div>
   )
 }

@@ -3,25 +3,26 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
-import toast from 'react-hot-toast'
 import ImageLightbox from '../../components/ImageLightbox'
+import { useConfirmAction } from '../../hooks/useConfirmAction'
 
 export default function UsedListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { askConfirm, showResult, Dialogs } = useConfirmAction()
   const [offerAmount, setOfferAmount] = useState('')
   const [offerMsg, setOfferMsg] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const handleChat = async () => {
-    if (!user) { toast.error('Please sign in first'); return }
+    if (!user) { showResult('Please sign in first', 'error'); return }
     try {
       await apiClient.post('/api/chat/conversations/used', { listingId: parseInt(id!) })
       navigate('/messages')
     } catch (err: any) {
-      toast.error(err.response?.data?.error ?? 'Could not start conversation')
+      showResult(err.response?.data?.error ?? 'Could not start conversation', 'error')
     }
   }
 
@@ -37,11 +38,11 @@ export default function UsedListingDetailPage() {
       offerAmountBdt: parseFloat(offerAmount), message: offerMsg
     }),
     onSuccess: () => {
-      toast.success('Offer sent!')
       setOfferAmount('')
       setOfferMsg('')
+      showResult('Offer sent!', 'success')
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || 'Failed to send offer'),
+    onError: (e: any) => showResult(e.response?.data?.error || 'Failed to send offer', 'error'),
   })
 
   if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
@@ -125,7 +126,16 @@ export default function UsedListingDetailPage() {
                 <textarea value={offerMsg} onChange={e => setOfferMsg(e.target.value)}
                   placeholder="Message to seller (optional)" rows={2}
                   className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
-                <button onClick={() => offerMutation.mutate()} disabled={!offerAmount || offerMutation.isPending}
+                <button onClick={() => {
+                  if (!item) return
+                  const amount = parseFloat(offerAmount)
+                  askConfirm({
+                    title: 'Submit offer',
+                    description: `Submit offer of ৳${amount.toLocaleString('en-BD')} for "${item.title}"? Seller has 24h to respond.`,
+                    label: 'Offer submitted',
+                    request: () => offerMutation.mutateAsync(),
+                  })
+                }} disabled={!offerAmount || offerMutation.isPending}
                   className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
                   {offerMutation.isPending ? 'Sending...' : 'Send Offer'}
                 </button>
@@ -141,6 +151,7 @@ export default function UsedListingDetailPage() {
           onClose={() => setLightboxIndex(null)}
         />
       )}
+      {Dialogs}
     </div>
   )
 }

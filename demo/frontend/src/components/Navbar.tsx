@@ -95,14 +95,8 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8]/60 bg-white/95 shadow-[0_1px_0_0_rgba(255,255,255,0.5)_inset] backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5 lg:px-8">
         <div className="flex items-center gap-10">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#2a221c] to-[#1a1410] shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
-              <span className="text-[11px] font-bold tracking-tight text-[#f5ede4]">AD</span>
-            </div>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-[15px] font-bold tracking-tight text-[#221b16]">Atom</span>
-              <span className="text-[15px] font-light tracking-wide text-[#8a7a6a]">Drops</span>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img src="/logo.png" alt="AtomDrops" className="h-16 w-16" />
           </Link>
           <div className="hidden items-center gap-0.5 md:flex">
             {[
