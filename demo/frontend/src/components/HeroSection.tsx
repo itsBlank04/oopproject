@@ -104,31 +104,33 @@ export default function HeroSection() {
       </button>
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-6 py-14 md:flex-row md:gap-16 md:py-20 lg:px-8 lg:py-24">
         {/* Left */}
-        <div className="w-full max-w-lg md:w-1/2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8c7564]">
-            AtomDrops 2026
-          </p>
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
-            {slide.badge}
-          </p>
-          <h1
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            className="mt-2 text-[2.8rem] font-light leading-[1.1] tracking-tight text-[#221b16] sm:text-[3.2rem] lg:text-[3.8rem]"
-          >
-            {slide.title}
-          </h1>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#6c5b4f]">
-            {slide.description}
-          </p>
-          <Link
-            to={slide.cta.to}
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#c4956a] px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]"
-          >
-            {slide.cta.text}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
+        <div className="w-full max-w-lg md:w-1/2" key={`text-${current}`}>
+          <div className="animate-hero-fade-up">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8c7564]">
+              AtomDrops 2026
+            </p>
+            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
+              {slide.badge}
+            </p>
+            <h1
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              className="mt-2 text-[2.8rem] font-light leading-[1.1] tracking-tight text-[#221b16] sm:text-[3.2rem] lg:text-[3.8rem]"
+            >
+              {slide.title}
+            </h1>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#6c5b4f]">
+              {slide.description}
+            </p>
+            <Link
+              to={slide.cta.to}
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#c4956a] px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]"
+            >
+              {slide.cta.text}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
           <div className="mt-10 flex items-center gap-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#e4d6c8]">
               {String(current + 1).padStart(2, '0')}
@@ -170,8 +172,8 @@ export default function HeroSection() {
         </div>
 
         {/* Right */}
-        <div className="flex w-full items-center justify-center md:w-1/2">
-          <div className="flex flex-col items-center">
+        <div className="flex w-full items-center justify-center md:w-1/2" key={`visual-${current}`}>
+          <div className="animate-hero-fade-scale flex flex-col items-center" style={{ animationDelay: '0.15s' }}>
             <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
               {/* Glass circle */}
               <div

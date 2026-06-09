@@ -16,51 +16,53 @@ const CATEGORIES = [
 
 export default function CategoryGrid() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
-  const [hovering, setHovering] = useState(false)
+  const trackRef = useRef<HTMLDivElement>(null)
   const [autoIdx, setAutoIdx] = useState(0)
+  const [paused, setPaused] = useState(false)
 
-  const checkScroll = useCallback(() => {
+  const scrollTo = useCallback((i: number) => {
     const el = scrollRef.current
     if (!el) return
-    setCanScrollLeft(el.scrollLeft > 10)
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10)
+    const card = el.children[i] as HTMLElement | undefined
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
   }, [])
 
-  const scroll = useCallback((dir: 'left' | 'right') => {
-    const el = scrollRef.current
-    if (!el) return
-    const step = dir === 'left' ? -el.clientWidth * 0.6 : el.clientWidth * 0.6
-    el.scrollBy({ left: step, behavior: 'smooth' })
-    setTimeout(checkScroll, 400)
-  }, [checkScroll])
+  const handlePrev = useCallback(() => {
+    setPaused(true)
+    setAutoIdx(i => {
+      const next = (i - 1 + CATEGORIES.length) % CATEGORIES.length
+      scrollTo(next)
+      return next
+    })
+    setTimeout(() => setPaused(false), 3000)
+  }, [scrollTo])
+
+  const handleNext = useCallback(() => {
+    setPaused(true)
+    setAutoIdx(i => {
+      const next = (i + 1) % CATEGORIES.length
+      scrollTo(next)
+      return next
+    })
+    setTimeout(() => setPaused(false), 3000)
+  }, [scrollTo])
+
+  const handleDotClick = useCallback((i: number) => {
+    setPaused(true)
+    setAutoIdx(i)
+    scrollTo(i)
+    setTimeout(() => setPaused(false), 3000)
+  }, [scrollTo])
 
   useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener('scroll', checkScroll)
-    checkScroll()
-    return () => el.removeEventListener('scroll', checkScroll)
-  }, [checkScroll])
-
-  useEffect(() => {
-    if (hovering) return
+    if (paused) return
     const timer = setInterval(() => {
-      setAutoIdx(i => {
-        const next = (i + 1) % CATEGORIES.length
-        const el = scrollRef.current
-        if (!el) return next
-        const card = el.children[next] as HTMLElement | undefined
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-          setTimeout(checkScroll, 400)
-        }
-        return next
-      })
+      setAutoIdx(i => (i + 1) % CATEGORIES.length)
     }, 3500)
     return () => clearInterval(timer)
-  }, [hovering, checkScroll])
+  }, [paused])
 
   return (
     <section className="bg-[#faf6f2] px-6 py-16 lg:px-8 lg:py-20">
@@ -82,56 +84,58 @@ export default function CategoryGrid() {
         </div>
 
         <div
-          className="relative mt-10"
-          onMouseEnter={() => setHovering(true)}
-          onMouseLeave={() => setHovering(false)}
+          className="group relative mt-10"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
         >
           {/* Glass arrows */}
           <button
-            onClick={() => scroll('left')}
+            onClick={handlePrev}
             aria-label="Previous categories"
-            className={`absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 ${
-              canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
-            } hover:bg-white/90 hover:scale-110 active:scale-95`}
+            className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
               <path d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
-            onClick={() => scroll('right')}
+            onClick={handleNext}
             aria-label="Next categories"
-            className={`absolute -right-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 ${
-              canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'
-            } hover:bg-white/90 hover:scale-110 active:scale-95`}
+            className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
               <path d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
-          {/* Scrollable track */}
+          {/* Auto-scrolling track */}
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar pb-2"
+            className="overflow-hidden no-scrollbar"
           >
-            {CATEGORIES.map((cat, i) => (
-              <Link
-                key={cat.name}
-                to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
-                className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
-                style={{
-                  animation: `fadeIn 0.5s ease-out ${i * 0.05}s both`,
-                }}
-              >
-                <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
-                  <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
-                </div>
-                <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
+            <div
+              ref={trackRef}
+              className={`flex gap-4 ${paused ? '' : 'animate-category-scroll'}`}
+              style={{ width: 'max-content' }}
+            >
+              {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
+                <Link
+                  key={`${cat.name}-${i}`}
+                  to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
+                  className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
+                  style={{
+                    animation: `fadeIn 0.5s ease-out ${(i % CATEGORIES.length) * 0.05}s both`,
+                  }}
+                >
+                  <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                    <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
+                  </div>
+                  <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Dots */}
@@ -139,15 +143,7 @@ export default function CategoryGrid() {
             {CATEGORIES.map((_, i) => (
               <button
                 key={i}
-                onClick={() => {
-                  setAutoIdx(i)
-                  const el = scrollRef.current
-                  const card = el?.children[i] as HTMLElement | undefined
-                  if (card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-                    setTimeout(checkScroll, 400)
-                  }
-                }}
+                onClick={() => handleDotClick(i)}
                 className={`rounded-full transition-all duration-500 ${
                   i === autoIdx ? 'w-5 bg-[#c4956a]' : 'w-1.5 bg-[#e4d6c8] hover:bg-[#c4956a]'
                 }`}
