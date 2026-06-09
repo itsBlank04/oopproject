@@ -36,6 +36,7 @@ import RepairMarketplacePage from './pages/repair/RepairMarketplacePage'
 import RepairRequestDetailPage from './pages/repair/RepairRequestDetailPage'
 import TechnicianDetailPage from './pages/repair/TechnicianDetailPage'
 import TechnicianDashboardPage from './pages/repair/TechnicianDashboardPage'
+import RepairJobsPage from './pages/repair/RepairJobsPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/repair/requests" element={<SiteLayout><RepairRequestsPage /></SiteLayout>} />
         <Route path="/repair/requests/:id" element={<SiteLayout><RepairRequestDetailPage /></SiteLayout>} />
         <Route path="/repair/dashboard" element={<SiteLayout><TechnicianDashboardPage /></SiteLayout>} />
+        <Route path="/repair/jobs" element={<SiteLayout><RepairJobsPage /></SiteLayout>} />
 
         {/* Account */}
         <Route path="/account/orders" element={<SiteLayout><AccountOrdersPage /></SiteLayout>} />
