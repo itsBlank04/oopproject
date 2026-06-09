@@ -55,7 +55,7 @@ function StarRating({ value, onChange, interactive }: {
         <button key={star} type="button" disabled={!interactive}
           onClick={() => onChange?.(star)}
           className={`text-lg ${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'} transition ${
-            star <= value ? 'text-amber-500' : 'text-[#d7c7b8]'
+            star <= value ? 'text-amber-500' : 'text-[#e4d6c8]'
           }`}
         >
           {star <= value ? '\u2605' : '\u2606'}
@@ -90,7 +90,7 @@ function ReviewCard({ review }: { review: Review }) {
         </div>
       </div>
       {review.comment && (
-        <p className="mt-2 text-sm leading-relaxed text-[#4f4035]">{review.comment}</p>
+        <p className="mt-2 text-sm leading-relaxed text-[#6c5b4f]">{review.comment}</p>
       )}
     </div>
   )
@@ -200,7 +200,7 @@ export default function ProductDetailPage() {
           {/* Image gallery */}
           <div>
             <div
-              className="group relative aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]"
+              className="group relative aspect-square overflow-hidden rounded-2xl bg-[#f9f5f0]"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (images.length <= 1) return
@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
                   )}
                 </>
               ) : (
-                <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
+                <div className="flex h-full items-center justify-center text-lg text-[#8c7564]">No image</div>
               )}
             </div>
             {images.length > 1 && (
@@ -259,7 +259,7 @@ export default function ProductDetailPage() {
                 {images.map((img, i) => (
                   <button key={img.id} onClick={() => setSelectedImage(i)}
                     className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                      selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#b8a494]'
+                      selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#e4d6c8]'
                     }`}>
                     <img src={img.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                   </button>
@@ -269,7 +269,7 @@ export default function ProductDetailPage() {
           </div>
           {/* Product info */}
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#a28672]">
+            <p className="text-xs uppercase tracking-[0.2em] text-[#8c7564]">
               {product.category?.name}
             </p>
             <h1 className="mt-2 font-[Fraunces] text-4xl text-[#221b16]">{product.name}</h1>
@@ -299,7 +299,7 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-            <p className="mt-6 text-sm leading-relaxed text-[#4f4035]">
+            <p className="mt-6 text-sm leading-relaxed text-[#6c5b4f]">
               {product.description || 'No description available.'}
             </p>
             {/* Add to cart + wishlist */}
@@ -326,7 +326,7 @@ export default function ProductDetailPage() {
                 className={`flex-1 rounded-xl py-3 font-semibold transition ${
                   inStock && !isOwner
                     ? 'bg-[#221b16] text-[#f9f5f0] hover:bg-[#3a3028]'
-                    : 'cursor-not-allowed bg-[#d7c7b8] text-[#8c7564]'
+                    : 'cursor-not-allowed bg-[#e4d6c8] text-[#8c7564]'
                 }`}
               >
                 {isOwner
@@ -344,7 +344,7 @@ export default function ProductDetailPage() {
                     toast.error(err.response?.data?.error ?? 'Failed')
                   }
                 }}
-                className="rounded-xl border border-[#d7c7b8] px-4 py-3 text-lg hover:bg-[#f0e8df] transition"
+                className="rounded-xl border border-[#e4d6c8] px-4 py-3 text-lg hover:bg-[#f9f5f0] transition"
               >
                 ♡
               </button>
@@ -352,9 +352,9 @@ export default function ProductDetailPage() {
             {/* Vendor card — Meet the Maker */}
             {vendorProfile && (
               <div className="mt-6 rounded-2xl border border-[#e4d6c8] bg-white/80 p-5 shadow-sm backdrop-blur-sm">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#a28672]">Meet the Maker</p>
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]">Meet the Maker</p>
                 <div className="flex items-center gap-4">
-                  <Link to={`/shop/${vendorProfile.shopSlug}`} className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8] ring-2 ring-[#f0e8df]">
+                  <Link to={`/shop/${vendorProfile.shopSlug}`} className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8] ring-2 ring-[#f9f5f0]">
                     {(vendorProfile.logoUrl || vendorProfile.avatarUrl) ? (
                       <img src={vendorProfile.logoUrl || vendorProfile.avatarUrl} alt="" loading="lazy"
                         className="h-full w-full object-cover" />
@@ -384,12 +384,12 @@ export default function ProductDetailPage() {
                       <span>{vendorProfile.followerCount} follower{vendorProfile.followerCount !== 1 ? 's' : ''}</span>
                     </div>
                     {vendorProfile.location && (
-                      <p className="mt-0.5 text-xs text-[#a28672]">{vendorProfile.location}</p>
+                      <p className="mt-0.5 text-xs text-[#8c7564]">{vendorProfile.location}</p>
                     )}
                   </div>
                 </div>
                 {vendorProfile.bio && (
-                  <p className="mt-3 border-t border-[#f0e8df] pt-3 text-xs leading-relaxed text-[#6c5b4f]">
+                  <p className="mt-3 border-t border-[#f9f5f0] pt-3 text-xs leading-relaxed text-[#6c5b4f]">
                     {vendorProfile.bio}
                   </p>
                 )}
@@ -399,7 +399,7 @@ export default function ProductDetailPage() {
                     View Storefront
                   </Link>
                   <button onClick={() => { setReportType('VENDOR'); setShowReportModal(true) }}
-                    className="rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-xs font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
+                    className="rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-xs font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
                     Report
                   </button>
                 </div>
@@ -427,7 +427,7 @@ export default function ProductDetailPage() {
                 <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Share your thoughts about this product..."
                   rows={3}
-                  className="mt-3 w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+                  className="mt-3 w-full resize-none rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
                 <div className="mt-3 flex justify-end">
                   <button onClick={handleSubmitReview} disabled={submitting}
                     className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
@@ -479,10 +479,10 @@ export default function ProductDetailPage() {
             <textarea value={reportReason} onChange={(e) => setReportReason(e.target.value)}
               placeholder="Tell us why you're reporting this..."
               rows={4}
-              className="mt-4 w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+              className="mt-4 w-full resize-none rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
             <div className="mt-4 flex justify-end gap-3">
               <button onClick={() => setShowReportModal(false)}
-                className="rounded-xl border border-[#d7c7b8] px-5 py-2.5 text-sm font-semibold text-[#6c5b4f] hover:bg-[#f0e8df] transition">
+                className="rounded-xl border border-[#e4d6c8] px-5 py-2.5 text-sm font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
                 Cancel
               </button>
               <button onClick={async () => {

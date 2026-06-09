@@ -69,7 +69,7 @@ export default function ImageLightbox({ images, initialIndex = 0, onClose }: Pro
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
             {images.length > 1 && (
-              <span className="rounded-full bg-[#f0e8df] px-2.5 py-0.5 text-xs font-semibold text-[#6c5b4f]">
+              <span className="rounded-full bg-[#f9f5f0] px-2.5 py-0.5 text-xs font-semibold text-[#6c5b4f]">
                 {index + 1} / {images.length}
               </span>
             )}
@@ -84,7 +84,7 @@ export default function ImageLightbox({ images, initialIndex = 0, onClose }: Pro
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f0e8df] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f9f5f0] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />

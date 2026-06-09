@@ -48,7 +48,7 @@ function StatusBanner({ status }: { status: string }) {
       status === 'CANCELLED' ? 'bg-red-50 ring-1 ring-red-200/60' :
       status === 'ABANDONED' ? 'bg-amber-50 ring-1 ring-amber-200/60' :
       status === 'EXPIRED' ? 'bg-gray-50 ring-1 ring-gray-200/60' :
-      'bg-[#f5f0eb] ring-1 ring-[#e4d6c8]/60'
+      'bg-[#f9f5f0] ring-1 ring-[#e4d6c8]/60'
     }`}>
       <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${meta.dot}`} />
       <div className="flex-1 min-w-0">
@@ -68,9 +68,9 @@ function EmptyState({ status }: { status: string }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="font-semibold text-[#1a1512]">Order placed!</p>
+        <p className="font-semibold text-[#221b16]">Order placed!</p>
         <p className="mt-1 text-sm text-[#8c7564]">Your order has been placed successfully</p>
-        <Link to="/account/orders" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#2d241e]">
+        <Link to="/account/orders" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#3a3028]">
           View orders
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
         </Link>
@@ -81,14 +81,14 @@ function EmptyState({ status }: { status: string }) {
   if (status === 'CANCELLED' || status === 'ABANDONED' || status === 'EXPIRED') {
     return (
       <div className="flex flex-col items-center py-16 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f0eb] mb-4">
-          <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0] mb-4">
+          <svg className="h-8 w-8 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
         </div>
-        <p className="font-semibold text-[#1a1512]">Cart {status.toLowerCase()}</p>
+        <p className="font-semibold text-[#221b16]">Cart {status.toLowerCase()}</p>
         <p className="mt-1 text-sm text-[#8c7564]">Start a new shopping cart</p>
-        <Link to="/products" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#2d241e]">
+        <Link to="/products" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#3a3028]">
           Browse products
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
         </Link>
@@ -98,14 +98,14 @@ function EmptyState({ status }: { status: string }) {
 
   return (
     <div className="anim-fade anim-fade-2 rounded-2xl border-2 border-dashed border-[#e4d6c8] p-12 sm:p-16 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f0eb]">
-        <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
+        <svg className="h-8 w-8 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
         </svg>
       </div>
-      <p className="mt-4 font-semibold text-[#1a1512]">Your cart is empty</p>
+      <p className="mt-4 font-semibold text-[#221b16]">Your cart is empty</p>
       <p className="mt-1 text-sm text-[#8c7564]">Looks like you haven't added anything yet</p>
-      <Link to="/products" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
+      <Link to="/products" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#3a3028]">
         Browse products
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
       </Link>
@@ -192,14 +192,14 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-[#faf6f2] flex items-center justify-center">
         <div className="text-center max-w-md px-6">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1a1512] mb-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#221b16] mb-4">
             <svg className="h-8 w-8 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
           </div>
-          <p className="font-semibold text-[#1a1512]">Sign in to view your cart</p>
+          <p className="font-semibold text-[#221b16]">Sign in to view your cart</p>
           <p className="text-sm text-[#8c7564] mt-1">You need to be signed in to shop</p>
-          <Link to="/auth/login" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#2d241e]">
+          <Link to="/auth/login" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] hover:bg-[#3a3028]">
             Sign in
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
           </Link>
@@ -234,13 +234,13 @@ export default function CartPage() {
         <div className="anim-fade anim-fade-1">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1a1512] shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#221b16] shadow-sm">
                 <svg className="h-5 w-5 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">
+                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#221b16] tracking-tight">
                   Shopping Cart
                 </h1>
                 <p className="text-xs text-[#8c7564] mt-0.5">
@@ -266,7 +266,7 @@ export default function CartPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
             </div>
-            <p className="font-semibold text-[#1a1512]">Checkout in progress</p>
+            <p className="font-semibold text-[#221b16]">Checkout in progress</p>
             <p className="text-sm text-[#8c7564] mt-1">Complete your checkout to place the order</p>
             <div className="flex items-center justify-center gap-3 mt-5">
               <button onClick={() => navigate('/checkout')} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition">
@@ -290,19 +290,19 @@ export default function CartPage() {
                     style={{ animationDelay: `${idx * 0.04}s` }}>
                     {/* Image */}
                     <button type="button" onClick={() => { const u = item.product?.images?.[0]?.imageUrl; if (u) setLightboxUrl(u) }}
-                      className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-[#f0e8df]">
+                      className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-[#f9f5f0]">
                       {item.product?.images?.[0]?.imageUrl ? (
                         <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <svg className="h-6 w-6 text-[#a28672]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                          <svg className="h-6 w-6 text-[#8c7564]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                           </svg>
                         </div>
                       )}
                     </button>
                     <div className="min-w-0 flex-1">
-                      <Link to={`/products/${item.product?.id}`} className="text-sm font-semibold text-[#1a1512] hover:underline truncate block">
+                      <Link to={`/products/${item.product?.id}`} className="text-sm font-semibold text-[#221b16] hover:underline truncate block">
                         {item.product?.name || 'Product'}
                       </Link>
                       <p className="text-xs text-[#8c7564] mt-0.5">৳{unitPrice.toLocaleString('en-BD', { minimumFractionDigits: 2 })} each</p>
@@ -317,24 +317,24 @@ export default function CartPage() {
                     {/* Quantity */}
                     <div className="flex items-center gap-1">
                       <button onClick={() => updateQty.mutate({ id: item.id, qty: Math.max(1, item.qty - 1) })}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d7c7b8] text-sm font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition active:scale-90">
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e4d6c8] text-sm font-medium text-[#6c5b4f] hover:bg-[#f9f5f0] transition active:scale-90">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" /></svg>
                       </button>
-                      <span className="w-8 text-center text-sm font-semibold text-[#1a1512] tabular-nums">{item.qty}</span>
+                      <span className="w-8 text-center text-sm font-semibold text-[#221b16] tabular-nums">{item.qty}</span>
                       <button onClick={() => updateQty.mutate({ id: item.id, qty: item.qty + 1 })}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#d7c7b8] text-sm font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition active:scale-90">
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e4d6c8] text-sm font-medium text-[#6c5b4f] hover:bg-[#f9f5f0] transition active:scale-90">
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                       </button>
                     </div>
 
                     {/* Total price */}
                     <div className="text-right shrink-0 w-20 sm:w-24">
-                      <p className="font-[Fraunces] text-sm font-semibold text-[#1a1512]">৳{lineTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+                      <p className="font-[Fraunces] text-sm font-semibold text-[#221b16]">৳{lineTotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
                     </div>
 
                     {/* Remove */}
                     <button onClick={() => removeItem.mutate(item.id)}
-                      className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg text-[#b8a494] hover:text-red-500 hover:bg-red-50 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
+                      className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg text-[#e4d6c8] hover:text-red-500 hover:bg-red-50 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                       </svg>
@@ -348,18 +348,18 @@ export default function CartPage() {
             {hasPaidShipping && (
               <div className="anim-fade anim-fade-3">
                 <div className="rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-                  <h2 className="font-semibold text-[#1a1512] mb-3">Delivery Area</h2>
+                  <h2 className="font-semibold text-[#221b16] mb-3">Delivery Area</h2>
                   <p className="text-xs text-[#8c7564] mb-3">Some items have paid shipping — choose your delivery location</p>
                   <div className="space-y-2">
                     {(Object.entries(SHIPPING_RATES) as [ShippingOption, typeof SHIPPING_RATES[ShippingOption]][]).map(([key, rate]) => (
                       <button key={key} onClick={() => setShippingOption(key)}
                         className={`w-full flex items-center gap-3 rounded-xl border-2 p-3.5 text-left transition-all ${
                           shippingOption === key
-                            ? 'border-[#1a1512] bg-[#faf6f2]'
-                            : 'border-[#e4d6c8]/60 hover:border-[#b8a494]'
+                            ? 'border-[#221b16] bg-[#faf6f2]'
+                            : 'border-[#e4d6c8]/60 hover:border-[#e4d6c8]'
                         }`}>
                         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                          shippingOption === key ? 'bg-[#1a1512] text-[#faf6f2]' : 'bg-[#f5f0eb] text-[#6c5b4f]'
+                          shippingOption === key ? 'bg-[#221b16] text-[#faf6f2]' : 'bg-[#f9f5f0] text-[#6c5b4f]'
                         }`}>
                           {key === 'INSIDE_DHAKA' ? (
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -373,11 +373,11 @@ export default function CartPage() {
                           )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-[#1a1512]">{rate.label}</p>
+                          <p className="text-sm font-semibold text-[#221b16]">{rate.label}</p>
                           <p className="text-xs text-[#8c7564]">{rate.desc}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold text-[#1a1512]">৳{rate.fee}</p>
+                          <p className="text-sm font-semibold text-[#221b16]">৳{rate.fee}</p>
                         </div>
                         {shippingOption === key && (
                           <svg className="h-5 w-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -394,16 +394,16 @@ export default function CartPage() {
             {/* Summary */}
             <div className="anim-fade anim-fade-3">
               <div className="rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-                <h2 className="font-semibold text-[#1a1512] mb-4">Order Summary</h2>
+                <h2 className="font-semibold text-[#221b16] mb-4">Order Summary</h2>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-[#6c5b4f]">
                     <span>Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''})</span>
-                    <span className="font-medium text-[#1a1512]">৳{subtotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                    <span className="font-medium text-[#221b16]">৳{subtotal.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-[#6c5b4f]">
                     <span>Shipping</span>
-                    <span className="font-medium text-[#1a1512]">
+                    <span className="font-medium text-[#221b16]">
                       {shippingFee === 0 ? (
                         <span className="text-emerald-600">Free</span>
                       ) : (
@@ -415,8 +415,8 @@ export default function CartPage() {
 
                 <div className="mt-4 pt-4 border-t border-[#e4d6c8]/40">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-[#1a1512]">Total</span>
-                    <span className="font-[Fraunces] text-xl font-bold text-[#1a1512]">৳{total.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
+                    <span className="font-semibold text-[#221b16]">Total</span>
+                    <span className="font-[Fraunces] text-xl font-bold text-[#221b16]">৳{total.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
 
@@ -438,13 +438,13 @@ export default function CartPage() {
                   className={`mt-5 w-full rounded-xl py-3 text-sm font-semibold transition active:scale-[0.98] ${
                     hasStockIssues
                       ? 'bg-[#e4d6c8] text-[#8c7564] cursor-not-allowed'
-                      : 'bg-[#1a1512] text-[#faf6f2] hover:bg-[#2d241e]'
+                      : 'bg-[#221b16] text-[#faf6f2] hover:bg-[#3a3028]'
                   }`}>
                   Proceed to Checkout
                 </button>
 
                 <Link to="/products"
-                  className="mt-3 flex items-center justify-center gap-1.5 w-full rounded-xl border border-[#d7c7b8] py-2.5 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
+                  className="mt-3 flex items-center justify-center gap-1.5 w-full rounded-xl border border-[#e4d6c8] py-2.5 text-xs font-medium text-[#6c5b4f] hover:bg-[#f9f5f0] transition-colors">
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
                   Continue shopping
                 </Link>

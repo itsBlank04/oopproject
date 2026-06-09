@@ -137,7 +137,7 @@ export default function VendorSubscriptionsPage() {
 
   if (summaryLoading || plansLoading) {
     return (
-      <div className="min-h-screen bg-[#fcfbfa] py-12 px-6">
+      <div className="min-h-screen bg-[#faf6f2] py-12 px-6">
         <div className="mx-auto max-w-5xl animate-pulse space-y-8">
           <div className="h-40 rounded-2xl bg-[#e4d6c8]/30" />
           <div className="grid gap-6 md:grid-cols-3">
@@ -151,7 +151,7 @@ export default function VendorSubscriptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] py-12 px-6">
+    <div className="min-h-screen bg-[#faf6f2] py-12 px-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 text-center md:text-left">
           <h1 className="font-[Fraunces] text-4xl font-bold text-[#221b16]">Vendor Subscriptions</h1>
@@ -175,23 +175,23 @@ export default function VendorSubscriptionsPage() {
               </h2>
               <div className="text-sm text-[#8c7564] flex flex-wrap gap-x-4 gap-y-1">
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-4 w-4 text-[#a89280]" />
+                  <ShieldCheck className="h-4 w-4 text-[#8c7564]" />
                   Limit: {summary.maxShops === -1 ? 'Unlimited' : `${summary.maxShops} Shop Slots`} ({summary.currentShopCount} Active)
                 </span>
                 {summary.expiresAt && (
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4 text-[#a89280]" />
+                    <Calendar className="h-4 w-4 text-[#8c7564]" />
                     Renews/Expires: {new Date(summary.expiresAt).toLocaleDateString('en-BD')}
                   </span>
                 )}
                 <span className="flex items-center gap-1 capitalize">
-                  <CreditCard className="h-4 w-4 text-[#a89280]" />
+                  <CreditCard className="h-4 w-4 text-[#8c7564]" />
                   Billing: {summary.billingCycle.toLowerCase()}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 bg-[#fcfbfa] border border-[#e4d6c8]/50 p-4 rounded-xl w-full md:w-auto">
+            <div className="flex items-center gap-4 bg-[#faf6f2] border border-[#e4d6c8]/50 p-4 rounded-xl w-full md:w-auto">
               <div className="text-center w-full">
                 <p className="text-[10px] uppercase font-semibold tracking-wider text-[#8c7564]">Shop Capacity</p>
                 <div className="flex items-baseline justify-center gap-1 mt-1">
@@ -332,7 +332,7 @@ export default function VendorSubscriptionsPage() {
                   {/* Features */}
                   <ul className="mb-8 space-y-3">
                     {featuresList.map((f: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-[#4f4035]">
+                      <li key={i} className="flex items-start gap-2 text-xs text-[#6c5b4f]">
                         <Check className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                         <span>{f}</span>
                       </li>
@@ -382,7 +382,7 @@ export default function VendorSubscriptionsPage() {
                   {checkoutStep === 'details' ? (
                     <div className="space-y-4">
                       {/* Summary fields */}
-                      <div className="rounded-xl bg-[#fcfbfa] border border-[#e4d6c8]/40 p-4 space-y-2">
+                      <div className="rounded-xl bg-[#faf6f2] border border-[#e4d6c8]/40 p-4 space-y-2">
                         <div className="flex justify-between text-xs text-[#8c7564]">
                           <span>Subtotal</span>
                           <span>৳{(billingCycle === 'MONTHLY' ? selectedPlan.priceMonthlyBdt : selectedPlan.priceYearlyBdt).toLocaleString()}</span>
@@ -427,7 +427,7 @@ export default function VendorSubscriptionsPage() {
                           type="button"
                           onClick={() => { setPaymentMethod('nagad'); setErrorMsg(''); }}
                           className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                            paymentMethod === 'nagad' ? 'bg-[#f47321] text-white' : 'text-[#8c7564] hover:bg-gray-100'
+                            paymentMethod === 'nagad' ? 'bg-[#c4956a] text-white' : 'text-[#8c7564] hover:bg-gray-100'
                           }`}
                         >
                           Nagad

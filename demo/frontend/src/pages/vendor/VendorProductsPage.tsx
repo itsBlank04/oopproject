@@ -231,7 +231,7 @@ export default function VendorProductsPage() {
     return (
       <div className="mx-auto max-w-4xl px-6 py-20 text-center">
         <div className="mx-auto max-w-xl rounded-3xl border border-[#e4d6c8] bg-white p-8 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f0e8df]">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f9f5f0]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-[#221b16]">
               <path d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
             </svg>
@@ -254,7 +254,7 @@ export default function VendorProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f0eb]">
+    <div className="min-h-screen bg-[#f9f5f0]">
       {/* Header */}
       <div className="border-b border-[#e4d6c8] bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
@@ -267,7 +267,7 @@ export default function VendorProductsPage() {
             <div className="flex flex-wrap items-center gap-2">
               {/* Shop filter */}
               {shops.length > 0 && (
-                <div className="flex items-center gap-2 bg-[#fcfbfa] border border-[#e4d6c8] px-3 py-2 rounded-xl shadow-sm text-xs">
+                <div className="flex items-center gap-2 bg-[#faf6f2] border border-[#e4d6c8] px-3 py-2 rounded-xl shadow-sm text-xs">
                   <span className="font-semibold text-[#8c7564]">Shop:</span>
                   <select
                     value={selectedShopId || ''}
@@ -283,7 +283,7 @@ export default function VendorProductsPage() {
               )}
 
               <button onClick={() => { resetForm(); setShowForm(!showForm) }}
-                className="flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] active:scale-[0.97]">
+                className="flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028] active:scale-[0.97]">
                 <Plus className="h-4 w-4" />
                 {showForm ? 'Cancel' : 'Add Product'}
               </button>
@@ -328,7 +328,7 @@ export default function VendorProductsPage() {
                   value={form.shopId} 
                   onChange={e => setForm({ ...form, shopId: e.target.value })}
                   disabled={!!editProductId}
-                  className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10 disabled:opacity-50"
+                  className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10 disabled:opacity-50"
                 >
                   <option value="">Select Target Shop</option>
                   {shops.map(s => (
@@ -341,25 +341,25 @@ export default function VendorProductsPage() {
                 <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Product Name</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. Wireless Bluetooth Headphones"
-                  className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
+                  className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Description</label>
                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3}
                   placeholder="Describe your product..."
-                  className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
+                  className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Price (৳)</label>
                   <input type="number" step="0.01" value={form.priceBdt} onChange={e => setForm({ ...form, priceBdt: e.target.value })}
                     placeholder="0.00"
-                    className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
+                    className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Category</label>
                   <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10">
+                    className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10">
                     <option value="">Select</option>
                     {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -376,7 +376,7 @@ export default function VendorProductsPage() {
               </div>
               <button onClick={() => editProductId ? updateProduct.mutate() : createProduct.mutate()}
                 disabled={createProduct.isPending || updateProduct.isPending || !form.name || !form.priceBdt || !form.categoryId}
-                className="w-full rounded-xl bg-[#221b16] py-3 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] disabled:opacity-40 active:scale-[0.98]">
+                className="w-full rounded-xl bg-[#221b16] py-3 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028] disabled:opacity-40 active:scale-[0.98]">
                 {createProduct.isPending || updateProduct.isPending ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
@@ -394,12 +394,12 @@ export default function VendorProductsPage() {
         {products.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-[#e4d6c8] p-16 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
-              <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+              <svg className="h-8 w-8 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
             </div>
             <p className="mt-4 font-semibold text-[#221b16]">No products yet</p>
             <p className="mt-1 text-sm text-[#8c7564]">Click "Add Product" to create your first listing</p>
             {productsFetching && (
-              <p className="mt-2 text-xs text-[#b8a494]">Checking your catalog...</p>
+              <p className="mt-2 text-xs text-[#e4d6c8]">Checking your catalog...</p>
             )}
           </div>
         ) : (
@@ -408,7 +408,7 @@ export default function VendorProductsPage() {
               const s = stockFor(p)
               const level = stockLevel(p)
               return (
-                <div key={p.id} className="group relative rounded-2xl bg-white shadow-sm ring-1 ring-[#e4d6c8]/60 transition-all hover:shadow-md hover:ring-[#d7c7b8]">
+                <div key={p.id} className="group relative rounded-2xl bg-white shadow-sm ring-1 ring-[#e4d6c8]/60 transition-all hover:shadow-md hover:ring-[#e4d6c8]">
                   {/* Status badge */}
                   <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
                     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
@@ -434,7 +434,7 @@ export default function VendorProductsPage() {
                       <img src={p.images[0].imageUrl} alt={p.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <svg className="h-10 w-10 text-[#d7c7b8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                        <svg className="h-10 w-10 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                       </div>
                     )}
                   </button>
@@ -463,7 +463,7 @@ export default function VendorProductsPage() {
                     {/* Stock controls */}
                     <div className="mt-4 flex items-center gap-2">
                       <button onClick={() => setStock(p.id, Math.max(0, s.stockQty - 1), s.lowStockThreshold)}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#e4d6c8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" /></svg>
                       </button>
                       <input
@@ -473,10 +473,10 @@ export default function VendorProductsPage() {
                           const val = parseInt(e.target.value) || 0
                           setStock(p.id, val, s.lowStockThreshold)
                         }}
-                        className="w-16 rounded-lg border border-[#d7c7b8] bg-[#faf8f6] px-2 py-1.5 text-center text-xs font-semibold text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="w-16 rounded-lg border border-[#e4d6c8] bg-[#f9f5f0] px-2 py-1.5 text-center text-xs font-semibold text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                       <button onClick={() => setStock(p.id, s.stockQty + 1, s.lowStockThreshold)}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#d7c7b8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#e4d6c8] text-[#6c5b4f] transition hover:bg-[#f9f5f0] active:scale-90">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                       </button>
                       <div className="ml-auto flex items-center gap-1">
@@ -485,13 +485,13 @@ export default function VendorProductsPage() {
                           type="number" min="0"
                           value={s.lowStockThreshold}
                           onChange={e => setStock(p.id, s.stockQty, Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-12 rounded-lg border border-[#d7c7b8] bg-[#faf8f6] px-1.5 py-1 text-center text-[10px] text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          className="w-12 rounded-lg border border-[#e4d6c8] bg-[#f9f5f0] px-1.5 py-1 text-center text-[10px] text-[#221b16] outline-none focus:border-[#221b16] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </div>
                     </div>
 
                     {/* Shipping toggle */}
-                    <div className="mt-4 border-t border-[#f0e8e0] pt-3">
+                    <div className="mt-4 border-t border-[#f9f5f0] pt-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-[#6c5b4f]">Shipping</span>
                         <button
@@ -501,7 +501,7 @@ export default function VendorProductsPage() {
                           })}
                           disabled={updateShipping.isPending}
                           className={`relative inline-flex h-6 w-10 cursor-pointer items-center rounded-full transition-all ${
-                            p.shippingType === 'PAID' ? 'bg-[#221b16]' : 'bg-[#d7c7b8]'
+                            p.shippingType === 'PAID' ? 'bg-[#221b16]' : 'bg-[#e4d6c8]'
                           }`}
                         >
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-all ${
@@ -517,7 +517,7 @@ export default function VendorProductsPage() {
                     {/* Actions */}
                     <div className="mt-4 flex gap-2">
                       <button onClick={() => startEdit(p)}
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#d7c7b8] py-2 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0] active:scale-[0.97]">
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#e4d6c8] py-2 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0] active:scale-[0.97]">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                         Edit
                       </button>

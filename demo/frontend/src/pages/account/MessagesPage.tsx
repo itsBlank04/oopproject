@@ -200,12 +200,12 @@ export default function MessagesPage() {
             {/* Search */}
             <div className="border-b border-[#e4d6c8] px-4 py-3">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search conversations..."
-                  className="w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] py-2 pl-10 pr-4 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
+                  className="w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] py-2 pl-10 pr-4 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
               </div>
             </div>
 
@@ -227,7 +227,7 @@ export default function MessagesPage() {
                 <div className="flex flex-1 items-center justify-center p-8 text-center">
                   <div>
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#f9f5f0]">
-                      <svg className="h-6 w-6 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <svg className="h-6 w-6 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                       </svg>
                     </div>
@@ -242,7 +242,7 @@ export default function MessagesPage() {
                   {filteredConvs.map(c => (
                     <button key={c.id} onClick={() => selectConv(c)}
                       className={`flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-[#f9f5f0] ${
-                        selected?.id === c.id ? 'bg-[#f0e8df]' : ''
+                        selected?.id === c.id ? 'bg-[#f9f5f0]' : ''
                       }`}>
                       <button type="button" onClick={() => setLightboxAvatar(c.otherUserAvatar)}
                         className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
@@ -266,7 +266,7 @@ export default function MessagesPage() {
                               {c.otherUserName || `User #${c.otherUserId}`}
                             </p>
                             {c.type === 'ORDER' && (
-                              <span className="shrink-0 rounded-full bg-[#f0e8df] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
+                              <span className="shrink-0 rounded-full bg-[#f9f5f0] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
                                 Order
                               </span>
                             )}
@@ -281,7 +281,7 @@ export default function MessagesPage() {
                           )}
                         </div>
                         {c.title && (
-                          <p className="mt-0.5 truncate text-xs font-medium text-[#a28672]">{c.title}</p>
+                          <p className="mt-0.5 truncate text-xs font-medium text-[#8c7564]">{c.title}</p>
                         )}
                         <p className="mt-0.5 truncate text-xs text-[#8c7564]">
                           {c.lastMessage || 'No messages yet'}
@@ -319,7 +319,7 @@ export default function MessagesPage() {
                     </div>
                     {selected.type === 'ORDER' && (
                       <Link to={`/account/orders`}
-                        className="shrink-0 rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]">
+                        className="shrink-0 rounded-lg border border-[#e4d6c8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]">
                         View Order
                       </Link>
                     )}
@@ -339,7 +339,7 @@ export default function MessagesPage() {
                         <div key={m.id}>
                           {showDate && (
                             <div className="flex justify-center py-2">
-                              <span className="rounded-full bg-[#f0e8df] px-3 py-1 text-[10px] font-medium text-[#6c5b4f]">
+                              <span className="rounded-full bg-[#f9f5f0] px-3 py-1 text-[10px] font-medium text-[#6c5b4f]">
                                 {formatDate(m.createdAt)}
                               </span>
                             </div>
@@ -353,7 +353,7 @@ export default function MessagesPage() {
                           ) : (
                             <div className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
                               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                                m.isMine ? 'bg-[#221b16] text-[#f9f5f0] rounded-br-md' : 'bg-[#f0e8df] text-[#221b16] rounded-bl-md'
+                                m.isMine ? 'bg-[#221b16] text-[#f9f5f0] rounded-br-md' : 'bg-[#f9f5f0] text-[#221b16] rounded-bl-md'
                               }`}>
                                 {m.attachmentUrl && (
                                   <div className="mb-1">
@@ -372,7 +372,7 @@ export default function MessagesPage() {
                                   </div>
                                 )}
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{m.body}</p>
-                                <p className={`mt-1 text-[10px] ${m.isMine ? 'text-[#b8a494]' : 'text-[#8c7564]'}`}>
+                                <p className={`mt-1 text-[10px] ${m.isMine ? 'text-[#e4d6c8]' : 'text-[#8c7564]'}`}>
                                   {formatTime(m.createdAt)}
                                   {m.isMine && (
                                     <span className="ml-1">{m.isRead ? '✓✓' : '✓'}</span>
@@ -394,9 +394,9 @@ export default function MessagesPage() {
                     <input value={newMsg} onChange={e => setNewMsg(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                       placeholder={selected.type === 'ORDER' ? 'Type a message about this order...' : 'Type a message...'}
-                      className="flex-1 rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
+                      className="flex-1 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
                     <button onClick={handleSend} disabled={!newMsg.trim() || sendMutation.isPending}
-                      className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] disabled:opacity-40 active:scale-[0.97]">
+                      className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028] disabled:opacity-40 active:scale-[0.97]">
                       {sendMutation.isPending ? (
                         <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                       ) : (
@@ -404,7 +404,7 @@ export default function MessagesPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-1.5 text-[10px] text-[#b8a494]">
+                  <p className="mt-1.5 text-[10px] text-[#e4d6c8]">
                     {selected.type === 'ORDER' ? 'Text only · Be respectful and stay on topic' : 'Be respectful and follow community guidelines'}
                   </p>
                 </div>
@@ -412,7 +412,7 @@ export default function MessagesPage() {
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
-                  <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <svg className="h-8 w-8 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
                 </div>

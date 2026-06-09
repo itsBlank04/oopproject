@@ -56,7 +56,7 @@ function statusTone(status: string) {
   if (status === 'ACTIVE') return 'border-emerald-300 bg-emerald-50 text-emerald-700'
   if (status === 'PREPARING') return 'border-amber-300 bg-amber-50 text-amber-700'
   if (status === 'CLOSED') return 'border-slate-300 bg-slate-50 text-slate-600'
-  return 'border-[#d7c7b8] bg-[#f9f5f0] text-[#6c5b4f]'
+  return 'border-[#e4d6c8] bg-[#f9f5f0] text-[#6c5b4f]'
 }
 
 function auctionHeat(auction: Auction) {
@@ -131,7 +131,7 @@ export default function AuctionsPage() {
           <div className="mt-10 grid gap-3 md:grid-cols-4">
             {tabs.map(item => (
               <button key={item.id} onClick={() => setTab(item.id)}
-                className={`group rounded-2xl border p-4 text-left transition-all ${tab === item.id ? 'border-[#ee5a24] bg-[#ee5a24] text-white shadow-[0_20px_60px_rgba(238,90,36,0.25)]' : 'border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#d7c7b8] hover:bg-[#f9f5f0]'}`}>
+                className={`group rounded-2xl border p-4 text-left transition-all ${tab === item.id ? 'border-[#c4956a] bg-[#c4956a] text-white shadow-[0_20px_60px_rgba(238,90,36,0.25)]' : 'border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#e4d6c8] hover:bg-[#f9f5f0]'}`}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-black uppercase tracking-[0.18em]">{item.label}</span>
                   {item.id === 'ACTIVE' && <span className={`h-2 w-2 rounded-full ${tab === item.id ? 'bg-white' : 'bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]'}`} />}
@@ -146,7 +146,7 @@ export default function AuctionsPage() {
       <main className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#ee5a24]">{tab === 'ALL' ? 'Full board' : tab.toLowerCase()}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#c4956a]">{tab === 'ALL' ? 'Full board' : tab.toLowerCase()}</p>
             <h2 className="mt-1 font-[Fraunces] text-3xl text-[#221b16]">{visibleAuctions.length} auction{visibleAuctions.length === 1 ? '' : 's'} available</h2>
           </div>
           <div className="rounded-full border border-[#e4d6c8] bg-white px-4 py-2 text-xs font-semibold text-[#6c5b4f]">
@@ -170,21 +170,21 @@ export default function AuctionsPage() {
               const trust = sellerTrust(auction.vendor)
               return (
                 <Link key={auction.id} to={`/auctions/${auction.id}`}
-                  className="group relative overflow-hidden rounded-[2rem] border border-[#e4d6c8] bg-white p-5 shadow-[0_24px_70px_rgba(34,27,22,0.08)] transition-all hover:-translate-y-1 hover:border-[#ee5a24]/60 hover:shadow-[0_28px_90px_rgba(238,90,36,0.15)]">
-                  <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#ee5a24]/5 blur-2xl transition group-hover:bg-[#ee5a24]/10" />
+                  className="group relative overflow-hidden rounded-[2rem] border border-[#e4d6c8] bg-white p-5 shadow-[0_24px_70px_rgba(34,27,22,0.08)] transition-all hover:-translate-y-1 hover:border-[#c4956a]/60 hover:shadow-[0_28px_90px_rgba(238,90,36,0.15)]">
+                  <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#c4956a]/5 blur-2xl transition group-hover:bg-[#c4956a]/10" />
                   <div className="relative grid gap-5 md:grid-cols-[180px_1fr]">
                     <div className="space-y-3">
                       <div className="grid h-44 grid-cols-2 gap-2 overflow-hidden rounded-3xl bg-[#f9f5f0] p-2">
                         {images.length > 0 ? images.map((image, index) => (
                           <img key={`${image.imageUrl}-${index}`} src={image.imageUrl} alt={image.lotTitle} loading="lazy" className="h-full w-full rounded-2xl object-cover" />
                         )) : (
-                          <div className="col-span-2 flex h-full items-center justify-center rounded-2xl border border-dashed border-[#d7c7b8] text-xs text-[#a28672]">No lot photos yet</div>
+                          <div className="col-span-2 flex h-full items-center justify-center rounded-2xl border border-dashed border-[#e4d6c8] text-xs text-[#8c7564]">No lot photos yet</div>
                         )}
                       </div>
                       <div className="rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-3">
                         <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.18em] text-[#8c7564]"><span>Heat</span><span>{heat}%</span></div>
                         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e4d6c8]">
-                          <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[#ee5a24] to-rose-500 transition-all" style={{ width: `${heat}%` }} />
+                          <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[#c4956a] to-rose-500 transition-all" style={{ width: `${heat}%` }} />
                         </div>
                       </div>
                     </div>
@@ -195,7 +195,7 @@ export default function AuctionsPage() {
                         <span className="rounded-full border border-[#e4d6c8] bg-[#f9f5f0] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#6c5b4f]">{auction.type}</span>
                         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">Trust {trust}/100</span>
                       </div>
-                      <h3 className="mt-4 truncate font-[Fraunces] text-3xl text-[#221b16] group-hover:text-[#ee5a24]">{auction.title}</h3>
+                      <h3 className="mt-4 truncate font-[Fraunces] text-3xl text-[#221b16] group-hover:text-[#c4956a]">{auction.title}</h3>
                       <p className="mt-1 text-sm text-[#6c5b4f]">Seller: {auction.vendor?.displayName || 'Verified seller'}</p>
 
                       <div className="mt-5 grid gap-3 sm:grid-cols-3">

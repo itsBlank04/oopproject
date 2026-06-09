@@ -224,7 +224,7 @@ export default function VendorShopManagerPage() {
   const slotLimitReached = summary ? (summary.maxShops !== -1 && summary.currentShopCount >= summary.maxShops) : false
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] py-12 px-6">
+    <div className="min-h-screen bg-[#faf6f2] py-12 px-6">
       <div className="mx-auto max-w-5xl">
         
         {/* Header */}
@@ -283,7 +283,7 @@ export default function VendorShopManagerPage() {
               </div>
             ) : shops.length === 0 ? (
               <div className="text-center p-16 bg-white rounded-2xl border border-[#e4d6c8]/40">
-                <Store className="mx-auto h-12 w-12 text-[#a89280] mb-4" />
+                <Store className="mx-auto h-12 w-12 text-[#8c7564] mb-4" />
                 <h3 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">No Shops Found</h3>
                 <p className="text-[#8c7564] text-xs max-w-sm mx-auto mt-2 mb-6">Create your first shop outlet to start uploading products and scheduling auctions.</p>
                 <button

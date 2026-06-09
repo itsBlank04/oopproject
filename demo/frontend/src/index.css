@@ -4,54 +4,50 @@
 
 @theme {
   /* ─── M3 AtomDrops Reference Palette ─── */
-  --color-primary: #5a5d76;
+  --color-primary: #221b16;
   --color-on-primary: #ffffff;
-  --color-primary-container: #bfc1de;
-  --color-on-primary-container: #4c4f67;
-  --color-primary-fixed: #dfe0fe;
-  --color-primary-fixed-dim: #c2c4e2;
-  --color-on-primary-fixed: #171a30;
-  --color-on-primary-fixed-variant: #42455d;
-  --color-inverse-primary: #c2c4e2;
+  --color-primary-container: #f9f5f0;
+  --color-on-primary-container: #6c5b4f;
+  --color-primary-fixed: #f9f5f0;
+  --color-primary-fixed-dim: #e4d6c8;
+  --color-on-primary-fixed: #221b16;
+  --color-on-primary-fixed-variant: #6c5b4f;
+  --color-inverse-primary: #c4956a;
 
-  --color-secondary: #5c5f61;
+  --color-secondary: #6c5b4f;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #e1e3e5;
-  --color-on-secondary-container: #626567;
-  --color-secondary-fixed: #e1e3e5;
-  --color-secondary-fixed-dim: #c5c7c9;
-  --color-on-secondary-fixed: #191c1e;
-  --color-on-secondary-fixed-variant: #444749;
+  --color-secondary-container: #f9f5f0;
+  --color-on-secondary-container: #6c5b4f;
+  --color-secondary-fixed: #f9f5f0;
+  --color-secondary-fixed-dim: #e4d6c8;
+  --color-on-secondary-fixed: #221b16;
+  --color-on-secondary-fixed-variant: #6c5b4f;
 
-  --color-tertiary: #635f3d;
+  --color-tertiary: #8c7564;
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #cac49b;
-  --color-on-tertiary-container: #555130;
-  --color-tertiary-fixed: #eae4b8;
-  --color-tertiary-fixed-dim: #cec89e;
-  --color-on-tertiary-fixed: #1f1c03;
-  --color-on-tertiary-fixed-variant: #4b4828;
+  --color-tertiary-container: #f9f5f0;
+  --color-on-tertiary-container: #5c4e42;
 
-  --color-surface: #fcf8fa;
-  --color-surface-bright: #fcf8fa;
-  --color-surface-dim: #dcd9db;
-  --color-surface-tint: #5a5d76;
+  --color-surface: #faf6f2;
+  --color-surface-bright: #faf6f2;
+  --color-surface-dim: #e4d6c8;
+  --color-surface-tint: #221b16;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f6f3f5;
-  --color-surface-container: #f0edef;
-  --color-surface-container-high: #ebe7e9;
-  --color-surface-container-highest: #e5e1e4;
-  --color-surface-variant: #e5e1e4;
+  --color-surface-container-low: #f9f5f0;
+  --color-surface-container: #f9f5f0;
+  --color-surface-container-high: #f9f5f0;
+  --color-surface-container-highest: #f9f5f0;
+  --color-surface-variant: #f9f5f0;
 
-  --color-background: #fcf8fa;
-  --color-on-background: #1c1b1d;
-  --color-on-surface: #1c1b1d;
-  --color-on-surface-variant: #46464d;
-  --color-inverse-on-surface: #f3f0f2;
-  --color-inverse-surface: #313032;
+  --color-background: #faf6f2;
+  --color-on-background: #221b16;
+  --color-on-surface: #221b16;
+  --color-on-surface-variant: #6c5b4f;
+  --color-inverse-on-surface: #ffffff;
+  --color-inverse-surface: #221b16;
 
-  --color-outline: #77767d;
-  --color-outline-variant: #c7c5cd;
+  --color-outline: #e4d6c8;
+  --color-outline-variant: #e4d6c8;
 
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
@@ -137,8 +133,8 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #fcf8fa;
-  color: #1c1b1d;
+  background-color: #faf6f2;
+  color: #221b16;
 }
 
 /* ─── Material Symbols ─── */
@@ -245,21 +241,21 @@ body {
 .auth-field {
   width: 100%;
   padding: .75rem 1rem;
-  border: 1.5px solid #e8e8e8;
+  border: 1.5px solid #e4d6c8;
   border-radius: 10px;
   background: #fff;
-  color: #1a1a1a;
+  color: #221b16;
   font-size: .9rem;
   font-family: inherit;
   outline: none;
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .auth-field:focus {
-  border-color: #1a1a1a;
-  box-shadow: 0 0 0 3px rgba(26,26,26,.06);
+  border-color: #221b16;
+  box-shadow: 0 0 0 3px rgba(34,27,22,.06);
 }
 .auth-field::placeholder {
-  color: #9a9a9a;
+  color: #8c7564;
 }
 .auth-field--error {
   border-color: #dc2626;
@@ -279,7 +275,7 @@ body {
   height: 2.9rem;
   border: none;
   border-radius: 10px;
-  background: #1a1a1a;
+  background: #221b16;
   color: #fff;
   font-size: .9rem;
   font-weight: 600;
@@ -288,7 +284,7 @@ body {
   transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 .auth-btn:hover:not(:disabled) {
-  background: #2a2a2a;
+  background: #3a3028;
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
   transform: translateY(-1px);
 }

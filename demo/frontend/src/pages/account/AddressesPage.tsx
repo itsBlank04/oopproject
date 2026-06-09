@@ -81,7 +81,7 @@ export default function AddressesPage() {
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Account</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8c7564]">Account</p>
             <h1 className="font-[Fraunces] text-3xl text-[#221b16]">Addresses</h1>
             <p className="mt-1 text-sm text-[#8c7564]">{addresses.length} address{addresses.length !== 1 ? 'es' : ''} on file</p>
           </div>
@@ -89,8 +89,8 @@ export default function AddressesPage() {
             onClick={() => setShowForm(!showForm)}
             className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
               showForm
-                ? 'border border-[#d7c7b8] bg-white text-[#221b16]'
-                : 'bg-[#221b16] text-[#f9f5f0] hover:bg-[#3a2f28]'
+                ? 'border border-[#e4d6c8] bg-white text-[#221b16]'
+                : 'bg-[#221b16] text-[#f9f5f0] hover:bg-[#3a3028]'
             }`}
           >
             {showForm ? (
@@ -126,7 +126,7 @@ export default function AddressesPage() {
                     value={form[field.key]}
                     onChange={e => setForm({ ...form, [field.key]: e.target.value })}
                     placeholder={field.placeholder}
-                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-2.5 text-sm outline-none transition focus:border-[#221b16] focus:bg-white"
+                    className="mt-1 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm outline-none transition focus:border-[#221b16] focus:bg-white"
                   />
                 </div>
               ))}
@@ -136,7 +136,7 @@ export default function AddressesPage() {
               <button
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2f28] disabled:opacity-50"
+                className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028] disabled:opacity-50"
               >
                 {saveMutation.isPending ? 'Saving...' : 'Save Address'}
               </button>
@@ -148,8 +148,8 @@ export default function AddressesPage() {
           <div className="mt-16 text-center text-sm text-[#8c7564]">Loading addresses...</div>
         ) : addresses.length === 0 ? (
           <div className="mt-16 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f0e8df]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-[#a28672]">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-[#8c7564]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
@@ -218,12 +218,12 @@ export default function AddressesPage() {
               </div>
             )}
             {otherAddresses.map((a: any) => (
-              <div key={a.id} className="group/card overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white transition hover:border-[#c8b8a8] hover:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.1)]">
+              <div key={a.id} className="group/card overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white transition hover:border-[#e4d6c8] hover:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.1)]">
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f0e8df]">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-[#a28672]">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f9f5f0]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-[#8c7564]">
                           <path strokeLinecap="round" strokeLinejoin="round" d={getLabelIcon(a.label)} />
                         </svg>
                       </div>

@@ -59,7 +59,7 @@ export default function UsedListingDetailPage() {
         <div className="mt-6 grid gap-8 lg:grid-cols-2">
           {/* Media gallery */}
           <div>
-            <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
+            <div className="aspect-square overflow-hidden rounded-2xl bg-[#f9f5f0]">
               {allMedia.length > 0 ? (
                   allMedia[selectedImage]?.type === 'video' ? (
                   <video src={allMedia[selectedImage]?.url} controls className="h-full w-full object-cover rounded-2xl" />
@@ -69,7 +69,7 @@ export default function UsedListingDetailPage() {
                   </button>
                 )
               ) : (
-                <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
+                <div className="flex h-full items-center justify-center text-lg text-[#8c7564]">No image</div>
               )}
             </div>
             {allMedia.length > 1 && (
@@ -77,7 +77,7 @@ export default function UsedListingDetailPage() {
                 {allMedia.map((m: any, i: number) => (
                   <button key={i} onClick={() => setSelectedImage(i)}
                     className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                      selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#b8a494]'
+                      selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#e4d6c8]'
                     }`}>
                     {m.type === 'video' ? (
                       <>
@@ -100,7 +100,7 @@ export default function UsedListingDetailPage() {
 
           {/* Info & offer */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-[#a28672]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
+            <p className="text-xs uppercase tracking-wider text-[#8c7564]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
             <h1 className="mt-2 font-[Fraunces] text-3xl text-[#221b16]">{item.title}</h1>
             <p className="mt-4 text-3xl font-bold text-[#221b16]">৳{item.askingPriceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
             <p className="mt-4 text-sm leading-relaxed text-[#6c5b4f]">{item.description}</p>
@@ -112,7 +112,7 @@ export default function UsedListingDetailPage() {
                 </div>
                 {user && item.seller?.id !== user.id && (
                   <button onClick={handleChat}
-                    className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f0e8df]">
+                    className="rounded-lg border border-[#e4d6c8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]">
                     Chat with Seller
                   </button>
                 )}
@@ -122,10 +122,10 @@ export default function UsedListingDetailPage() {
               <div className="mt-6 space-y-3 rounded-2xl border border-[#e4d6c8] bg-white p-5">
                 <p className="font-semibold text-[#221b16]">Make an Offer</p>
                 <input type="number" value={offerAmount} onChange={e => setOfferAmount(e.target.value)}
-                  placeholder="Your offer in ৳" className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+                  placeholder="Your offer in ৳" className="w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
                 <textarea value={offerMsg} onChange={e => setOfferMsg(e.target.value)}
                   placeholder="Message to seller (optional)" rows={2}
-                  className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+                  className="w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
                 <button onClick={() => {
                   if (!item) return
                   const amount = parseFloat(offerAmount)

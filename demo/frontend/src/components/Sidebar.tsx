@@ -58,12 +58,12 @@ export default function Sidebar() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#a28672]">{modeLabel}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]">{modeLabel}</p>
             <p className="truncate text-sm font-medium text-[#221b16]">{activeRole === 'vendor' ? 'Vendor Panel' : 'Technician Panel'}</p>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#a28672] transition-colors hover:bg-[#f0e8df] hover:text-[#221b16] lg:hidden"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#8c7564] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16] lg:hidden"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-4 w-4">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -84,7 +84,7 @@ export default function Sidebar() {
             </div>
           </div>
           <div className="space-y-0.5">
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a28672]/60">Navigation</p>
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]/60">Navigation</p>
             {links.map(link => {
               const isActive = location.pathname === link.to || location.pathname.startsWith(link.to + '/')
               return (
@@ -98,7 +98,7 @@ export default function Sidebar() {
                       : 'text-[#6c5b4f] hover:bg-[#f9f5f0] hover:text-[#221b16]'
                   }`}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? '' : 'text-[#a28672] group-hover:text-[#221b16]'}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? '' : 'text-[#8c7564] group-hover:text-[#221b16]'}`}>
                     <path d={link.icon} />
                   </svg>
                   <span>{link.label}</span>

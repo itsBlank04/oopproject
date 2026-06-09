@@ -11,12 +11,12 @@ type Category = {
 }
 
 const GRADIENT_BG = [
-  'bg-gradient-to-br from-[#f5ede4] to-[#e8ddd0]',
-  'bg-gradient-to-br from-[#f0e8df] to-[#e0d0bd]',
-  'bg-gradient-to-br from-[#f7f0e8] to-[#e8ddd0]',
-  'bg-gradient-to-br from-[#f5ede4] to-[#dfcbb5]',
-  'bg-gradient-to-br from-[#f2ebe2] to-[#e0d0bd]',
-  'bg-gradient-to-br from-[#f7f0e8] to-[#dcc5ad]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#f9f5f0]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#e4d6c8]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#f9f5f0]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#e4d6c8]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#e4d6c8]',
+  'bg-gradient-to-br from-[#f9f5f0] to-[#e4d6c8]',
 ]
 
 export default function CategoryGrid() {
@@ -35,7 +35,7 @@ export default function CategoryGrid() {
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a7a6a]">Browse</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8c7564]">Browse</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#221b16]">Shop by Categories</h2>
           </div>
           <Link
@@ -60,7 +60,7 @@ export default function CategoryGrid() {
                 className={`flex h-[140px] w-[140px] items-center justify-center rounded-2xl sm:h-[160px] sm:w-[160px] ${GRADIENT_BG[i % GRADIENT_BG.length]} transition-all duration-200 group-hover:scale-[1.03] group-hover:shadow-md`}
               >
                 {/* Placeholder icon — swap with real image when available */}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-10 w-10 text-[#a89a85]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-10 w-10 text-[#8c7564]">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <circle cx="8.5" cy="8.5" r="1.5" />
                   <path d="m21 15-5-5L5 21" />

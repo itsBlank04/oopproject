@@ -62,16 +62,16 @@ export default function VendorFinancialPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
           <div>
-            <h1 className="font-[Fraunces] text-4xl font-bold text-[#1a1512]">Financial Overview</h1>
+            <h1 className="font-[Fraunces] text-4xl font-bold text-[#221b16]">Financial Overview</h1>
             <p className="text-sm text-[#8c7564] mt-2">Track your revenue, payouts, and shop performance.</p>
           </div>
           <div className="flex items-center gap-3">
             <select value={selectedShopId ?? ''} onChange={e => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
-              className="rounded-xl border border-[#d7c7b8] bg-white px-3.5 py-2 text-xs font-semibold text-[#6c5b4f] outline-none focus:border-[#1a1512]">
+              className="rounded-xl border border-[#e4d6c8] bg-white px-3.5 py-2 text-xs font-semibold text-[#6c5b4f] outline-none focus:border-[#221b16]">
               <option value="">All Shops</option>
               {shops.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
-            <button className="flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-3.5 py-2 text-xs font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
+            <button className="flex items-center gap-1.5 rounded-xl border border-[#e4d6c8] bg-white px-3.5 py-2 text-xs font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
               <Download className="h-3.5 w-3.5" /> Export
             </button>
           </div>
@@ -86,7 +86,7 @@ export default function VendorFinancialPage() {
                 <DollarSign className="h-4 w-4" />
               </div>
             </div>
-            <p className="font-[Fraunces] text-2xl font-bold text-[#1a1512]">৳{totalRevenue.toLocaleString()}</p>
+            <p className="font-[Fraunces] text-2xl font-bold text-[#221b16]">৳{totalRevenue.toLocaleString()}</p>
             <p className="mt-1 text-[10px] text-[#8c7564]">{totalOrders} orders</p>
           </div>
           <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-5 shadow-sm">
@@ -96,7 +96,7 @@ export default function VendorFinancialPage() {
                 <Wallet className="h-4 w-4" />
               </div>
             </div>
-            <p className="font-[Fraunces] text-2xl font-bold text-[#1a1512]">৳{pendingPayout.toLocaleString()}</p>
+            <p className="font-[Fraunces] text-2xl font-bold text-[#221b16]">৳{pendingPayout.toLocaleString()}</p>
             <p className="mt-1 text-[10px] text-[#8c7564]">{pendingCount} awaiting payment</p>
           </div>
           <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-5 shadow-sm">
@@ -106,7 +106,7 @@ export default function VendorFinancialPage() {
                 <TrendingUp className="h-4 w-4" />
               </div>
             </div>
-            <p className="font-[Fraunces] text-2xl font-bold text-[#1a1512]">৳{paidPayout.toLocaleString()}</p>
+            <p className="font-[Fraunces] text-2xl font-bold text-[#221b16]">৳{paidPayout.toLocaleString()}</p>
             <p className="mt-1 text-[10px] text-[#8c7564]">Total paid commissions</p>
           </div>
           <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-5 shadow-sm">
@@ -116,7 +116,7 @@ export default function VendorFinancialPage() {
                 <Calendar className="h-4 w-4" />
               </div>
             </div>
-            <p className="font-[Fraunces] text-2xl font-bold text-[#1a1512]">{analytics?.totalProducts ?? 0}</p>
+            <p className="font-[Fraunces] text-2xl font-bold text-[#221b16]">{analytics?.totalProducts ?? 0}</p>
             <p className="mt-1 text-[10px] text-[#8c7564]">{analytics?.uniqueCustomers ?? 0} unique customers</p>
           </div>
         </div>
@@ -125,13 +125,13 @@ export default function VendorFinancialPage() {
         <div className="mb-10 overflow-hidden rounded-2xl border border-[#e4d6c8]/60 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-[#e4d6c8]/30 px-6 py-4">
             <div>
-              <h2 className="font-[Fraunces] text-lg font-bold text-[#1a1512]">Revenue vs Payouts</h2>
+              <h2 className="font-[Fraunces] text-lg font-bold text-[#221b16]">Revenue vs Payouts</h2>
               <p className="text-[10px] text-[#8c7564]">Sales and net payout over time</p>
             </div>
             <div className="flex rounded-lg border border-[#e4d6c8] p-0.5">
               {(['daily', 'weekly', 'monthly'] as const).map(r => (
                 <button key={r} onClick={() => setTimeRange(r)}
-                  className={`px-3 py-1.5 rounded text-[10px] font-semibold transition ${timeRange === r ? 'bg-[#1a1512] text-white' : 'text-[#8c7564] hover:text-[#1a1512]'}`}>
+                  className={`px-3 py-1.5 rounded text-[10px] font-semibold transition ${timeRange === r ? 'bg-[#221b16] text-white' : 'text-[#8c7564] hover:text-[#221b16]'}`}>
                   {r.charAt(0).toUpperCase() + r.slice(1)}
                 </button>
               ))}
@@ -150,9 +150,9 @@ export default function VendorFinancialPage() {
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 rounded-full bg-[#e4d6c8]/30 overflow-hidden">
-                            <div className="h-full rounded-full bg-[#1a1512] transition-all" style={{ width: `${salePct}%` }} />
+                            <div className="h-full rounded-full bg-[#221b16] transition-all" style={{ width: `${salePct}%` }} />
                           </div>
-                          <span className="w-16 text-right text-[10px] font-semibold text-[#1a1512]">৳{d.totalSale.toLocaleString()}</span>
+                          <span className="w-16 text-right text-[10px] font-semibold text-[#221b16]">৳{d.totalSale.toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 rounded-full bg-[#e4d6c8]/30 overflow-hidden">
@@ -176,7 +176,7 @@ export default function VendorFinancialPage() {
           {/* Earnings by Shop */}
           {selectedShopId === null && (
             <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-6 shadow-sm">
-              <h2 className="font-[Fraunces] text-lg font-bold text-[#1a1512] mb-5">Earnings by Shop</h2>
+              <h2 className="font-[Fraunces] text-lg font-bold text-[#221b16] mb-5">Earnings by Shop</h2>
               {shops.length === 0 ? (
                 <p className="text-[10px] text-[#8c7564]">No shops yet.</p>
               ) : (
@@ -186,15 +186,15 @@ export default function VendorFinancialPage() {
                     const shopTotal = shopOrders.reduce((sum, o) => sum + o.netPayoutBdt, 0)
                     const pct = totalRevenue > 0 ? (shopTotal / totalRevenue) * 100 : 0
                     return (
-                      <div key={s.id} className="flex items-center justify-between rounded-xl border border-[#e4d6c8]/30 bg-[#fcfbfa] px-4 py-3 hover:bg-[#f9f5f0] transition cursor-pointer">
+                      <div key={s.id} className="flex items-center justify-between rounded-xl border border-[#e4d6c8]/30 bg-[#faf6f2] px-4 py-3 hover:bg-[#f9f5f0] transition cursor-pointer">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a1512] text-xs font-bold text-white">{s.name.charAt(0)}</div>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#221b16] text-xs font-bold text-white">{s.name.charAt(0)}</div>
                           <div>
-                            <p className="text-sm font-semibold text-[#1a1512]">{s.name}</p>
+                            <p className="text-sm font-semibold text-[#221b16]">{s.name}</p>
                             <p className="text-[10px] text-[#8c7564]">{pct.toFixed(0)}% of total</p>
                           </div>
                         </div>
-                        <span className="font-[Fraunces] text-lg font-bold text-[#1a1512]">৳{shopTotal.toLocaleString()}</span>
+                        <span className="font-[Fraunces] text-lg font-bold text-[#221b16]">৳{shopTotal.toLocaleString()}</span>
                       </div>
                     )
                   })}
@@ -205,7 +205,7 @@ export default function VendorFinancialPage() {
 
           {/* Recent Transactions */}
           <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-6 shadow-sm">
-            <h2 className="font-[Fraunces] text-lg font-bold text-[#1a1512] mb-5">Recent Transactions</h2>
+            <h2 className="font-[Fraunces] text-lg font-bold text-[#221b16] mb-5">Recent Transactions</h2>
             {orders.length === 0 ? (
               <p className="text-[10px] text-[#8c7564]">No transactions yet.</p>
             ) : (
@@ -213,11 +213,11 @@ export default function VendorFinancialPage() {
                 {orders.slice(0, 10).map(o => (
                   <div key={o.id} className="flex items-center justify-between border-b border-[#e4d6c8]/20 pb-2 last:border-0 last:pb-0">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-[#1a1512] truncate">{o.productName}</p>
+                      <p className="text-xs font-semibold text-[#221b16] truncate">{o.productName}</p>
                       <p className="text-[10px] text-[#8c7564]">{new Date(o.createdAt).toLocaleDateString('en-BD')} · Qty: {o.qty}</p>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <p className="text-xs font-semibold text-[#1a1512]">৳{o.netPayoutBdt.toLocaleString()}</p>
+                      <p className="text-xs font-semibold text-[#221b16]">৳{o.netPayoutBdt.toLocaleString()}</p>
                       <span className={`text-[9px] font-bold uppercase ${o.status === 'PAID' ? 'text-emerald-600' : o.status === 'PENDING' ? 'text-amber-600' : 'text-[#8c7564]'}`}>
                         {o.status}
                       </span>

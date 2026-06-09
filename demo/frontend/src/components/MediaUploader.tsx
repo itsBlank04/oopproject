@@ -129,7 +129,7 @@ export default function MediaUploader({
           ))}
           {media.length < maxFiles && (
             <button onClick={() => inputRef.current?.click()} disabled={uploading}
-              className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[#d7c7b8] text-[#8c7564] hover:border-[#221b16] hover:text-[#221b16] transition disabled:opacity-50">
+              className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[#e4d6c8] text-[#8c7564] hover:border-[#221b16] hover:text-[#221b16] transition disabled:opacity-50">
               {uploading ? (
                 <span className="text-xs">{progress.uploaded}/{progress.total}</span>
               ) : (
@@ -156,7 +156,7 @@ export default function MediaUploader({
         onDrop={onDrop}
         onClick={() => !uploading && inputRef.current?.click()}
         className={`relative cursor-pointer rounded-2xl border-2 text-center transition
-          ${dragOver ? 'border-[#221b16] bg-[#f0e8df] border-dashed' : media.length > 0 ? 'border-emerald-300 bg-emerald-50/40 hover:border-emerald-400 p-5' : 'border-dashed border-[#d7c7b8] bg-[#faf6f1] hover:border-[#b8a494] p-8'}
+          ${dragOver ? 'border-[#221b16] bg-[#f9f5f0] border-dashed' : media.length > 0 ? 'border-emerald-300 bg-emerald-50/40 hover:border-emerald-400 p-5' : 'border-dashed border-[#e4d6c8] bg-[#f9f5f0] hover:border-[#e4d6c8] p-8'}
           ${uploading ? 'pointer-events-none opacity-60' : ''}
           ${successFlash ? '!border-emerald-500 !bg-emerald-50' : ''}`}
       >
@@ -278,7 +278,7 @@ export default function MediaUploader({
                   <button
                     type="button"
                     onClick={() => setLightboxUrl(null)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f0e8df] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f9f5f0] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
                   >
                     <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />

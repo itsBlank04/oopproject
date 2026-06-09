@@ -205,12 +205,12 @@ export default function VendorAuctionsPage() {
         <div className="overflow-hidden rounded-[2rem] border border-[#e4d6c8] bg-white p-6 text-[#221b16] shadow-[0_24px_70px_rgba(34,27,22,0.08)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#ee5a24]">Seller Auction Studio</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#c4956a]">Seller Auction Studio</p>
               <h1 className="mt-3 font-[Fraunces] text-4xl text-[#221b16] md:text-5xl">Build a live bidding event</h1>
               <p className="mt-3 text-sm leading-7 text-[#6c5b4f]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
             </div>
             <button onClick={openCreate}
-              className="rounded-2xl bg-[#ee5a24] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#d94d1a]">
+              className="rounded-2xl bg-[#c4956a] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#c4956a]">
               + New Auction
             </button>
           </div>
@@ -243,7 +243,7 @@ export default function VendorAuctionsPage() {
                   </span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={() => openEdit(a)} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">Edit</button>
+                  <button onClick={() => openEdit(a)} className="rounded-lg border border-[#e4d6c8] px-3 py-1.5 text-xs">Edit</button>
                   {a.status === 'CREATED' && (
                     <button onClick={() => askConfirm({
                       title: 'Publish auction',
@@ -261,7 +261,7 @@ export default function VendorAuctionsPage() {
                       request: () => deleteAuction.mutateAsync(a.id),
                     })} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600">Delete</button>
                   )}
-                  <Link to={`/auctions/${a.id}`} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">View</Link>
+                  <Link to={`/auctions/${a.id}`} className="rounded-lg border border-[#e4d6c8] px-3 py-1.5 text-xs">View</Link>
                 </div>
                 {(a.startTime || a.endTime) && (
                   <div className="mt-4 rounded-xl bg-[#f9f5f0] px-3 py-2 text-xs text-[#6c5b4f]">
@@ -288,14 +288,14 @@ export default function VendorAuctionsPage() {
                   <label className="text-xs font-semibold text-[#6c5b4f]">Title</label>
                   <input value={auctionForm.title} onChange={e => setAuctionForm({ ...auctionForm, title: e.target.value })}
                     disabled={editingLocked}
-                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
+                    className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="text-xs font-semibold text-[#6c5b4f]">Type</label>
                     <select value={auctionForm.type} onChange={e => setAuctionForm({ ...auctionForm, type: e.target.value })}
                       disabled={editingLocked}
-                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]">
+                      className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]">
                       <option value="STANDARD">Standard</option>
                       <option value="FLASH">Flash</option>
                       <option value="REVERSE">Reverse</option>
@@ -315,7 +315,7 @@ export default function VendorAuctionsPage() {
                     <input type="number" min="0" value={auctionForm.preparationDurationMinutes}
                       disabled={editingLocked}
                       onChange={e => setAuctionForm({ ...auctionForm, preparationDurationMinutes: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
+                      className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
                     <p className="mt-0.5 text-[10px] text-[#8c7564]">Shown to buyers before bidding starts</p>
                   </div>
                   <div>
@@ -323,14 +323,14 @@ export default function VendorAuctionsPage() {
                     <input type="number" min="1" value={auctionForm.activeDurationMinutes}
                       disabled={editingLocked}
                       onChange={e => setAuctionForm({ ...auctionForm, activeDurationMinutes: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
+                      className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
                     <p className="mt-0.5 text-[10px] text-[#8c7564]">How long bidding stays open</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => editingAuction ? updateAuction.mutate() : createAuction.mutate()} disabled={editingLocked || createAuction.isPending || updateAuction.isPending}
                     className="rounded-xl bg-[#221b16] px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50">{editingAuction ? 'Save Auction' : 'Create Auction'}</button>
-                  <button onClick={() => setShowForm(false)} className="rounded-xl border border-[#d7c7b8] px-4 py-2 text-sm">Close</button>
+                  <button onClick={() => setShowForm(false)} className="rounded-xl border border-[#e4d6c8] px-4 py-2 text-sm">Close</button>
                 </div>
               </div>
             </div>
@@ -353,12 +353,12 @@ export default function VendorAuctionsPage() {
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Lot title</label>
                         <input value={lotForm.title} onChange={e => setLotForm({ ...lotForm, title: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Condition</label>
                         <select value={lotForm.conditionNote} onChange={e => setLotForm({ ...lotForm, conditionNote: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2">
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2">
                           <option>New</option>
                           <option>Used</option>
                           <option>Refurbished</option>
@@ -368,40 +368,40 @@ export default function VendorAuctionsPage() {
                     <div>
                       <label className="text-xs font-semibold text-[#6c5b4f]">Description</label>
                       <textarea value={lotForm.description} onChange={e => setLotForm({ ...lotForm, description: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" rows={3} />
+                        className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" rows={3} />
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Starting price</label>
                         <input value={lotForm.startingPriceBdt} onChange={e => setLotForm({ ...lotForm, startingPriceBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Min increment</label>
                         <input value={lotForm.minBidIncrementBdt} onChange={e => setLotForm({ ...lotForm, minBidIncrementBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Reserve</label>
                         <input value={lotForm.reservePriceBdt} onChange={e => setLotForm({ ...lotForm, reservePriceBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Extension (min)</label>
                         <input value={lotForm.extensionDurationMinutes} onChange={e => setLotForm({ ...lotForm, extensionDurationMinutes: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Max extensions</label>
                         <input value={lotForm.maxExtensions} onChange={e => setLotForm({ ...lotForm, maxExtensions: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2" />
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-[#6c5b4f]">Category</label>
                         <select value={lotForm.categoryId} onChange={e => setLotForm({ ...lotForm, categoryId: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2">
+                          className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-3 py-2">
                           <option value="">Select</option>
                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>

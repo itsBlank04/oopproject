@@ -158,11 +158,11 @@ export default function VendorDashboardPage() {
         <div className="anim-fade anim-fade-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#e4d6c8]/50">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1a1512] text-[#faf6f2] shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#221b16] text-[#faf6f2] shadow-sm">
                 <Store className="h-6 w-6 text-amber-200" />
               </div>
               <div>
-                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">
+                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#221b16] tracking-tight">
                   {currentShop ? currentShop.name : stats?.shopName || `${user?.displayName}'s Shop`}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -188,11 +188,11 @@ export default function VendorDashboardPage() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Dropdown Selector */}
               {stats?.shops && stats.shops.length > 0 && (
-                <div className="flex items-center gap-2 bg-white border border-[#d7c7b8] px-3.5 py-2 rounded-xl shadow-sm relative">
+                <div className="flex items-center gap-2 bg-white border border-[#e4d6c8] px-3.5 py-2 rounded-xl shadow-sm relative">
                   <select
                     value={selectedShopId || ''}
                     onChange={(e) => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
-                    className="text-xs font-bold text-[#1a1512] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
+                    className="text-xs font-bold text-[#221b16] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
                   >
                     <option value="">All Outlets (Aggregate)</option>
                     {stats.shops.map((s) => (
@@ -204,11 +204,11 @@ export default function VendorDashboardPage() {
               )}
 
               <Link to="/vendor/shops"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#e4d6c8] bg-white px-4 py-2 text-xs font-semibold text-[#221b16] transition hover:bg-gray-50 active:scale-[0.97]">
                 <Store className="h-3.5 w-3.5 text-[#8c7564]" /> Shop Manager
               </Link>
               <Link to="/vendor/subscription"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#e4d6c8] bg-white px-4 py-2 text-xs font-semibold text-[#221b16] transition hover:bg-gray-50 active:scale-[0.97]">
                 <CreditCard className="h-3.5 w-3.5 text-[#8c7564]" /> Billing & Plans
               </Link>
             </div>
@@ -240,7 +240,7 @@ export default function VendorDashboardPage() {
                   {m.label === 'Total Orders' && pendingOrders > 0 ? `${pendingOrders} pending` : ''}
                 </span>
               </div>
-              <p className="mt-3 font-[Fraunces] text-2xl sm:text-3xl font-semibold tracking-tight text-[#1a1512]">
+              <p className="mt-3 font-[Fraunces] text-2xl sm:text-3xl font-semibold tracking-tight text-[#221b16]">
                 {m.value}
               </p>
               <p className="mt-0.5 text-xs text-[#8c7564]">{m.sub}</p>
@@ -259,7 +259,7 @@ export default function VendorDashboardPage() {
             <div className="anim-scale anim-scale-1 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Revenue</h2>
+                  <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Revenue</h2>
                   <p className="text-xs text-[#8c7564] mt-0.5">{timeRange === 'daily' ? 'Daily' : timeRange === 'weekly' ? 'Weekly' : 'Monthly'} sales overview</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export default function VendorDashboardPage() {
                         onClick={() => setTimeRange(range)}
                         className={`px-3 py-1.5 font-semibold transition-colors ${
                           timeRange === range
-                            ? 'bg-[#1a1512] text-white'
+                            ? 'bg-[#221b16] text-white'
                             : 'bg-white text-[#8c7564] hover:bg-gray-50'
                         }`}
                       >
@@ -282,7 +282,7 @@ export default function VendorDashboardPage() {
                   {(analytics?.salesData?.length ?? 0) > 0 && (
                     <div className="flex items-center gap-3 text-xs ml-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-sm bg-[#1a1512]" />
+                        <span className="h-2.5 w-2.5 rounded-sm bg-[#221b16]" />
                         <span className="text-[#6c5b4f]">Revenue</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -304,10 +304,10 @@ export default function VendorDashboardPage() {
                         <div key={m.label} className="flex-1 flex flex-col items-center h-full justify-end group/bar">
                           <div className="relative w-full flex flex-col items-center justify-end h-[calc(100%-24px)]">
                             <div
-                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#1a1512] transition-all duration-500 hover:opacity-80 cursor-pointer"
+                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#221b16] transition-all duration-500 hover:opacity-80 cursor-pointer"
                               style={{ height: `${saleH}%`, animationDelay: `${i * 60}ms` }}
                             >
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#1a1512] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#221b16] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
                                 ৳{m.totalSale.toLocaleString('en-BD')}
                               </div>
                             </div>
@@ -351,10 +351,10 @@ export default function VendorDashboardPage() {
               ].map(a => (
                 <Link key={a.to} to={a.to}
                   className="group rounded-xl bg-white p-4 ring-1 ring-[#e4d6c8]/40 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#6c5b4f] group-hover:bg-[#1a1512] group-hover:text-[#faf6f2] transition-colors">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f9f5f0] text-[#6c5b4f] group-hover:bg-[#221b16] group-hover:text-[#faf6f2] transition-colors">
                     {a.icon}
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-[#1a1512]">{a.label}</p>
+                  <p className="mt-3 text-sm font-semibold text-[#221b16]">{a.label}</p>
                   <p className="mt-0.5 text-[11px] text-[#8c7564] leading-snug">{a.desc}</p>
                 </Link>
               ))}
@@ -365,7 +365,7 @@ export default function VendorDashboardPage() {
           <div className="space-y-6">
             {/* Top Products */}
             <div className="anim-scale anim-scale-3 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Top Products</h2>
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Top Products</h2>
               <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Highest revenue generators</p>
               {(analytics?.topProducts?.length ?? 0) > 0 ? (
                 <div className="space-y-4">
@@ -379,15 +379,15 @@ export default function VendorDashboardPage() {
                               i === 0 ? 'bg-amber-100 text-amber-700' :
                               i === 1 ? 'bg-gray-100 text-gray-600' :
                               i === 2 ? 'bg-orange-100 text-orange-700' :
-                              'bg-[#f5f0eb] text-[#8c7564]'
+                              'bg-[#f9f5f0] text-[#8c7564]'
                             }`}>{i + 1}</span>
-                            <p className="text-sm font-medium text-[#1a1512] truncate">{p.name}</p>
+                            <p className="text-sm font-medium text-[#221b16] truncate">{p.name}</p>
                           </div>
                           <p className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">৳{Math.round(p.totalRevenue).toLocaleString('en-BD')}</p>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-[#f5f0eb] overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-[#f9f5f0] overflow-hidden">
                           <div
-                            className="grow-w h-full rounded-full bg-gradient-to-r from-[#1a1512] to-[#5c4a3c] transition-all duration-700"
+                            className="grow-w h-full rounded-full bg-gradient-to-r from-[#221b16] to-[#6c5b4f] transition-all duration-700"
                             style={{ width: `${(p.totalRevenue / maxRev) * 100}%`, animationDelay: `${i * 100}ms` }}
                           />
                         </div>
@@ -403,16 +403,16 @@ export default function VendorDashboardPage() {
             {/* Most Viewed Products */}
             {(analytics?.mostViewedProducts?.length ?? 0) > 0 && (
               <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Most Ordered</h2>
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Most Ordered</h2>
                 <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Products ordered most frequently</p>
                 <div className="space-y-3">
                   {analytics!.mostViewedProducts.map((p, i) => (
                     <div key={p.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className={`shrink-0 flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold ${
-                          i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-[#f5f0eb] text-[#8c7564]'
+                          i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-[#f9f5f0] text-[#8c7564]'
                         }`}>{i + 1}</span>
-                        <span className="text-xs font-medium text-[#1a1512] truncate">{p.name}</span>
+                        <span className="text-xs font-medium text-[#221b16] truncate">{p.name}</span>
                       </div>
                       <span className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">{p.viewCount} view{p.viewCount !== 1 ? 's' : ''}</span>
                     </div>
@@ -423,21 +423,21 @@ export default function VendorDashboardPage() {
 
             {/* Customer Split */}
             <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Customers</h2>
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Customers</h2>
               <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Customer overview</p>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#1a1512]">Unique Customers</span>
-                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.uniqueCustomers ?? 0}</span>
+                  <span className="text-xs text-[#221b16]">Unique Customers</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#221b16]">{analytics?.uniqueCustomers ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#1a1512]">Total Orders</span>
-                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.totalOrders ?? 0}</span>
+                  <span className="text-xs text-[#221b16]">Total Orders</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#221b16]">{analytics?.totalOrders ?? 0}</span>
                 </div>
-                <div className="pt-2 border-t border-[#f5f0eb]">
+                <div className="pt-2 border-t border-[#f9f5f0]">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#8c7564]">Avg. Orders / Customer</span>
-                    <span className="font-semibold text-[#1a1512]">
+                    <span className="font-semibold text-[#221b16]">
                       {(analytics?.uniqueCustomers ?? 0) > 0
                         ? ((analytics?.totalOrders ?? 0) / (analytics?.uniqueCustomers ?? 1)).toFixed(1)
                         : '0'}
@@ -450,7 +450,7 @@ export default function VendorDashboardPage() {
             {/* Shop Performance */}
             {stats?.shops && stats.shops.length > 0 && (
               <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Shop Performance</h2>
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Shop Performance</h2>
                 <p className="text-xs text-[#8c7564] mt-0.5 mb-4">Per-shop snapshot</p>
                 <div className="space-y-3">
                   {stats.shops.map((s) => (
@@ -464,7 +464,7 @@ export default function VendorDashboardPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#1a1512] truncate">{s.name}</p>
+                        <p className="text-sm font-semibold text-[#221b16] truncate">{s.name}</p>
                         <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${
                           s.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
                           s.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
@@ -479,7 +479,7 @@ export default function VendorDashboardPage() {
             )}
 
             {/* Support Widget */}
-            <div className="anim-scale anim-scale-4 rounded-2xl bg-gradient-to-br from-[#1a1512] to-[#3a3028] p-5 sm:p-6 shadow-md">
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-gradient-to-br from-[#221b16] to-[#3a3028] p-5 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
                   <svg className="h-4 w-4 text-amber-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -488,7 +488,7 @@ export default function VendorDashboardPage() {
                 </div>
                 <h3 className="text-sm font-semibold text-[#f9f5f0]">Need Assistance?</h3>
               </div>
-              <p className="text-xs leading-relaxed text-[#b8a494] mb-4">Get help with your shop, products, or account settings.</p>
+              <p className="text-xs leading-relaxed text-[#e4d6c8] mb-4">Get help with your shop, products, or account settings.</p>
               <Link to="/messages"
                 className="block w-full rounded-xl bg-white/10 py-2.5 text-center text-xs font-semibold text-[#f9f5f0] hover:bg-white/20 transition">
                 Contact Support
@@ -497,32 +497,32 @@ export default function VendorDashboardPage() {
 
             {/* Product Status Summary */}
             <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Product Status</h2>
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Product Status</h2>
               <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Overview of your catalog</p>
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-[#1a1512] font-medium">Active</span>
+                    <span className="text-[#221b16] font-medium">Active</span>
                     <span className="text-emerald-600 font-semibold">{activeProducts}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#f5f0eb] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#f9f5f0] overflow-hidden">
                     <div className="grow-w h-full rounded-full bg-emerald-500 transition-all duration-700"
                       style={{ width: `${products.length > 0 ? (activeProducts / products.length) * 100 : 0}%` }} />
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-[#1a1512] font-medium">Draft</span>
+                    <span className="text-[#221b16] font-medium">Draft</span>
                     <span className="text-gray-500 font-semibold">{draftProducts}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#f5f0eb] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#f9f5f0] overflow-hidden">
                     <div className="grow-w h-full rounded-full bg-gray-400 transition-all duration-700"
                       style={{ width: `${products.length > 0 ? (draftProducts / products.length) * 100 : 0}%` }} />
                   </div>
                 </div>
                 <div className="pt-2">
                   <Link to="/vendor/products"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] hover:text-[#1a1512] transition-colors">
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] hover:text-[#221b16] transition-colors">
                     Manage inventory
                     <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
@@ -537,11 +537,11 @@ export default function VendorDashboardPage() {
           <div className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 overflow-hidden">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#e4d6c8]/40">
               <div>
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Recent Transactions</h2>
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">Recent Transactions</h2>
                 <p className="text-xs text-[#8c7564] mt-0.5">Latest {Math.min(orders.length, 10)} commission payouts</p>
               </div>
               {orders.length > 0 && (
-                <Link to="/vendor/orders" className="text-xs font-semibold text-[#6c5b4f] hover:text-[#1a1512] transition-colors">
+                <Link to="/vendor/orders" className="text-xs font-semibold text-[#6c5b4f] hover:text-[#221b16] transition-colors">
                   View all
                 </Link>
               )}
@@ -551,18 +551,18 @@ export default function VendorDashboardPage() {
                 {orders.slice(0, 10).map((o, idx) => (
                   <div key={o.id} className="flex items-center justify-between px-5 sm:px-6 py-3.5 transition hover:bg-[#faf6f2]" style={{ animationDelay: `${idx * 30}ms` }}>
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#8c7564]">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f9f5f0] text-[#8c7564]">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4" /></svg>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#1a1512] truncate">{o.productName}</p>
+                        <p className="text-sm font-medium text-[#221b16] truncate">{o.productName}</p>
                         <p className="text-[11px] text-[#8c7564] mt-0.5">
                           Qty: {o.qty} · {new Date(o.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'short' })}
                         </p>
                       </div>
                     </div>
                     <div className="text-right ml-4 shrink-0">
-                      <p className="text-sm font-semibold text-[#1a1512]">৳{o.saleAmountBdt.toLocaleString('en-BD')}</p>
+                      <p className="text-sm font-semibold text-[#221b16]">৳{o.saleAmountBdt.toLocaleString('en-BD')}</p>
                       <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusColor[o.status] || statusColor.PENDING}`}>
                         {o.status}
                       </span>
@@ -572,8 +572,8 @@ export default function VendorDashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f0eb]">
-                  <svg className="h-6 w-6 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f9f5f0]">
+                  <svg className="h-6 w-6 text-[#e4d6c8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                   </svg>
                 </div>

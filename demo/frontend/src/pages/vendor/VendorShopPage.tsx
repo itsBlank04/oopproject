@@ -185,7 +185,7 @@ export default function VendorShopPage() {
 
   if (shopLoading) {
     return (
-      <div className="min-h-screen bg-[#fcfbfa]">
+      <div className="min-h-screen bg-[#faf6f2]">
         <div className="mx-auto max-w-6xl px-6 py-10">
           <div className="h-64 animate-pulse rounded-2xl bg-[#e4d6c8]/40" />
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -200,7 +200,7 @@ export default function VendorShopPage() {
 
   if (!shop) {
     return (
-      <div className="min-h-screen bg-[#fcfbfa] flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf6f2] flex items-center justify-center">
         <div className="text-center p-8 bg-white border border-[#e4d6c8] rounded-2xl max-w-md shadow-sm">
           <h2 className="font-[Fraunces] text-2xl text-[#221b16] mb-2">Shop Not Found</h2>
           <p className="text-[#8c7564] text-sm mb-6">The shop you're looking for does not exist or has been deactivated.</p>
@@ -213,9 +213,9 @@ export default function VendorShopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] pb-16">
+    <div className="min-h-screen bg-[#faf6f2] pb-16">
       {/* Banner */}
-      <div className="relative h-64 w-full overflow-hidden bg-gradient-to-r from-[#e4d6c8] via-[#f1e9e0] to-[#e4d6c8]">
+      <div className="relative h-64 w-full overflow-hidden bg-gradient-to-r from-[#e4d6c8] via-[#f9f5f0] to-[#e4d6c8]">
         {shop.bannerUrl ? (
           <img src={shop.bannerUrl} alt={shop.name} className="h-full w-full object-cover" />
         ) : (
@@ -259,11 +259,11 @@ export default function VendorShopPage() {
                 {/* Meta stats */}
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#8c7564]">
                   <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-[#a89280]" />
+                    <MapPin className="h-3.5 w-3.5 text-[#8c7564]" />
                     {shop.location || 'Dhaka, Bangladesh'}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5 text-[#a89280]" />
+                    <Clock className="h-3.5 w-3.5 text-[#8c7564]" />
                     Est. {new Date(shop.createdAt).getFullYear()}
                   </span>
                   <span>&bull;</span>
@@ -324,7 +324,7 @@ export default function VendorShopPage() {
           {shop.description && (
             <div className="mt-6 border-t border-[#e4d6c8]/40 pt-4">
               <h3 className="text-xs font-semibold text-[#8c7564] uppercase tracking-wider mb-1">About the Shop</h3>
-              <p className="text-sm leading-relaxed text-[#4f4035]">{shop.description}</p>
+              <p className="text-sm leading-relaxed text-[#6c5b4f]">{shop.description}</p>
             </div>
           )}
         </div>
@@ -376,7 +376,7 @@ export default function VendorShopPage() {
                                 setStockCache(prev => ({ ...prev, [p.id]: { ...prev[p.id] ?? { lowStockThreshold: 5 }, stockQty: next } }))
                                 syncStock(p.id, next, stockCache[p.id]?.lowStockThreshold ?? 5)
                               }}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d7c7b8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#e4d6c8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
                             >−</button>
                             <span className={`min-w-[2rem] text-center text-xs font-semibold ${
                               (stockCache[p.id]?.stockQty ?? 0) === 0 ? 'text-red-500' :
@@ -391,12 +391,12 @@ export default function VendorShopPage() {
                                 setStockCache(prev => ({ ...prev, [p.id]: { ...prev[p.id] ?? { lowStockThreshold: 5 }, stockQty: next } }))
                                 syncStock(p.id, next, stockCache[p.id]?.lowStockThreshold ?? 5)
                               }}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d7c7b8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#e4d6c8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
                             >+</button>
                           </div>
                         </div>
                         {/* Stock status bar */}
-                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#f0e8df]">
+                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#f9f5f0]">
                           <div className={`h-full rounded-full transition-all ${
                             (stockCache[p.id]?.stockQty ?? 0) === 0 ? 'bg-red-400' :
                             (stockCache[p.id]?.stockQty ?? 0) <= (stockCache[p.id]?.lowStockThreshold ?? 5) ? 'bg-amber-400' : 'bg-emerald-400'
@@ -430,7 +430,7 @@ export default function VendorShopPage() {
                 <BookOpen className="h-5 w-5 text-[#8c7564]" />
                 <h3 className="font-[Fraunces] text-lg text-[#221b16]">Shop Policies</h3>
               </div>
-              <p className="text-sm leading-relaxed text-[#4f4035] whitespace-pre-line">
+              <p className="text-sm leading-relaxed text-[#6c5b4f] whitespace-pre-line">
                 {shop.policies || 'No specific shop policies defined. Standard platform policies apply.'}
               </p>
             </div>
@@ -469,7 +469,7 @@ export default function VendorShopPage() {
                             </div>
                           </div>
                         </div>
-                        {r.comment && <p className="mt-2 text-xs leading-relaxed text-[#4f4035]">{r.comment}</p>}
+                        {r.comment && <p className="mt-2 text-xs leading-relaxed text-[#6c5b4f]">{r.comment}</p>}
                       </div>
                     )
                   })}
@@ -502,23 +502,23 @@ export default function VendorShopPage() {
             <div className="space-y-5 px-6 py-6">
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Shop</label>
-                <input readOnly value={shop?.name} className="w-full rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]" />
+                <input readOnly value={shop?.name} className="w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]" />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Product Name</label>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Enter product name" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672]" />
+                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Enter product name" className="w-full rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#8c7564] outline-none focus:border-[#8c7564]" />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Description</label>
-                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe your product" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672] resize-none" />
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe your product" className="w-full rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#8c7564] outline-none focus:border-[#8c7564] resize-none" />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Price (BDT)</label>
-                <input type="number" value={form.priceBdt} onChange={e => setForm(f => ({ ...f, priceBdt: e.target.value }))} placeholder="0.00" min="0" step="0.01" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672]" />
+                <input type="number" value={form.priceBdt} onChange={e => setForm(f => ({ ...f, priceBdt: e.target.value }))} placeholder="0.00" min="0" step="0.01" className="w-full rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#8c7564] outline-none focus:border-[#8c7564]" />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Category</label>
-                <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none focus:border-[#a28672]">
+                <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} className="w-full rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none focus:border-[#8c7564]">
                   <option value="">Select category</option>
                   {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>

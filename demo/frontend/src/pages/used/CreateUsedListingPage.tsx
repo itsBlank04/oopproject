@@ -55,25 +55,25 @@ export default function CreateUsedListingPage() {
             <label className="text-sm font-semibold text-[#221b16]">Title *</label>
             <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
               placeholder="e.g. iPhone 14 Pro — Like New"
-              className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+              className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
           </div>
           <div>
             <label className="text-sm font-semibold text-[#221b16]">Description</label>
             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={4}
               placeholder="Describe the item condition, any defects, accessories included..."
-              className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+              className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-semibold text-[#221b16]">Asking Price (৳) *</label>
               <input type="number" value={form.askingPriceBdt} onChange={e => setForm({ ...form, askingPriceBdt: e.target.value })}
                 placeholder="25,000"
-                className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+                className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
             </div>
             <div>
               <label className="text-sm font-semibold text-[#221b16]">Category</label>
               <select value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]">
+                className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]">
                 <option value="">Select category</option>
                 {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
