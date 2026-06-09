@@ -125,7 +125,7 @@ export default function VendorDashboardPage() {
   const currentShop = stats?.shops?.find(s => s.id === selectedShopId)
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#faf6f2]">
       <style>{`
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(16px); }
@@ -156,17 +156,17 @@ export default function VendorDashboardPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* ── Header ── */}
         <div className="anim-fade anim-fade-1">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#e0e7ff]/50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#e4d6c8]/50">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1e293b] text-[#f8fafc] shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1a1512] text-[#faf6f2] shadow-sm">
                 <Store className="h-6 w-6 text-amber-200" />
               </div>
               <div>
-                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1e293b] tracking-tight">
+                <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">
                   {currentShop ? currentShop.name : stats?.shopName || `${user?.displayName}'s Shop`}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm text-[#94A3B8]">{selectedShopId ? 'Single Shop View' : 'All Shops (Aggregated)'}</span>
+                  <span className="text-sm text-[#8c7564]">{selectedShopId ? 'Single Shop View' : 'All Shops (Aggregated)'}</span>
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                     stats?.verificationStatus === 'VERIFIED'
                       ? 'bg-emerald-50 text-emerald-700'
@@ -188,28 +188,28 @@ export default function VendorDashboardPage() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Dropdown Selector */}
               {stats?.shops && stats.shops.length > 0 && (
-                <div className="flex items-center gap-2 bg-white border border-[#cbd5e1] px-3.5 py-2 rounded-xl shadow-sm relative">
+                <div className="flex items-center gap-2 bg-white border border-[#d7c7b8] px-3.5 py-2 rounded-xl shadow-sm relative">
                   <select
                     value={selectedShopId || ''}
                     onChange={(e) => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
-                    className="text-xs font-bold text-[#1e293b] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
+                    className="text-xs font-bold text-[#1a1512] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
                   >
                     <option value="">All Outlets (Aggregate)</option>
                     {stats.shops.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-3 h-3 w-3 text-[#94A3B8] pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-3 h-3 w-3 text-[#8c7564] pointer-events-none" />
                 </div>
               )}
 
               <Link to="/vendor/shops"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] bg-white px-4 py-2 text-xs font-semibold text-[#1e293b] transition hover:bg-gray-50 active:scale-[0.97]">
-                <Store className="h-3.5 w-3.5 text-[#94A3B8]" /> Shop Manager
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                <Store className="h-3.5 w-3.5 text-[#8c7564]" /> Shop Manager
               </Link>
               <Link to="/vendor/subscription"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] bg-white px-4 py-2 text-xs font-semibold text-[#1e293b] transition hover:bg-gray-50 active:scale-[0.97]">
-                <CreditCard className="h-3.5 w-3.5 text-[#94A3B8]" /> Billing & Plans
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                <CreditCard className="h-3.5 w-3.5 text-[#8c7564]" /> Billing & Plans
               </Link>
             </div>
           </div>
@@ -231,19 +231,19 @@ export default function VendorDashboardPage() {
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
             ), accent: 'text-amber-600', bg: 'bg-amber-50/60', spark: 'M0,12 L4,8 L8,16 L12,6 L16,10 L20,2', sparkColor: '#d97706' },
           ].map((m, i) => (
-            <div key={m.label} className={`anim-fade anim-fade-${i + 1} group relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40 transition-all hover:shadow-md hover:-translate-y-0.5`}>
+            <div key={m.label} className={`anim-fade anim-fade-${i + 1} group relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md hover:-translate-y-0.5`}>
               <div className="flex items-start justify-between">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${m.bg} ${m.accent}`}>
                   {m.icon}
                 </div>
-                <span className={`text-xs font-medium ${pendingOrders > 0 && m.label === 'Total Orders' ? 'text-amber-600' : 'text-[#94A3B8]'}`}>
+                <span className={`text-xs font-medium ${pendingOrders > 0 && m.label === 'Total Orders' ? 'text-amber-600' : 'text-[#8c7564]'}`}>
                   {m.label === 'Total Orders' && pendingOrders > 0 ? `${pendingOrders} pending` : ''}
                 </span>
               </div>
-              <p className="mt-3 font-[Fraunces] text-2xl sm:text-3xl font-semibold tracking-tight text-[#1e293b]">
+              <p className="mt-3 font-[Fraunces] text-2xl sm:text-3xl font-semibold tracking-tight text-[#1a1512]">
                 {m.value}
               </p>
-              <p className="mt-0.5 text-xs text-[#94A3B8]">{m.sub}</p>
+              <p className="mt-0.5 text-xs text-[#8c7564]">{m.sub}</p>
               <svg className="absolute bottom-1 right-1 h-10 w-20 opacity-30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d={m.spark} stroke={m.sparkColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -256,23 +256,23 @@ export default function VendorDashboardPage() {
           {/* Left column: Chart + Quick actions */}
           <div className="lg:col-span-2 space-y-6">
             {/* Revenue Chart */}
-            <div className="anim-scale anim-scale-1 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
+            <div className="anim-scale anim-scale-1 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Revenue</h2>
-                  <p className="text-xs text-[#94A3B8] mt-0.5">{timeRange === 'daily' ? 'Daily' : timeRange === 'weekly' ? 'Weekly' : 'Monthly'} sales overview</p>
+                  <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Revenue</h2>
+                  <p className="text-xs text-[#8c7564] mt-0.5">{timeRange === 'daily' ? 'Daily' : timeRange === 'weekly' ? 'Weekly' : 'Monthly'} sales overview</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {/* Time Range Tabs */}
-                  <div className="flex rounded-lg border border-[#e0e7ff] overflow-hidden text-xs">
+                  <div className="flex rounded-lg border border-[#e4d6c8] overflow-hidden text-xs">
                     {(['daily', 'weekly', 'monthly'] as const).map((range) => (
                       <button
                         key={range}
                         onClick={() => setTimeRange(range)}
                         className={`px-3 py-1.5 font-semibold transition-colors ${
                           timeRange === range
-                            ? 'bg-[#1e293b] text-white'
-                            : 'bg-white text-[#94A3B8] hover:bg-gray-50'
+                            ? 'bg-[#1a1512] text-white'
+                            : 'bg-white text-[#8c7564] hover:bg-gray-50'
                         }`}
                       >
                         {range === 'daily' ? 'Daily' : range === 'weekly' ? 'Weekly' : 'Monthly'}
@@ -282,12 +282,12 @@ export default function VendorDashboardPage() {
                   {(analytics?.salesData?.length ?? 0) > 0 && (
                     <div className="flex items-center gap-3 text-xs ml-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-sm bg-[#1e293b]" />
-                        <span className="text-[#64748b]">Revenue</span>
+                        <span className="h-2.5 w-2.5 rounded-sm bg-[#1a1512]" />
+                        <span className="text-[#6c5b4f]">Revenue</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-sm bg-[#818cf8]" />
-                        <span className="text-[#64748b]">Payout</span>
+                        <span className="h-2.5 w-2.5 rounded-sm bg-[#c4956a]" />
+                        <span className="text-[#6c5b4f]">Payout</span>
                       </div>
                     </div>
                   )}
@@ -304,30 +304,30 @@ export default function VendorDashboardPage() {
                         <div key={m.label} className="flex-1 flex flex-col items-center h-full justify-end group/bar">
                           <div className="relative w-full flex flex-col items-center justify-end h-[calc(100%-24px)]">
                             <div
-                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#1e293b] transition-all duration-500 hover:opacity-80 cursor-pointer"
+                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#1a1512] transition-all duration-500 hover:opacity-80 cursor-pointer"
                               style={{ height: `${saleH}%`, animationDelay: `${i * 60}ms` }}
                             >
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#1e293b] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#1a1512] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
                                 ৳{m.totalSale.toLocaleString('en-BD')}
                               </div>
                             </div>
                             <div
-                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#818cf8] -mt-0.5 transition-all duration-500 hover:opacity-80 cursor-pointer"
+                              className="w-full max-w-[36px] rounded-t-[3px] bg-[#c4956a] -mt-0.5 transition-all duration-500 hover:opacity-80 cursor-pointer"
                               style={{ height: `${payH}%`, animationDelay: `${i * 60 + 30}ms` }}
                             >
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#64748b] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-[#6c5b4f] text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap pointer-events-none shadow-lg">
                                 ৳{m.netPayout.toLocaleString('en-BD')}
                               </div>
                             </div>
                           </div>
-                          <span className="text-[10px] text-[#94A3B8] font-medium mt-1.5">{m.label}</span>
+                          <span className="text-[10px] text-[#8c7564] font-medium mt-1.5">{m.label}</span>
                         </div>
                       )
                     })}
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-44 text-xs text-[#94A3B8]">
+                <div className="flex items-center justify-center h-44 text-xs text-[#8c7564]">
                   No sales data yet
                 </div>
               )}
@@ -350,12 +350,12 @@ export default function VendorDashboardPage() {
                 ) },
               ].map(a => (
                 <Link key={a.to} to={a.to}
-                  className="group rounded-xl bg-white p-4 ring-1 ring-[#e0e7ff]/40 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f8fafc] text-[#64748b] group-hover:bg-[#1e293b] group-hover:text-[#f8fafc] transition-colors">
+                  className="group rounded-xl bg-white p-4 ring-1 ring-[#e4d6c8]/40 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#6c5b4f] group-hover:bg-[#1a1512] group-hover:text-[#faf6f2] transition-colors">
                     {a.icon}
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-[#1e293b]">{a.label}</p>
-                  <p className="mt-0.5 text-[11px] text-[#94A3B8] leading-snug">{a.desc}</p>
+                  <p className="mt-3 text-sm font-semibold text-[#1a1512]">{a.label}</p>
+                  <p className="mt-0.5 text-[11px] text-[#8c7564] leading-snug">{a.desc}</p>
                 </Link>
               ))}
             </div>
@@ -364,9 +364,9 @@ export default function VendorDashboardPage() {
           {/* Right column: Top Products + Status */}
           <div className="space-y-6">
             {/* Top Products */}
-            <div className="anim-scale anim-scale-3 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Top Products</h2>
-              <p className="text-xs text-[#94A3B8] mt-0.5 mb-5">Highest revenue generators</p>
+            <div className="anim-scale anim-scale-3 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Top Products</h2>
+              <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Highest revenue generators</p>
               {(analytics?.topProducts?.length ?? 0) > 0 ? (
                 <div className="space-y-4">
                   {analytics!.topProducts.map((p, i) => {
@@ -379,15 +379,15 @@ export default function VendorDashboardPage() {
                               i === 0 ? 'bg-amber-100 text-amber-700' :
                               i === 1 ? 'bg-gray-100 text-gray-600' :
                               i === 2 ? 'bg-orange-100 text-orange-700' :
-                              'bg-[#f8fafc] text-[#94A3B8]'
+                              'bg-[#f5f0eb] text-[#8c7564]'
                             }`}>{i + 1}</span>
-                            <p className="text-sm font-medium text-[#1e293b] truncate">{p.name}</p>
+                            <p className="text-sm font-medium text-[#1a1512] truncate">{p.name}</p>
                           </div>
-                          <p className="text-xs font-semibold text-[#64748b] shrink-0 ml-2">৳{Math.round(p.totalRevenue).toLocaleString('en-BD')}</p>
+                          <p className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">৳{Math.round(p.totalRevenue).toLocaleString('en-BD')}</p>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-[#f8fafc] overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-[#f5f0eb] overflow-hidden">
                           <div
-                            className="grow-w h-full rounded-full bg-gradient-to-r from-[#1e293b] to-[#64748b] transition-all duration-700"
+                            className="grow-w h-full rounded-full bg-gradient-to-r from-[#1a1512] to-[#5c4a3c] transition-all duration-700"
                             style={{ width: `${(p.totalRevenue / maxRev) * 100}%`, animationDelay: `${i * 100}ms` }}
                           />
                         </div>
@@ -396,25 +396,25 @@ export default function VendorDashboardPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-[#94A3B8] text-center py-8">No sales yet</p>
+                <p className="text-xs text-[#8c7564] text-center py-8">No sales yet</p>
               )}
             </div>
 
             {/* Most Viewed Products */}
             {(analytics?.mostViewedProducts?.length ?? 0) > 0 && (
-              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Most Ordered</h2>
-                <p className="text-xs text-[#94A3B8] mt-0.5 mb-5">Products ordered most frequently</p>
+              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Most Ordered</h2>
+                <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Products ordered most frequently</p>
                 <div className="space-y-3">
                   {analytics!.mostViewedProducts.map((p, i) => (
                     <div key={p.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className={`shrink-0 flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold ${
-                          i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-[#f8fafc] text-[#94A3B8]'
+                          i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-[#f5f0eb] text-[#8c7564]'
                         }`}>{i + 1}</span>
-                        <span className="text-xs font-medium text-[#1e293b] truncate">{p.name}</span>
+                        <span className="text-xs font-medium text-[#1a1512] truncate">{p.name}</span>
                       </div>
-                      <span className="text-xs font-semibold text-[#64748b] shrink-0 ml-2">{p.viewCount} view{p.viewCount !== 1 ? 's' : ''}</span>
+                      <span className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">{p.viewCount} view{p.viewCount !== 1 ? 's' : ''}</span>
                     </div>
                   ))}
                 </div>
@@ -422,22 +422,22 @@ export default function VendorDashboardPage() {
             )}
 
             {/* Customer Split */}
-            <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Customers</h2>
-              <p className="text-xs text-[#94A3B8] mt-0.5 mb-5">Customer overview</p>
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Customers</h2>
+              <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Customer overview</p>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#1e293b]">Unique Customers</span>
-                  <span className="text-lg font-[Fraunces] font-semibold text-[#1e293b]">{analytics?.uniqueCustomers ?? 0}</span>
+                  <span className="text-xs text-[#1a1512]">Unique Customers</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.uniqueCustomers ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#1e293b]">Total Orders</span>
-                  <span className="text-lg font-[Fraunces] font-semibold text-[#1e293b]">{analytics?.totalOrders ?? 0}</span>
+                  <span className="text-xs text-[#1a1512]">Total Orders</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.totalOrders ?? 0}</span>
                 </div>
-                <div className="pt-2 border-t border-[#f8fafc]">
+                <div className="pt-2 border-t border-[#f5f0eb]">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#94A3B8]">Avg. Orders / Customer</span>
-                    <span className="font-semibold text-[#1e293b]">
+                    <span className="text-[#8c7564]">Avg. Orders / Customer</span>
+                    <span className="font-semibold text-[#1a1512]">
                       {(analytics?.uniqueCustomers ?? 0) > 0
                         ? ((analytics?.totalOrders ?? 0) / (analytics?.uniqueCustomers ?? 1)).toFixed(1)
                         : '0'}
@@ -449,29 +449,29 @@ export default function VendorDashboardPage() {
 
             {/* Shop Performance */}
             {stats?.shops && stats.shops.length > 0 && (
-              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Shop Performance</h2>
-                <p className="text-xs text-[#94A3B8] mt-0.5 mb-4">Per-shop snapshot</p>
+              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Shop Performance</h2>
+                <p className="text-xs text-[#8c7564] mt-0.5 mb-4">Per-shop snapshot</p>
                 <div className="space-y-3">
                   {stats.shops.map((s) => (
                     <Link key={s.id} to={`/vendor/dashboard?shop=${s.id}`}
-                      className="flex items-center gap-3 rounded-xl border border-[#e0e7ff]/60 p-3 transition hover:bg-[#f8fafc] hover:border-[#818cf8]">
-                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[#e0e7ff]">
+                      className="flex items-center gap-3 rounded-xl border border-[#e4d6c8]/60 p-3 transition hover:bg-[#faf6f2] hover:border-[#c4956a]">
+                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[#e4d6c8]">
                         {s.logoUrl ? (
                           <img src={s.logoUrl} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-xs font-bold text-[#64748b]">{s.name[0]}</div>
+                          <div className="flex h-full items-center justify-center text-xs font-bold text-[#6c5b4f]">{s.name[0]}</div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#1e293b] truncate">{s.name}</p>
+                        <p className="text-sm font-semibold text-[#1a1512] truncate">{s.name}</p>
                         <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${
                           s.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
                           s.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
                           'bg-gray-100 text-gray-500'
                         }`}>{s.status}</span>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-[#94A3B8] shrink-0" />
+                      <ChevronRight className="h-4 w-4 text-[#8c7564] shrink-0" />
                     </Link>
                   ))}
                 </div>
@@ -479,50 +479,50 @@ export default function VendorDashboardPage() {
             )}
 
             {/* Support Widget */}
-            <div className="anim-scale anim-scale-4 rounded-2xl bg-gradient-to-br from-[#1e293b] to-[#4338ca] p-5 sm:p-6 shadow-md">
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-gradient-to-br from-[#1a1512] to-[#3a3028] p-5 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
                   <svg className="h-4 w-4 text-amber-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-semibold text-[#f8fafc]">Need Assistance?</h3>
+                <h3 className="text-sm font-semibold text-[#f9f5f0]">Need Assistance?</h3>
               </div>
-              <p className="text-xs leading-relaxed text-[#cbd5e1] mb-4">Get help with your shop, products, or account settings.</p>
+              <p className="text-xs leading-relaxed text-[#b8a494] mb-4">Get help with your shop, products, or account settings.</p>
               <Link to="/messages"
-                className="block w-full rounded-xl bg-white/10 py-2.5 text-center text-xs font-semibold text-[#f8fafc] hover:bg-white/20 transition">
+                className="block w-full rounded-xl bg-white/10 py-2.5 text-center text-xs font-semibold text-[#f9f5f0] hover:bg-white/20 transition">
                 Contact Support
               </Link>
             </div>
 
             {/* Product Status Summary */}
-            <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
-              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Product Status</h2>
-              <p className="text-xs text-[#94A3B8] mt-0.5 mb-5">Overview of your catalog</p>
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Product Status</h2>
+              <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Overview of your catalog</p>
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-[#1e293b] font-medium">Active</span>
+                    <span className="text-[#1a1512] font-medium">Active</span>
                     <span className="text-emerald-600 font-semibold">{activeProducts}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#f8fafc] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#f5f0eb] overflow-hidden">
                     <div className="grow-w h-full rounded-full bg-emerald-500 transition-all duration-700"
                       style={{ width: `${products.length > 0 ? (activeProducts / products.length) * 100 : 0}%` }} />
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1.5">
-                    <span className="text-[#1e293b] font-medium">Draft</span>
+                    <span className="text-[#1a1512] font-medium">Draft</span>
                     <span className="text-gray-500 font-semibold">{draftProducts}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#f8fafc] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#f5f0eb] overflow-hidden">
                     <div className="grow-w h-full rounded-full bg-gray-400 transition-all duration-700"
                       style={{ width: `${products.length > 0 ? (draftProducts / products.length) * 100 : 0}%` }} />
                   </div>
                 </div>
                 <div className="pt-2">
                   <Link to="/vendor/products"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#64748b] hover:text-[#1e293b] transition-colors">
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] hover:text-[#1a1512] transition-colors">
                     Manage inventory
                     <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
@@ -534,35 +534,35 @@ export default function VendorDashboardPage() {
 
         {/* ── Recent Transactions ── */}
         <div className="mt-6 sm:mt-8 anim-scale" style={{ animationDelay: '0.45s' }}>
-          <div className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40 overflow-hidden">
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#e0e7ff]/40">
+          <div className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#e4d6c8]/40">
               <div>
-                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">Recent Transactions</h2>
-                <p className="text-xs text-[#94A3B8] mt-0.5">Latest {Math.min(orders.length, 10)} commission payouts</p>
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Recent Transactions</h2>
+                <p className="text-xs text-[#8c7564] mt-0.5">Latest {Math.min(orders.length, 10)} commission payouts</p>
               </div>
               {orders.length > 0 && (
-                <Link to="/vendor/orders" className="text-xs font-semibold text-[#64748b] hover:text-[#1e293b] transition-colors">
+                <Link to="/vendor/orders" className="text-xs font-semibold text-[#6c5b4f] hover:text-[#1a1512] transition-colors">
                   View all
                 </Link>
               )}
             </div>
             {orders.length > 0 ? (
-              <div className="divide-y divide-[#e0e7ff]/30 max-h-[340px] overflow-y-auto no-scrollbar">
+              <div className="divide-y divide-[#e4d6c8]/30 max-h-[340px] overflow-y-auto no-scrollbar">
                 {orders.slice(0, 10).map((o, idx) => (
-                  <div key={o.id} className="flex items-center justify-between px-5 sm:px-6 py-3.5 transition hover:bg-[#f8fafc]" style={{ animationDelay: `${idx * 30}ms` }}>
+                  <div key={o.id} className="flex items-center justify-between px-5 sm:px-6 py-3.5 transition hover:bg-[#faf6f2]" style={{ animationDelay: `${idx * 30}ms` }}>
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f8fafc] text-[#94A3B8]">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f5f0eb] text-[#8c7564]">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4" /></svg>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#1e293b] truncate">{o.productName}</p>
-                        <p className="text-[11px] text-[#94A3B8] mt-0.5">
+                        <p className="text-sm font-medium text-[#1a1512] truncate">{o.productName}</p>
+                        <p className="text-[11px] text-[#8c7564] mt-0.5">
                           Qty: {o.qty} · {new Date(o.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'short' })}
                         </p>
                       </div>
                     </div>
                     <div className="text-right ml-4 shrink-0">
-                      <p className="text-sm font-semibold text-[#1e293b]">৳{o.saleAmountBdt.toLocaleString('en-BD')}</p>
+                      <p className="text-sm font-semibold text-[#1a1512]">৳{o.saleAmountBdt.toLocaleString('en-BD')}</p>
                       <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusColor[o.status] || statusColor.PENDING}`}>
                         {o.status}
                       </span>
@@ -572,13 +572,13 @@ export default function VendorDashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f8fafc]">
-                  <svg className="h-6 w-6 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f0eb]">
+                  <svg className="h-6 w-6 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                   </svg>
                 </div>
-                <p className="mt-3 text-sm font-medium text-[#64748b]">No transactions yet</p>
-                <p className="mt-0.5 text-xs text-[#94A3B8]">When customers purchase your products, payouts will appear here</p>
+                <p className="mt-3 text-sm font-medium text-[#6c5b4f]">No transactions yet</p>
+                <p className="mt-0.5 text-xs text-[#8c7564]">When customers purchase your products, payouts will appear here</p>
               </div>
             )}
           </div>

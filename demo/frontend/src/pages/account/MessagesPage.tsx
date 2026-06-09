@@ -170,42 +170,42 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#f9f5f0]">
       <div className="mx-auto flex h-[calc(100vh-80px)] max-w-6xl px-4 py-6">
-        <div className="flex w-full overflow-hidden rounded-2xl border border-[#e0e7ff] bg-white shadow-sm">
+        <div className="flex w-full overflow-hidden rounded-2xl border border-[#e4d6c8] bg-white shadow-sm">
           {/* Sidebar */}
-          <div className="flex w-[360px] flex-shrink-0 flex-col border-r border-[#e0e7ff]">
+          <div className="flex w-[360px] flex-shrink-0 flex-col border-r border-[#e4d6c8]">
             {/* Header */}
-            <div className="border-b border-[#e0e7ff] px-5 py-4">
-              <h2 className="font-[Fraunces] text-xl text-[#1e293b]">Messages</h2>
-              <p className="mt-0.5 text-xs text-[#94A3B8]">{convs.length} conversation{convs.length !== 1 ? 's' : ''}</p>
+            <div className="border-b border-[#e4d6c8] px-5 py-4">
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Messages</h2>
+              <p className="mt-0.5 text-xs text-[#8c7564]">{convs.length} conversation{convs.length !== 1 ? 's' : ''}</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#e0e7ff]">
+            <div className="flex border-b border-[#e4d6c8]">
               <button onClick={() => { setTab('ORDER'); setSelected(null) }}
                 className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-                  tab === 'ORDER' ? 'border-[#1e293b] text-[#1e293b]' : 'border-transparent text-[#94A3B8] hover:text-[#1e293b]'
+                  tab === 'ORDER' ? 'border-[#221b16] text-[#221b16]' : 'border-transparent text-[#8c7564] hover:text-[#221b16]'
                 }`}>
                 Order Chats
               </button>
               <button onClick={() => { setTab('USED'); setSelected(null) }}
                 className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-                  tab === 'USED' ? 'border-[#1e293b] text-[#1e293b]' : 'border-transparent text-[#94A3B8] hover:text-[#1e293b]'
+                  tab === 'USED' ? 'border-[#221b16] text-[#221b16]' : 'border-transparent text-[#8c7564] hover:text-[#221b16]'
                 }`}>
                 Used Item Chats
               </button>
             </div>
 
             {/* Search */}
-            <div className="border-b border-[#e0e7ff] px-4 py-3">
+            <div className="border-b border-[#e4d6c8] px-4 py-3">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search conversations..."
-                  className="w-full rounded-xl border border-[#cbd5e1] bg-[#f8fafc] py-2 pl-10 pr-4 text-sm text-[#1e293b] outline-none transition focus:border-[#1e293b] focus:bg-white" />
+                  className="w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] py-2 pl-10 pr-4 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
               </div>
             </div>
 
@@ -215,10 +215,10 @@ export default function MessagesPage() {
                 <div className="space-y-1 p-3">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex items-center gap-3 rounded-xl p-3 animate-pulse">
-                      <div className="h-10 w-10 rounded-full bg-[#e0e7ff]" />
+                      <div className="h-10 w-10 rounded-full bg-[#e4d6c8]" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-3 w-24 rounded bg-[#e0e7ff]" />
-                        <div className="h-2 w-40 rounded bg-[#e0e7ff]" />
+                        <div className="h-3 w-24 rounded bg-[#e4d6c8]" />
+                        <div className="h-2 w-40 rounded bg-[#e4d6c8]" />
                       </div>
                     </div>
                   ))}
@@ -226,13 +226,13 @@ export default function MessagesPage() {
               ) : filteredConvs.length === 0 ? (
                 <div className="flex flex-1 items-center justify-center p-8 text-center">
                   <div>
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#f8fafc]">
-                      <svg className="h-6 w-6 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#f9f5f0]">
+                      <svg className="h-6 w-6 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                       </svg>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-[#1e293b]">No {tab === 'ORDER' ? 'order' : 'used item'} conversations</p>
-                    <p className="mt-1 text-xs text-[#94A3B8]">
+                    <p className="mt-3 text-sm font-semibold text-[#221b16]">No {tab === 'ORDER' ? 'order' : 'used item'} conversations</p>
+                    <p className="mt-1 text-xs text-[#8c7564]">
                       {tab === 'ORDER' ? 'Conversations appear after you place an order' : 'Start a chat from a used item listing'}
                     </p>
                   </div>
@@ -241,15 +241,15 @@ export default function MessagesPage() {
                 <div className="py-1">
                   {filteredConvs.map(c => (
                     <button key={c.id} onClick={() => selectConv(c)}
-                      className={`flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-[#f8fafc] ${
-                        selected?.id === c.id ? 'bg-[#eef2ff]' : ''
+                      className={`flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-[#f9f5f0] ${
+                        selected?.id === c.id ? 'bg-[#f0e8df]' : ''
                       }`}>
                       <button type="button" onClick={() => setLightboxAvatar(c.otherUserAvatar)}
-                        className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#e0e7ff]">
+                        className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
                         {c.otherUserAvatar ? (
                           <img src={c.otherUserAvatar} alt="" loading="lazy" className="h-full w-full object-cover" />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-sm font-semibold text-[#64748b]">
+                          <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
                             {c.otherUserName?.charAt(0)?.toUpperCase()}
                           </div>
                         )}
@@ -262,28 +262,28 @@ export default function MessagesPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#1e293b]">
+                            <p className="truncate text-sm font-semibold text-[#221b16]">
                               {c.otherUserName || `User #${c.otherUserId}`}
                             </p>
                             {c.type === 'ORDER' && (
-                              <span className="shrink-0 rounded-full bg-[#eef2ff] px-2 py-0.5 text-[10px] font-medium text-[#64748b]">
+                              <span className="shrink-0 rounded-full bg-[#f0e8df] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
                                 Order
                               </span>
                             )}
                             {c.type === 'USED' && (
-                              <span className="shrink-0 rounded-full bg-[#e0e7ff] px-2 py-0.5 text-[10px] font-medium text-[#64748b]">
+                              <span className="shrink-0 rounded-full bg-[#e4d6c8] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
                                 Used
                               </span>
                             )}
                           </div>
                           {c.lastMessageAt && (
-                            <p className="ml-2 shrink-0 text-[10px] text-[#94A3B8]">{timeAgo(c.lastMessageAt)}</p>
+                            <p className="ml-2 shrink-0 text-[10px] text-[#8c7564]">{timeAgo(c.lastMessageAt)}</p>
                           )}
                         </div>
                         {c.title && (
-                          <p className="mt-0.5 truncate text-xs font-medium text-[#94A3B8]">{c.title}</p>
+                          <p className="mt-0.5 truncate text-xs font-medium text-[#a28672]">{c.title}</p>
                         )}
-                        <p className="mt-0.5 truncate text-xs text-[#94A3B8]">
+                        <p className="mt-0.5 truncate text-xs text-[#8c7564]">
                           {c.lastMessage || 'No messages yet'}
                         </p>
                       </div>
@@ -299,27 +299,27 @@ export default function MessagesPage() {
             {selected ? (
               <>
                 {/* Chat header with context card */}
-                <div className="border-b border-[#e0e7ff]">
+                <div className="border-b border-[#e4d6c8]">
                   <div className="flex items-center gap-3 px-6 py-3">
                     <button type="button" onClick={() => setLightboxAvatar(selected.otherUserAvatar)}
-                      className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-[#e0e7ff]">
+                      className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
                       {selected.otherUserAvatar ? (
                         <img src={selected.otherUserAvatar} alt="" loading="lazy" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-semibold text-[#64748b]">
+                        <div className="flex h-full items-center justify-center text-sm font-semibold text-[#6c5b4f]">
                           {selected.otherUserName?.charAt(0)?.toUpperCase()}
                         </div>
                       )}
                     </button>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-[#1e293b]">
+                      <p className="truncate text-sm font-semibold text-[#221b16]">
                         {selected.otherUserName || `User #${selected.otherUserId}`}
                       </p>
-                      <p className="truncate text-xs text-[#94A3B8]">{selected.title}</p>
+                      <p className="truncate text-xs text-[#8c7564]">{selected.title}</p>
                     </div>
                     {selected.type === 'ORDER' && (
                       <Link to={`/account/orders`}
-                        className="shrink-0 rounded-lg border border-[#cbd5e1] px-3 py-1.5 text-xs font-semibold text-[#1e293b] transition hover:bg-[#f8fafc]">
+                        className="shrink-0 rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]">
                         View Order
                       </Link>
                     )}
@@ -329,7 +329,7 @@ export default function MessagesPage() {
                 {/* Messages */}
                 <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
                   {localMessages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-sm text-[#94A3B8]">
+                    <div className="flex h-full items-center justify-center text-sm text-[#8c7564]">
                       No messages yet. Start the conversation!
                     </div>
                   ) : (
@@ -339,21 +339,21 @@ export default function MessagesPage() {
                         <div key={m.id}>
                           {showDate && (
                             <div className="flex justify-center py-2">
-                              <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-medium text-[#64748b]">
+                              <span className="rounded-full bg-[#f0e8df] px-3 py-1 text-[10px] font-medium text-[#6c5b4f]">
                                 {formatDate(m.createdAt)}
                               </span>
                             </div>
                           )}
                           {m.messageType === 'SYSTEM' ? (
                             <div className="flex justify-center">
-                              <div className="rounded-xl bg-[#f8fafc] px-4 py-2 text-xs text-[#94A3B8]">
+                              <div className="rounded-xl bg-[#f9f5f0] px-4 py-2 text-xs text-[#8c7564]">
                                 {m.body}
                               </div>
                             </div>
                           ) : (
                             <div className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
                               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                                m.isMine ? 'bg-[#1e293b] text-[#f8fafc] rounded-br-md' : 'bg-[#eef2ff] text-[#1e293b] rounded-bl-md'
+                                m.isMine ? 'bg-[#221b16] text-[#f9f5f0] rounded-br-md' : 'bg-[#f0e8df] text-[#221b16] rounded-bl-md'
                               }`}>
                                 {m.attachmentUrl && (
                                   <div className="mb-1">
@@ -372,7 +372,7 @@ export default function MessagesPage() {
                                   </div>
                                 )}
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{m.body}</p>
-                                <p className={`mt-1 text-[10px] ${m.isMine ? 'text-[#cbd5e1]' : 'text-[#94A3B8]'}`}>
+                                <p className={`mt-1 text-[10px] ${m.isMine ? 'text-[#b8a494]' : 'text-[#8c7564]'}`}>
                                   {formatTime(m.createdAt)}
                                   {m.isMine && (
                                     <span className="ml-1">{m.isRead ? '✓✓' : '✓'}</span>
@@ -389,14 +389,14 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Input area */}
-                <div className="border-t border-[#e0e7ff] px-6 py-4">
+                <div className="border-t border-[#e4d6c8] px-6 py-4">
                   <div className="flex items-center gap-3">
                     <input value={newMsg} onChange={e => setNewMsg(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                       placeholder={selected.type === 'ORDER' ? 'Type a message about this order...' : 'Type a message...'}
-                      className="flex-1 rounded-xl border border-[#cbd5e1] bg-[#f8fafc] px-4 py-2.5 text-sm text-[#1e293b] outline-none transition focus:border-[#1e293b] focus:bg-white" />
+                      className="flex-1 rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white" />
                     <button onClick={handleSend} disabled={!newMsg.trim() || sendMutation.isPending}
-                      className="rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc] transition hover:bg-[#4338ca] disabled:opacity-40 active:scale-[0.97]">
+                      className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] disabled:opacity-40 active:scale-[0.97]">
                       {sendMutation.isPending ? (
                         <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                       ) : (
@@ -404,20 +404,20 @@ export default function MessagesPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-1.5 text-[10px] text-[#cbd5e1]">
+                  <p className="mt-1.5 text-[10px] text-[#b8a494]">
                     {selected.type === 'ORDER' ? 'Text only · Be respectful and stay on topic' : 'Be respectful and follow community guidelines'}
                   </p>
                 </div>
               </>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f8fafc]">
-                  <svg className="h-8 w-8 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f9f5f0]">
+                  <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
                 </div>
-                <p className="font-semibold text-[#1e293b]">Your Messages</p>
-                <p className="text-sm text-[#94A3B8]">Select a conversation to start chatting</p>
+                <p className="font-semibold text-[#221b16]">Your Messages</p>
+                <p className="text-sm text-[#8c7564]">Select a conversation to start chatting</p>
               </div>
             )}
           </div>

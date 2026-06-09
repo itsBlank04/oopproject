@@ -56,12 +56,12 @@ export default function AuctionHighlight() {
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">Bid now</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#1e293b]">Live Auctions</h2>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a7a6a]">Bid now</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#221b16]">Live Auctions</h2>
           </div>
           <Link
             to="/auctions"
-            className="flex items-center gap-1 text-xs font-semibold text-[#64748b] transition-colors hover:text-[#1e293b]"
+            className="flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] transition-colors hover:text-[#221b16]"
           >
             View all
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
@@ -79,13 +79,13 @@ export default function AuctionHighlight() {
               <Link
                 key={auction.id}
                 to={`/auctions/${auction.id}`}
-                className="group rounded-2xl border border-[#eef2ff] bg-white p-5 transition-all duration-200 hover:border-[#cbd5e1] hover:shadow-md"
+                className="group rounded-2xl border border-[#e8ddd0] bg-white p-5 transition-all duration-200 hover:border-[#c8bdb5] hover:shadow-md"
               >
-                <div className="flex h-40 items-center justify-center overflow-hidden rounded-xl bg-[#f8fafc]">
+                <div className="flex h-40 items-center justify-center overflow-hidden rounded-xl bg-[#f9f5f0]">
                   {img ? (
                     <img src={img} alt={auction.title} className="h-full w-full object-contain mix-blend-multiply" />
                   ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-10 w-10 text-[#cbd5e1]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-10 w-10 text-[#c8bdb5]">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
                       <path d="m21 15-5-5L5 21" />
@@ -95,8 +95,8 @@ export default function AuctionHighlight() {
 
                 <div className="mt-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-[#1e293b]">{auction.title}</h3>
-                    <p className="mt-0.5 text-sm font-medium text-[#4F46E5]">
+                    <h3 className="truncate text-sm font-semibold text-[#221b16]">{auction.title}</h3>
+                    <p className="mt-0.5 text-sm font-medium text-[#ee5a24]">
                       ৳{price.toLocaleString('en-BD')}
                     </p>
                   </div>
@@ -106,7 +106,7 @@ export default function AuctionHighlight() {
                 </div>
 
                 {auction.endTime && (
-                  <div className="mt-3 border-t border-[#eef2ff] pt-3 text-xs text-[#94A3B8]">
+                  <div className="mt-3 border-t border-[#f0e8df] pt-3 text-xs text-[#8a7a6a]">
                     <AuctionCountdown endTime={auction.endTime} />
                   </div>
                 )}

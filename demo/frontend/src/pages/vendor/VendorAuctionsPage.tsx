@@ -200,17 +200,17 @@ export default function VendorAuctionsPage() {
   }), [auctions])
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-6 py-10">
+    <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
       <div className="mx-auto max-w-6xl">
-        <div className="overflow-hidden rounded-[2rem] border border-[#e0e7ff] bg-white p-6 text-[#1e293b] shadow-[0_24px_70px_rgba(34,27,22,0.08)]">
+        <div className="overflow-hidden rounded-[2rem] border border-[#e4d6c8] bg-white p-6 text-[#221b16] shadow-[0_24px_70px_rgba(34,27,22,0.08)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#4F46E5]">Seller Auction Studio</p>
-              <h1 className="mt-3 font-[Fraunces] text-4xl text-[#1e293b] md:text-5xl">Build a live bidding event</h1>
-              <p className="mt-3 text-sm leading-7 text-[#64748b]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#ee5a24]">Seller Auction Studio</p>
+              <h1 className="mt-3 font-[Fraunces] text-4xl text-[#221b16] md:text-5xl">Build a live bidding event</h1>
+              <p className="mt-3 text-sm leading-7 text-[#6c5b4f]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
             </div>
             <button onClick={openCreate}
-              className="rounded-2xl bg-[#4F46E5] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#4F46E5]">
+              className="rounded-2xl bg-[#ee5a24] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#d94d1a]">
               + New Auction
             </button>
           </div>
@@ -224,26 +224,26 @@ export default function VendorAuctionsPage() {
         </div>
 
         {isLoading ? (
-          <div className="mt-12 text-center text-[#94A3B8]">Loading...</div>
+          <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
         ) : auctions.length === 0 ? (
-          <div className="mt-12 rounded-2xl border border-[#e0e7ff] bg-white p-10 text-center text-[#94A3B8]">
+          <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center text-[#8c7564]">
             No auctions yet. Create your first auction!
           </div>
         ) : (
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {auctions.map((a) => (
-              <div key={a.id} className="rounded-2xl border border-[#e0e7ff] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <div key={a.id} className="rounded-2xl border border-[#e4d6c8] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-[#1e293b]">{a.title}</h3>
-                    <p className="text-xs text-[#94A3B8]">{a.type} · {a.lots?.length || 0} lot(s)</p>
+                    <h3 className="font-semibold text-[#221b16]">{a.title}</h3>
+                    <p className="text-xs text-[#8c7564]">{a.type} · {a.lots?.length || 0} lot(s)</p>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold ${a.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : a.status === 'PREPARING' ? 'bg-amber-100 text-amber-700' : a.status === 'CREATED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                     {a.status}
                   </span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={() => openEdit(a)} className="rounded-lg border border-[#cbd5e1] px-3 py-1.5 text-xs">Edit</button>
+                  <button onClick={() => openEdit(a)} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">Edit</button>
                   {a.status === 'CREATED' && (
                     <button onClick={() => askConfirm({
                       title: 'Publish auction',
@@ -261,10 +261,10 @@ export default function VendorAuctionsPage() {
                       request: () => deleteAuction.mutateAsync(a.id),
                     })} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600">Delete</button>
                   )}
-                  <Link to={`/auctions/${a.id}`} className="rounded-lg border border-[#cbd5e1] px-3 py-1.5 text-xs">View</Link>
+                  <Link to={`/auctions/${a.id}`} className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs">View</Link>
                 </div>
                 {(a.startTime || a.endTime) && (
-                  <div className="mt-4 rounded-xl bg-[#f8fafc] px-3 py-2 text-xs text-[#64748b]">
+                  <div className="mt-4 rounded-xl bg-[#f9f5f0] px-3 py-2 text-xs text-[#6c5b4f]">
                     {a.startTime && <p>Starts: {new Date(a.startTime).toLocaleString()}</p>}
                     {a.endTime && <p>Ends: {new Date(a.endTime).toLocaleString()}</p>}
                   </div>
@@ -276,8 +276,8 @@ export default function VendorAuctionsPage() {
 
         {showForm && (
           <div className="mt-10 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-            <div className="rounded-2xl border border-[#e0e7ff] bg-white p-6">
-              <h2 className="font-[Fraunces] text-xl text-[#1e293b]">{editingAuction ? 'Edit Auction' : 'Create Auction'}</h2>
+            <div className="rounded-2xl border border-[#e4d6c8] bg-white p-6">
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">{editingAuction ? 'Edit Auction' : 'Create Auction'}</h2>
               {editingLocked && (
                 <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                   Published auctions are locked. You can monitor bids from the public view, but listing rules cannot be changed after launch.
@@ -285,17 +285,17 @@ export default function VendorAuctionsPage() {
               )}
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#64748b]">Title</label>
+                  <label className="text-xs font-semibold text-[#6c5b4f]">Title</label>
                   <input value={auctionForm.title} onChange={e => setAuctionForm({ ...auctionForm, title: e.target.value })}
                     disabled={editingLocked}
-                    className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2 disabled:bg-[#f8fafc] disabled:text-[#94A3B8]" />
+                    className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="text-xs font-semibold text-[#64748b]">Type</label>
+                    <label className="text-xs font-semibold text-[#6c5b4f]">Type</label>
                     <select value={auctionForm.type} onChange={e => setAuctionForm({ ...auctionForm, type: e.target.value })}
                       disabled={editingLocked}
-                      className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2 disabled:bg-[#f8fafc] disabled:text-[#94A3B8]">
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]">
                       <option value="STANDARD">Standard</option>
                       <option value="FLASH">Flash</option>
                       <option value="REVERSE">Reverse</option>
@@ -306,39 +306,39 @@ export default function VendorAuctionsPage() {
                     <input type="checkbox" checked={auctionForm.termsAccepted}
                       disabled={editingLocked}
                       onChange={e => setAuctionForm({ ...auctionForm, termsAccepted: e.target.checked })} />
-                    <span className="text-xs text-[#94A3B8]">I accept auction rules</span>
+                    <span className="text-xs text-[#8c7564]">I accept auction rules</span>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="text-xs font-semibold text-[#64748b]">Preparation (min)</label>
+                    <label className="text-xs font-semibold text-[#6c5b4f]">Preparation (min)</label>
                     <input type="number" min="0" value={auctionForm.preparationDurationMinutes}
                       disabled={editingLocked}
                       onChange={e => setAuctionForm({ ...auctionForm, preparationDurationMinutes: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2 disabled:bg-[#f8fafc] disabled:text-[#94A3B8]" />
-                    <p className="mt-0.5 text-[10px] text-[#94A3B8]">Shown to buyers before bidding starts</p>
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
+                    <p className="mt-0.5 text-[10px] text-[#8c7564]">Shown to buyers before bidding starts</p>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#64748b]">Active duration (min)</label>
+                    <label className="text-xs font-semibold text-[#6c5b4f]">Active duration (min)</label>
                     <input type="number" min="1" value={auctionForm.activeDurationMinutes}
                       disabled={editingLocked}
                       onChange={e => setAuctionForm({ ...auctionForm, activeDurationMinutes: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2 disabled:bg-[#f8fafc] disabled:text-[#94A3B8]" />
-                    <p className="mt-0.5 text-[10px] text-[#94A3B8]">How long bidding stays open</p>
+                      className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2 disabled:bg-[#f9f5f0] disabled:text-[#8c7564]" />
+                    <p className="mt-0.5 text-[10px] text-[#8c7564]">How long bidding stays open</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => editingAuction ? updateAuction.mutate() : createAuction.mutate()} disabled={editingLocked || createAuction.isPending || updateAuction.isPending}
-                    className="rounded-xl bg-[#1e293b] px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50">{editingAuction ? 'Save Auction' : 'Create Auction'}</button>
-                  <button onClick={() => setShowForm(false)} className="rounded-xl border border-[#cbd5e1] px-4 py-2 text-sm">Close</button>
+                    className="rounded-xl bg-[#221b16] px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50">{editingAuction ? 'Save Auction' : 'Create Auction'}</button>
+                  <button onClick={() => setShowForm(false)} className="rounded-xl border border-[#d7c7b8] px-4 py-2 text-sm">Close</button>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#e0e7ff] bg-white p-6">
-              <h2 className="font-[Fraunces] text-xl text-[#1e293b]">Lots</h2>
+            <div className="rounded-2xl border border-[#e4d6c8] bg-white p-6">
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Lots</h2>
               {!selectedAuction && (
-                <p className="mt-2 text-sm text-[#94A3B8]">Create or select an auction to manage lots.</p>
+                <p className="mt-2 text-sm text-[#8c7564]">Create or select an auction to manage lots.</p>
               )}
               {selectedAuction && (
                 <>
@@ -351,14 +351,14 @@ export default function VendorAuctionsPage() {
                   <div className="mt-4 space-y-3">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Lot title</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Lot title</label>
                         <input value={lotForm.title} onChange={e => setLotForm({ ...lotForm, title: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Condition</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Condition</label>
                         <select value={lotForm.conditionNote} onChange={e => setLotForm({ ...lotForm, conditionNote: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2">
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2">
                           <option>New</option>
                           <option>Used</option>
                           <option>Refurbished</option>
@@ -366,49 +366,49 @@ export default function VendorAuctionsPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[#64748b]">Description</label>
+                      <label className="text-xs font-semibold text-[#6c5b4f]">Description</label>
                       <textarea value={lotForm.description} onChange={e => setLotForm({ ...lotForm, description: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" rows={3} />
+                        className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" rows={3} />
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Starting price</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Starting price</label>
                         <input value={lotForm.startingPriceBdt} onChange={e => setLotForm({ ...lotForm, startingPriceBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Min increment</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Min increment</label>
                         <input value={lotForm.minBidIncrementBdt} onChange={e => setLotForm({ ...lotForm, minBidIncrementBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Reserve</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Reserve</label>
                         <input value={lotForm.reservePriceBdt} onChange={e => setLotForm({ ...lotForm, reservePriceBdt: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Extension (min)</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Extension (min)</label>
                         <input value={lotForm.extensionDurationMinutes} onChange={e => setLotForm({ ...lotForm, extensionDurationMinutes: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Max extensions</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Max extensions</label>
                         <input value={lotForm.maxExtensions} onChange={e => setLotForm({ ...lotForm, maxExtensions: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2" />
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[#64748b]">Category</label>
+                        <label className="text-xs font-semibold text-[#6c5b4f]">Category</label>
                         <select value={lotForm.categoryId} onChange={e => setLotForm({ ...lotForm, categoryId: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#cbd5e1] px-3 py-2">
+                          className="mt-1 w-full rounded-xl border border-[#d7c7b8] px-3 py-2">
                           <option value="">Select</option>
                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[#64748b]">Images</label>
+                      <label className="text-xs font-semibold text-[#6c5b4f]">Images</label>
                       <MediaUploader folder={`auctions/${selectedAuction.id}/lots/new`}
                         maxFiles={6} maxSizeMB={8} allowVideo={false}
                         onUpload={(urls) => setLotImages(prev => ({ ...prev, [selectedAuction.id]: urls }))} />
@@ -420,10 +420,10 @@ export default function VendorAuctionsPage() {
 
                   <div className="mt-6 space-y-3">
                     {(selectedAuction.lots || []).map(lot => (
-                      <div key={lot.id} className="flex items-center justify-between rounded-xl border border-[#e0e7ff] px-3 py-2">
+                      <div key={lot.id} className="flex items-center justify-between rounded-xl border border-[#e4d6c8] px-3 py-2">
                         <div>
                           <p className="text-sm font-semibold">{lot.title}</p>
-                          <p className="text-xs text-[#94A3B8]">৳{lot.startingPriceBdt} · {lot.status}</p>
+                          <p className="text-xs text-[#8c7564]">৳{lot.startingPriceBdt} · {lot.status}</p>
                         </div>
                         {selectedAuction.status === 'CREATED' && (
                           <button onClick={() => askConfirm({
@@ -450,9 +450,9 @@ export default function VendorAuctionsPage() {
 
 function StudioMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-[#e0e7ff] bg-[#f8fafc] p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#94A3B8]">{label}</p>
-      <p className="mt-1 font-[Fraunces] text-3xl text-[#1e293b]">{value}</p>
+    <div className="rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8c7564]">{label}</p>
+      <p className="mt-1 font-[Fraunces] text-3xl text-[#221b16]">{value}</p>
     </div>
   )
 }

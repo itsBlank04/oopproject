@@ -126,29 +126,29 @@ function PaymentModal({ orderId, amount, onClose }: { orderId: number; amount: n
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#e0e7ff]/40 px-6 py-4">
-          <h2 className="font-semibold text-[#1e293b]">Select Payment Method</h2>
-          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#1e293b] transition-colors">
+        <div className="flex items-center justify-between border-b border-[#e4d6c8]/40 px-6 py-4">
+          <h2 className="font-semibold text-[#1a1512]">Select Payment Method</h2>
+          <button onClick={onClose} className="text-[#8c7564] hover:text-[#1a1512] transition-colors">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         <div className="space-y-2 px-6 py-4">
-          <p className="text-center text-sm text-[#64748b] mb-3">
-            Order total: <strong className="text-[#1e293b]">৳{amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</strong>
+          <p className="text-center text-sm text-[#6c5b4f] mb-3">
+            Order total: <strong className="text-[#1a1512]">৳{amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</strong>
           </p>
           {PAYMENT_METHODS.map(m => (
             <button key={m.key} onClick={() => setSelectedMethod(m.key)}
               className={`w-full flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
                 selectedMethod === m.key
-                  ? 'border-[#1e293b] bg-[#f8fafc]'
-                  : 'border-[#e0e7ff]/60 hover:border-[#cbd5e1]'
+                  ? 'border-[#1a1512] bg-[#faf6f2]'
+                  : 'border-[#e4d6c8]/60 hover:border-[#b8a494]'
               }`}
             >
               <span className="text-2xl">{m.icon}</span>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-[#1e293b]">{m.label}</p>
-                <p className="text-xs text-[#94A3B8]">{m.desc}</p>
+                <p className="text-sm font-semibold text-[#1a1512]">{m.label}</p>
+                <p className="text-xs text-[#8c7564]">{m.desc}</p>
               </div>
               {selectedMethod === m.key && (
                 <svg className="h-5 w-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
@@ -157,12 +157,12 @@ function PaymentModal({ orderId, amount, onClose }: { orderId: number; amount: n
           ))}
         </div>
 
-        <div className="flex items-center gap-3 border-t border-[#e0e7ff]/40 px-6 py-4">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-[#cbd5e1] px-4 py-2.5 text-sm font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors">
+        <div className="flex items-center gap-3 border-t border-[#e4d6c8]/40 px-6 py-4">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
             Cancel
           </button>
           <button onClick={handlePay} disabled={!selectedMethod || isProcessing}
-            className="flex-1 rounded-xl bg-[#1e293b] px-4 py-2.5 text-sm font-semibold text-[#f8fafc] transition hover:bg-[#334155] disabled:opacity-40">
+            className="flex-1 rounded-xl bg-[#1a1512] px-4 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e] disabled:opacity-40">
             {isProcessing ? (
               <span className="inline-flex items-center gap-2"><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Processing...</span>
             ) : 'Confirm Payment'}
@@ -204,7 +204,7 @@ function CancelButton({ orderId, createdAt }: { orderId: number; createdAt: stri
           {cancelling ? '...' : 'Yes'}
         </button>
         <button onClick={() => setConfirming(false)}
-          className="rounded-lg border border-[#cbd5e1] px-2.5 py-1.5 text-xs font-medium text-[#64748b] hover:bg-[#f8fafc] transition">
+          className="rounded-lg border border-[#d7c7b8] px-2.5 py-1.5 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition">
           No
         </button>
       </div>
@@ -216,7 +216,7 @@ function CancelButton({ orderId, createdAt }: { orderId: number; createdAt: stri
       className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition ${
         canCancel
           ? 'border-red-200/60 text-red-600 hover:bg-red-50'
-          : 'border-[#cbd5e1] text-[#cbd5e1] cursor-not-allowed'
+          : 'border-[#d7c7b8] text-[#b8a494] cursor-not-allowed'
       }`}>
       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -259,13 +259,13 @@ export default function AccountOrdersPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
+      <div className="flex min-h-screen items-center justify-center bg-[#faf6f2]">
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1e293b] mb-4">
-            <svg className="h-7 w-7 text-[#f8fafc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a1512] mb-4">
+            <svg className="h-7 w-7 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
           </div>
-          <p className="text-sm text-[#64748b] mb-4">Sign in to view your orders</p>
-          <Link to="/auth/login" className="inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc] transition hover:bg-[#334155]">
+          <p className="text-sm text-[#6c5b4f] mb-4">Sign in to view your orders</p>
+          <Link to="/auth/login" className="inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
             Sign in
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
           </Link>
@@ -276,15 +276,15 @@ export default function AccountOrdersPage() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf6f2] flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 mb-4">
             <svg className="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
           </div>
-          <p className="text-sm font-semibold text-[#1e293b]">Failed to load orders</p>
-          <p className="text-xs text-[#94A3B8] mt-1">{(error as any)?.message || 'Something went wrong'}</p>
+          <p className="text-sm font-semibold text-[#1a1512]">Failed to load orders</p>
+          <p className="text-xs text-[#8c7564] mt-1">{(error as any)?.message || 'Something went wrong'}</p>
           <button onClick={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc] transition hover:bg-[#334155]">
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
             Try again
           </button>
         </div>
@@ -293,7 +293,7 @@ export default function AccountOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#faf6f2]">
       <style>{`
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -316,14 +316,14 @@ export default function AccountOrdersPage() {
         {/* Header */}
         <div className="anim-fade anim-fade-1">
           <div className="flex items-center gap-4 mb-8">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1e293b] shadow-sm">
-              <svg className="h-5 w-5 text-[#f8fafc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1a1512] shadow-sm">
+              <svg className="h-5 w-5 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
             </div>
             <div>
-              <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1e293b] tracking-tight">My Orders</h1>
-              <p className="text-xs text-[#94A3B8] mt-0.5">Track, pay, and manage your purchases</p>
+              <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">My Orders</h1>
+              <p className="text-xs text-[#8c7564] mt-0.5">Track, pay, and manage your purchases</p>
             </div>
           </div>
         </div>
@@ -332,12 +332,12 @@ export default function AccountOrdersPage() {
         {isLoading && (
           <div className="space-y-4 anim-fade">
             {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40 animate-pulse">
+              <div key={i} className="rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 animate-pulse">
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-lg bg-[#f8fafc]" />
+                  <div className="h-10 w-10 rounded-lg bg-[#f5f0eb]" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/3 rounded bg-[#f8fafc]" />
-                    <div className="h-3 w-1/4 rounded bg-[#f8fafc]" />
+                    <div className="h-4 w-1/3 rounded bg-[#f5f0eb]" />
+                    <div className="h-3 w-1/4 rounded bg-[#f5f0eb]" />
                   </div>
                 </div>
               </div>
@@ -347,15 +347,15 @@ export default function AccountOrdersPage() {
 
         {/* Empty */}
         {!isLoading && orders && orders.length === 0 && (
-          <div className="anim-fade anim-fade-2 rounded-2xl border-2 border-dashed border-[#e0e7ff] p-12 sm:p-16 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f8fafc]">
-              <svg className="h-8 w-8 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <div className="anim-fade anim-fade-2 rounded-2xl border-2 border-dashed border-[#e4d6c8] p-12 sm:p-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f0eb]">
+              <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
             </div>
-            <p className="mt-4 font-semibold text-[#1e293b]">No orders yet</p>
-            <p className="mt-1 text-sm text-[#94A3B8]">When you place an order, it will appear here</p>
-            <Link to="/" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc] transition hover:bg-[#334155]">
+            <p className="mt-4 font-semibold text-[#1a1512]">No orders yet</p>
+            <p className="mt-1 text-sm text-[#8c7564]">When you place an order, it will appear here</p>
+            <Link to="/" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition hover:bg-[#2d241e]">
               Start shopping
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </Link>
@@ -371,21 +371,21 @@ export default function AccountOrdersPage() {
               const pinfo = paymentInfo[order.id]
               const totalItems = order.items?.reduce((s, i) => s + i.qty, 0) || 0
               return (
-                <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.04}s` }}>
+                <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.04}s` }}>
                   {/* Collapsed header */}
                   <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 cursor-pointer select-none"
                     onClick={() => handleExpand(order.id)}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f8fafc]">
-                      <svg className="h-5 w-5 text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f5f0eb]">
+                      <svg className="h-5 w-5 text-[#6c5b4f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4" />
                       </svg>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-[#1e293b]">Order #{order.id}</span>
+                        <span className="text-sm font-semibold text-[#1a1512]">Order #{order.id}</span>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${meta.badge}`}>{meta.label}</span>
                       </div>
-                      <p className="text-xs text-[#94A3B8] mt-0.5">
+                      <p className="text-xs text-[#8c7564] mt-0.5">
                         {totalItems} item{totalItems !== 1 ? 's' : ''} · {new Date(order.createdAt).toLocaleString('en-BD', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                       </p>
                     </div>
@@ -393,33 +393,33 @@ export default function AccountOrdersPage() {
                       <OrderTimeline status={order.status} />
                     </div>
                     <div className="text-right shrink-0 ml-2">
-                      <p className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+                      <p className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
                     </div>
-                    <svg className={`h-5 w-5 shrink-0 text-[#cbd5e1] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                    <svg className={`h-5 w-5 shrink-0 text-[#b8a494] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                   </div>
 
                   {/* Expanded content */}
                   {isExpanded && (
-                    <div className="border-t border-[#e0e7ff]/40 px-4 sm:px-5 pb-5">
+                    <div className="border-t border-[#e4d6c8]/40 px-4 sm:px-5 pb-5">
                       {/* Items */}
                       <div className="mt-4 space-y-2">
                         {(order.items || []).map(item => (
-                          <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#f8fafc] p-3">
+                          <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
                             <button type="button" onClick={() => { const u = item.product?.images?.[0]?.imageUrl; if (u) setLightboxUrl(u) }}
-                              className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#eef2ff]">
+                              className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
                               {item.product?.images?.[0]?.imageUrl ? (
                                 <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center text-xs text-[#94A3B8]">
+                                <div className="flex h-full w-full items-center justify-center text-xs text-[#a28672]">
                                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                                 </div>
                               )}
                             </button>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-[#1e293b] truncate">{item.product?.name || 'Product'}</p>
-                              <p className="text-xs text-[#94A3B8]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
+                              <p className="text-sm font-medium text-[#1a1512] truncate">{item.product?.name || 'Product'}</p>
+                              <p className="text-xs text-[#8c7564]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
                             </div>
-                            <p className="shrink-0 text-sm font-semibold text-[#1e293b]">৳{(item.unitPriceBdt * item.qty).toLocaleString('en-BD')}</p>
+                            <p className="shrink-0 text-sm font-semibold text-[#1a1512]">৳{(item.unitPriceBdt * item.qty).toLocaleString('en-BD')}</p>
                           </div>
                         ))}
                       </div>
@@ -428,13 +428,13 @@ export default function AccountOrdersPage() {
                       <div className="mt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div>
                           {order.shippingAddress && (
-                            <p className="text-xs text-[#64748b]">
-                              <span className="font-medium text-[#1e293b]">Ship to:</span> {order.shippingAddress.fullName}, {order.shippingAddress.addressLine}, {order.shippingAddress.city}
+                            <p className="text-xs text-[#6c5b4f]">
+                              <span className="font-medium text-[#1a1512]">Ship to:</span> {order.shippingAddress.fullName}, {order.shippingAddress.addressLine}, {order.shippingAddress.city}
                             </p>
                           )}
                         </div>
                         <div className="space-y-1 text-right">
-                          <div className="flex justify-between gap-6 text-xs text-[#64748b]">
+                          <div className="flex justify-between gap-6 text-xs text-[#6c5b4f]">
                             <span>Subtotal</span><span>৳{order.subtotalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                           </div>
                           {order.discountBdt > 0 && (
@@ -442,10 +442,10 @@ export default function AccountOrdersPage() {
                               <span>Discount</span><span>-৳{order.discountBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                             </div>
                           )}
-                          <div className="flex justify-between gap-6 text-xs text-[#64748b]">
+                          <div className="flex justify-between gap-6 text-xs text-[#6c5b4f]">
                             <span>Shipping</span><span>৳{order.shippingFeeBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                           </div>
-                          <div className="flex justify-between gap-6 font-semibold text-sm text-[#1e293b] border-t border-[#e0e7ff]/40 pt-1">
+                          <div className="flex justify-between gap-6 font-semibold text-sm text-[#1a1512] border-t border-[#e4d6c8]/40 pt-1">
                             <span>Total</span><span className="font-[Fraunces]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</span>
                           </div>
                         </div>
@@ -454,7 +454,7 @@ export default function AccountOrdersPage() {
                       {/* Actions */}
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <Link to={`/messages?orderId=${order.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] px-3 py-2 text-xs font-semibold text-[#1e293b] transition hover:bg-[#f8fafc]">
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-[#faf6f2]">
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
                           Chat
                         </Link>
@@ -482,12 +482,12 @@ export default function AccountOrdersPage() {
                         {pinfo?.invoice && (
                           <>
                             <a href={`${API_URL}/api/payments/invoice/${order.id}/download?download=false`} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] px-3 py-2 text-xs font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors">
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3 py-2 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
                               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                               View
                             </a>
                             <a href={`${API_URL}/api/payments/invoice/${order.id}/download`} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] px-3 py-2 text-xs font-medium text-[#64748b] hover:bg-[#f8fafc] transition-colors">
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3 py-2 text-xs font-medium text-[#6c5b4f] hover:bg-[#f5f0eb] transition-colors">
                               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                               Download
                             </a>

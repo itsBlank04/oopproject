@@ -115,7 +115,7 @@ export default function MediaUploader({
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {media.map(m => (
-            <div key={m.url} className="group relative h-16 w-16 overflow-hidden rounded-xl border border-[#e0e7ff]">
+            <div key={m.url} className="group relative h-16 w-16 overflow-hidden rounded-xl border border-[#e4d6c8]">
               {m.type === 'video' ? (
                 <video src={m.url} className="h-full w-full object-cover" />
               ) : (
@@ -129,7 +129,7 @@ export default function MediaUploader({
           ))}
           {media.length < maxFiles && (
             <button onClick={() => inputRef.current?.click()} disabled={uploading}
-              className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[#cbd5e1] text-[#94A3B8] hover:border-[#1e293b] hover:text-[#1e293b] transition disabled:opacity-50">
+              className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[#d7c7b8] text-[#8c7564] hover:border-[#221b16] hover:text-[#221b16] transition disabled:opacity-50">
               {uploading ? (
                 <span className="text-xs">{progress.uploaded}/{progress.total}</span>
               ) : (
@@ -147,7 +147,7 @@ export default function MediaUploader({
   return (
     <div className="space-y-4">
       <style>{`@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }`}</style>
-      <label className="text-sm font-semibold text-[#1e293b]">{label}</label>
+      <label className="text-sm font-semibold text-[#221b16]">{label}</label>
 
       {/* Drop zone */}
       <div
@@ -156,17 +156,17 @@ export default function MediaUploader({
         onDrop={onDrop}
         onClick={() => !uploading && inputRef.current?.click()}
         className={`relative cursor-pointer rounded-2xl border-2 text-center transition
-          ${dragOver ? 'border-[#1e293b] bg-[#eef2ff] border-dashed' : media.length > 0 ? 'border-emerald-300 bg-emerald-50/40 hover:border-emerald-400 p-5' : 'border-dashed border-[#cbd5e1] bg-[#f8fafc] hover:border-[#cbd5e1] p-8'}
+          ${dragOver ? 'border-[#221b16] bg-[#f0e8df] border-dashed' : media.length > 0 ? 'border-emerald-300 bg-emerald-50/40 hover:border-emerald-400 p-5' : 'border-dashed border-[#d7c7b8] bg-[#faf6f1] hover:border-[#b8a494] p-8'}
           ${uploading ? 'pointer-events-none opacity-60' : ''}
           ${successFlash ? '!border-emerald-500 !bg-emerald-50' : ''}`}
       >
         <div className="space-y-3">
-          <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-[#f8fafc] transition-colors ${media.length > 0 ? 'bg-emerald-600' : 'bg-[#1e293b]'}`}>
+          <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-[#f9f5f0] transition-colors ${media.length > 0 ? 'bg-emerald-600' : 'bg-[#221b16]'}`}>
             {successFlash ? '✓' : '📷'}
           </div>
           <div>
             {uploading ? (
-              <p className="font-semibold text-[#1e293b]">
+              <p className="font-semibold text-[#221b16]">
                 Uploading {progress.uploaded}/{progress.total}...
               </p>
             ) : media.length > 0 ? (
@@ -180,8 +180,8 @@ export default function MediaUploader({
               </>
             ) : (
               <>
-                <p className="font-semibold text-[#1e293b]">Drop files here or click to browse</p>
-                <p className="mt-1 text-xs text-[#94A3B8]">
+                <p className="font-semibold text-[#221b16]">Drop files here or click to browse</p>
+                <p className="mt-1 text-xs text-[#8c7564]">
                   {allowVideo ? 'Images (JPG, PNG, WebP, GIF) & Videos (MP4, WebM)' : 'Images (JPG, PNG, WebP, GIF)'}
                   {' '}· Max {maxSizeMB}MB each · Up to {maxFiles} files
                 </p>
@@ -200,8 +200,8 @@ export default function MediaUploader({
 
         {/* Upload progress bar */}
         {uploading && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden rounded-b-2xl bg-[#e0e7ff]">
-            <div className="h-full bg-[#1e293b] transition-all duration-300"
+          <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden rounded-b-2xl bg-[#e4d6c8]">
+            <div className="h-full bg-[#221b16] transition-all duration-300"
               style={{ width: `${(progress.uploaded / progress.total) * 100}%` }} />
           </div>
         )}
@@ -214,7 +214,7 @@ export default function MediaUploader({
       {media.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {media.map(m => (
-            <div key={m.url} className="group relative overflow-hidden rounded-xl border border-[#e0e7ff] bg-white">
+            <div key={m.url} className="group relative overflow-hidden rounded-xl border border-[#e4d6c8] bg-white">
               {m.type === 'video' ? (
                 <video src={m.url} controls className="aspect-square w-full object-cover" />
               ) : (
@@ -225,7 +225,7 @@ export default function MediaUploader({
               <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition">
                 <button type="button" onClick={() => setLightboxUrl(m.url)} className="flex h-full w-full items-end">
                   <div className="flex w-full items-center justify-between p-2">
-                    <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs text-[#1e293b] truncate max-w-[60%]">
+                    <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs text-[#221b16] truncate max-w-[60%]">
                       {m.type === 'video' ? '🎬' : '🖼️'} {m.name}
                     </span>
                     <span onClick={(e) => { e.stopPropagation(); handleRemove(m.url) }}
@@ -261,7 +261,7 @@ export default function MediaUploader({
                 )}
               </div>
               <div className="flex items-center justify-between px-5 py-3">
-                <p className="text-xs text-[#94A3B8]">Click outside or press Esc to close</p>
+                <p className="text-xs text-[#8c7564]">Click outside or press Esc to close</p>
                 <div className="flex items-center gap-2">
                   {item && (
                     <button
@@ -278,7 +278,7 @@ export default function MediaUploader({
                   <button
                     type="button"
                     onClick={() => setLightboxUrl(null)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef2ff] text-[#64748b] transition hover:bg-[#e0e7ff]"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f0e8df] text-[#6c5b4f] transition hover:bg-[#e4d6c8]"
                   >
                     <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />

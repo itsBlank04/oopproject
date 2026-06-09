@@ -76,8 +76,8 @@ export default function HotProducts() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[#1e293b]">Hot Products</h2>
-            <div className="mt-2 h-0.5 w-12 rounded-full bg-[#4F46E5]" />
+            <h2 className="text-2xl font-semibold tracking-tight text-[#221b16]">Hot Products</h2>
+            <div className="mt-2 h-0.5 w-12 rounded-full bg-[#ee5a24]" />
           </div>
 
           {/* Tabs */}
@@ -88,19 +88,19 @@ export default function HotProducts() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative pb-1 text-sm font-medium transition-colors ${
                   activeTab === tab.key
-                    ? 'text-[#1e293b]'
-                    : 'text-[#94A3B8] hover:text-[#1e293b]'
+                    ? 'text-[#221b16]'
+                    : 'text-[#8a7a6a] hover:text-[#221b16]'
                 }`}
               >
                 {tab.label}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#4F46E5]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#ee5a24]" />
                 )}
               </button>
             ))}
             <Link
               to="/products"
-              className="ml-2 flex items-center gap-1 text-xs font-semibold text-[#64748b] transition-colors hover:text-[#1e293b]"
+              className="ml-2 flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] transition-colors hover:text-[#221b16]"
             >
               All products
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
@@ -114,13 +114,13 @@ export default function HotProducts() {
         <div className="mt-8">
           {/* Best Sellers empty state */}
           {activeTab === 'bestSellers' && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#eef2ff] bg-[#f8fafc] py-20">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12 text-[#cbd5e1]">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#e8ddd0] bg-[#f9f5f0] py-20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12 text-[#c8bdb5]">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" />
                 <path d="M2 17l10 5 10-5" />
                 <path d="M2 12l10 5 10-5" />
               </svg>
-              <p className="mt-4 text-sm text-[#94A3B8]">
+              <p className="mt-4 text-sm text-[#8a7a6a]">
                 No best sellers to show yet. Once sales pick up and products are flagged as best sellers, they will appear here.
               </p>
             </div>
@@ -128,11 +128,11 @@ export default function HotProducts() {
 
           {/* Top Rating empty state */}
           {activeTab === 'topRating' && !isLoading && topRatedProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#eef2ff] bg-[#f8fafc] py-20">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12 text-[#cbd5e1]">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#e8ddd0] bg-[#f9f5f0] py-20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12 text-[#c8bdb5]">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
-              <p className="mt-4 text-sm text-[#94A3B8]">
+              <p className="mt-4 text-sm text-[#8a7a6a]">
                 No top rated products to show yet. Once customers leave reviews, top rated products will appear here.
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function HotProducts() {
           {(activeTab === 'latest' || activeTab === 'topRating') && isLoading && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-72 animate-pulse rounded-2xl bg-[#eef2ff]" />
+                <div key={i} className="h-72 animate-pulse rounded-2xl bg-[#f0e8df]" />
               ))}
             </div>
           )}
@@ -166,7 +166,7 @@ export default function HotProducts() {
         <div className="mt-6 text-center md:hidden">
           <Link
             to="/products"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#64748b] transition-colors hover:text-[#1e293b]"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] transition-colors hover:text-[#221b16]"
           >
             All products
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">

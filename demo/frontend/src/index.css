@@ -3,55 +3,55 @@
 @import "tailwindcss";
 
 @theme {
-  /* ─── AtomDrops Indigo Palette ─── */
-  --color-primary: #4F46E5;
+  /* ─── M3 AtomDrops Reference Palette ─── */
+  --color-primary: #5a5d76;
   --color-on-primary: #ffffff;
-  --color-primary-container: #B1B2FF;
-  --color-on-primary-container: #1e293b;
-  --color-primary-fixed: #eef2ff;
-  --color-primary-fixed-dim: #AAC4FF;
-  --color-on-primary-fixed: #1e293b;
-  --color-on-primary-fixed-variant: #64748b;
-  --color-inverse-primary: #AAC4FF;
+  --color-primary-container: #bfc1de;
+  --color-on-primary-container: #4c4f67;
+  --color-primary-fixed: #dfe0fe;
+  --color-primary-fixed-dim: #c2c4e2;
+  --color-on-primary-fixed: #171a30;
+  --color-on-primary-fixed-variant: #42455d;
+  --color-inverse-primary: #c2c4e2;
 
-  --color-secondary: #64748b;
+  --color-secondary: #5c5f61;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #e2e8f0;
-  --color-on-secondary-container: #334155;
-  --color-secondary-fixed: #e2e8f0;
-  --color-secondary-fixed-dim: #cbd5e1;
-  --color-on-secondary-fixed: #0f172a;
-  --color-on-secondary-fixed-variant: #475569;
+  --color-secondary-container: #e1e3e5;
+  --color-on-secondary-container: #626567;
+  --color-secondary-fixed: #e1e3e5;
+  --color-secondary-fixed-dim: #c5c7c9;
+  --color-on-secondary-fixed: #191c1e;
+  --color-on-secondary-fixed-variant: #444749;
 
-  --color-tertiary: #818cf8;
+  --color-tertiary: #635f3d;
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #e0e7ff;
-  --color-on-tertiary-container: #3730a3;
-  --color-tertiary-fixed: #e0e7ff;
-  --color-tertiary-fixed-dim: #c7d2fe;
-  --color-on-tertiary-fixed: #1e1b4b;
-  --color-on-tertiary-fixed-variant: #4338ca;
+  --color-tertiary-container: #cac49b;
+  --color-on-tertiary-container: #555130;
+  --color-tertiary-fixed: #eae4b8;
+  --color-tertiary-fixed-dim: #cec89e;
+  --color-on-tertiary-fixed: #1f1c03;
+  --color-on-tertiary-fixed-variant: #4b4828;
 
-  --color-surface: #f8fafc;
-  --color-surface-bright: #f8fafc;
-  --color-surface-dim: #e2e8f0;
-  --color-surface-tint: #4F46E5;
+  --color-surface: #fcf8fa;
+  --color-surface-bright: #fcf8fa;
+  --color-surface-dim: #dcd9db;
+  --color-surface-tint: #5a5d76;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f1f5f9;
-  --color-surface-container: #eef2ff;
-  --color-surface-container-high: #e2e8f0;
-  --color-surface-container-highest: #cbd5e1;
-  --color-surface-variant: #e2e8f0;
+  --color-surface-container-low: #f6f3f5;
+  --color-surface-container: #f0edef;
+  --color-surface-container-high: #ebe7e9;
+  --color-surface-container-highest: #e5e1e4;
+  --color-surface-variant: #e5e1e4;
 
-  --color-background: #f8fafc;
-  --color-on-background: #1e293b;
-  --color-on-surface: #1e293b;
-  --color-on-surface-variant: #475569;
-  --color-inverse-on-surface: #f8fafc;
-  --color-inverse-surface: #334155;
+  --color-background: #fcf8fa;
+  --color-on-background: #1c1b1d;
+  --color-on-surface: #1c1b1d;
+  --color-on-surface-variant: #46464d;
+  --color-inverse-on-surface: #f3f0f2;
+  --color-inverse-surface: #313032;
 
-  --color-outline: #64748b;
-  --color-outline-variant: #cbd5e1;
+  --color-outline: #77767d;
+  --color-outline-variant: #c7c5cd;
 
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
@@ -137,8 +137,8 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  background-color: #fcf8fa;
+  color: #1c1b1d;
 }
 
 /* ─── Material Symbols ─── */
@@ -167,10 +167,10 @@ body {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(177, 178, 255, 0.4);
+  border: 1px solid rgba(199, 197, 205, 0.5);
 }
 .progress-line {
-  background: linear-gradient(to right, #4F46E5 66%, #e2e8f0 66%);
+  background: linear-gradient(to right, #5a5d76 66%, #e1e3e5 66%);
 }
 .repair-shadow {
   box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
@@ -188,17 +188,17 @@ body {
 
 /* ─── Step indicator classes ─── */
 .active-step-circle {
-  background-color: #4F46E5;
+  background-color: #5a5d76;
   color: #ffffff;
-  box-shadow: 0 0 0 4px #B1B2FF;
+  box-shadow: 0 0 0 4px #bfc1de;
 }
 .inactive-step-circle {
-  background-color: #e2e8f0;
-  color: #475569;
+  background-color: #ebe7e9;
+  color: #46464d;
 }
 .completed-step-circle {
-  background-color: #B1B2FF;
-  color: #1e293b;
+  background-color: #bfc1de;
+  color: #4c4f67;
 }
 
 * {
@@ -245,21 +245,21 @@ body {
 .auth-field {
   width: 100%;
   padding: .75rem 1rem;
-  border: 1.5px solid #e0e7ff;
+  border: 1.5px solid #e8e8e8;
   border-radius: 10px;
   background: #fff;
-  color: #1e293b;
+  color: #1a1a1a;
   font-size: .9rem;
   font-family: inherit;
   outline: none;
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .auth-field:focus {
-  border-color: #1e293b;
-  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26,26,26,.06);
 }
 .auth-field::placeholder {
-  color: #94A3B8;
+  color: #9a9a9a;
 }
 .auth-field--error {
   border-color: #dc2626;
@@ -279,7 +279,7 @@ body {
   height: 2.9rem;
   border: none;
   border-radius: 10px;
-  background: #1e293b;
+  background: #1a1a1a;
   color: #fff;
   font-size: .9rem;
   font-weight: 600;
@@ -288,8 +288,8 @@ body {
   transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 .auth-btn:hover:not(:disabled) {
-  background: #4338ca;
-  box-shadow: 0 4px 12px rgba(79,70,229,.25);
+  background: #2a2a2a;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
   transform: translateY(-1px);
 }
 .auth-btn:active:not(:disabled) {
