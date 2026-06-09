@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
@@ -8,6 +8,7 @@ import ImageLightbox from '../../components/ImageLightbox'
 
 type Category = { id: number; name: string; slug: string; parentId: number | null }
 type Review = { id: number; rating: number }
+type Condition = { id: number; label: string }
 type UsedListing = {
   id: number
   title: string
@@ -15,49 +16,13 @@ type UsedListing = {
   priceBdt: number
   askingPriceBdt?: number
   status: string
+  location?: string
   condition: { label: string } | null
   conditionLevel?: { label: string } | null
   category: { id: number; name: string } | null
   seller: { id?: number; displayName: string; avatarUrl?: string } | null
   images: { imageUrl: string }[]
   createdAt: string
-}
-
-const ICON_BY_SLUG: Record<string, string> = {
-  electronics: 'devices',
-  tech: 'devices',
-  phone: 'phone_iphone',
-  phones: 'phone_iphone',
-  computer: 'computer',
-  computers: 'computer',
-  laptop: 'computer',
-  camera: 'photo_camera',
-  cameras: 'photo_camera',
-  watch: 'watch',
-  watches: 'watch',
-  furniture: 'chair',
-  chair: 'chair',
-  home: 'chair',
-  kitchen: 'kitchen',
-  fashion: 'styler',
-  clothing: 'styler',
-  apparel: 'styler',
-  shoes: 'styler',
-  jewelry: 'diamond',
-  outdoors: 'directions_bike',
-  sports: 'sports_esports',
-  fitness: 'fitness_center',
-  bike: 'directions_bike',
-  books: 'menu_book',
-  book: 'menu_book',
-  collectibles: 'auto_stories',
-  art: 'palette',
-  music: 'music_note',
-  toys: 'toys',
-  pets: 'pets',
-  baby: 'child_care',
-  gaming: 'sports_esports',
-  garden: 'yard',
 }
 
 const AVATAR_PALETTE = [
@@ -92,13 +57,6 @@ function formatBdt(value: number | undefined | null): string {
   return `৳${value.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
-function resolveCategoryIcon(slug: string | undefined, name: string | undefined): string {
-  const s = (slug || name || '').toLowerCase()
-  if (ICON_BY_SLUG[s]) return ICON_BY_SLUG[s]
-  const key = Object.keys(ICON_BY_SLUG).find(k => s.includes(k))
-  return key ? ICON_BY_SLUG[key] : 'category'
-}
-
 function UsedListingCard({
   listing,
   onImageClick,
@@ -107,8 +65,10 @@ function UsedListingCard({
   onImageClick: (imgs: { url: string }[], idx: number) => void
 }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [favorited, setFavorited] = useState(false)
   const [imgHovered, setImgHovered] = useState(false)
+  const isOwnListing = !!user && !!listing.seller?.id && listing.seller.id === user.id
 
   const sellerId = listing.seller?.id
   const { data: reviews = [] } = useQuery<Review[]>({
@@ -151,17 +111,19 @@ function UsedListingCard({
         <span className="font-label-sm text-label-sm text-primary">{conditionLabel}</span>
       </div>
 
-      <button
-        type="button"
-        onClick={toggleFavorite}
-        className="absolute top-3 right-3 z-10 rounded-full bg-surface-base/90 p-2 text-outline backdrop-blur-md transition-colors hover:text-secondary"
-      >
-        <span
-          className={`material-symbols-outlined text-[20px] ${favorited ? 'icon-fill text-secondary' : ''}`}
+      {!isOwnListing && (
+        <button
+          type="button"
+          onClick={toggleFavorite}
+          className="absolute top-3 right-3 z-10 rounded-full bg-surface-base/90 p-2 text-outline backdrop-blur-md transition-colors hover:text-secondary"
         >
-          favorite
-        </span>
-      </button>
+          <span
+            className={`material-symbols-outlined text-[20px] ${favorited ? 'icon-fill text-secondary' : ''}`}
+          >
+            favorite
+          </span>
+        </button>
+      )}
 
       <div
         className="relative aspect-[4/3] w-full overflow-hidden bg-surface-container-high"
@@ -219,6 +181,12 @@ function UsedListingCard({
               </div>
             )}
             <span className="font-label-sm text-label-sm text-on-surface-variant">{sellerName}</span>
+            {listing.location && (
+              <span className="ml-2 flex items-center text-[11px] text-[#8c7564]">
+                <span className="material-symbols-outlined mr-0.5 text-[11px]">location_on</span>
+                {listing.location}
+              </span>
+            )}
             {reviewCount > 0 && (
               <span className="ml-auto flex items-center text-[11px] font-semibold text-auction-gold">
                 <span className="material-symbols-outlined mr-0.5 text-[12px] icon-fill">star</span>
@@ -226,24 +194,26 @@ function UsedListingCard({
               </span>
             )}
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={openMessage}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-surface-container py-2.5 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-highest"
-            >
-              <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
-              Message
-            </button>
-            <button
-              type="button"
-              onClick={openOffer}
-              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-action-teal/10 py-2.5 font-label-md text-label-md font-semibold text-action-teal transition-colors hover:bg-action-teal/20"
-            >
-              <span className="material-symbols-outlined text-[18px]">handshake</span>
-              Offer
-            </button>
-          </div>
+          {!isOwnListing && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={openMessage}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-surface-container py-2.5 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-highest"
+              >
+                <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
+                Message
+              </button>
+              <button
+                type="button"
+                onClick={openOffer}
+                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-action-teal/10 py-2.5 font-label-md text-label-md font-semibold text-action-teal transition-colors hover:bg-action-teal/20"
+              >
+                <span className="material-symbols-outlined text-[18px]">handshake</span>
+                Offer
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -256,20 +226,26 @@ export default function UsedListingsPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const submittedSearch = searchParams.get('q') ?? ''
   const rawCategory = searchParams.get('category')
-  const rawSearch = searchParams.get('q') ?? ''
+  const isOtherCategory = rawCategory === 'other'
   const parsedCategory = rawCategory ? Number(rawCategory) : NaN
-  const selectedCategory = Number.isFinite(parsedCategory) && parsedCategory > 0 ? parsedCategory : null
-  const submittedSearch = rawSearch
+  const selectedCategory = !isOtherCategory && Number.isFinite(parsedCategory) && parsedCategory > 0 ? parsedCategory : null
+  const rawMinPrice = searchParams.get('minPrice')
+  const minPrice = rawMinPrice ? Number(rawMinPrice) : undefined
+  const rawMaxPrice = searchParams.get('maxPrice')
+  const maxPrice = rawMaxPrice ? Number(rawMaxPrice) : undefined
+  const rawCondition = searchParams.get('condition')
+  const parsedCondition = rawCondition ? Number(rawCondition) : NaN
+  const selectedCondition = Number.isFinite(parsedCondition) && parsedCondition > 0 ? parsedCondition : null
+  const rawMaxDistance = searchParams.get('maxDistance')
+  const maxDistance = rawMaxDistance ? Number(rawMaxDistance) : undefined
 
-  const [searchInput, setSearchInput] = useState(rawSearch)
+  const [searchInput, setSearchInput] = useState(submittedSearch)
+  const [priceMin, setPriceMin] = useState(minPrice?.toString() ?? '')
+  const [priceMax, setPriceMax] = useState(maxPrice?.toString() ?? '')
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
-  const [catCarouselIdx, setCatCarouselIdx] = useState(0)
-  const [catCarouselPaused, setCatCarouselPaused] = useState(false)
-  const catScrollRef = useRef<HTMLDivElement>(null)
-  const catCarouselTimer = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
@@ -278,23 +254,27 @@ export default function UsedListingsPage() {
   })
 
   const topCategories = useMemo(() => {
-    const top = categories.filter(c => c.parentId === null).slice(0, 12)
+    const top = categories.filter(c => c.parentId === null).slice(0, 30)
     return top.length > 0 ? top : FALLBACK_CATEGORIES
   }, [categories])
 
-  const activeCategoryName = useMemo(
-    () => topCategories.find(c => c.id === selectedCategory)?.name,
-    [topCategories, selectedCategory],
-  )
+  const { data: conditions = [] } = useQuery<Condition[]>({
+    queryKey: ['conditions'],
+    queryFn: () => apiClient.get('/api/used-listings/conditions').then(r => (Array.isArray(r.data) ? r.data : [])),
+    staleTime: 300_000,
+  })
 
   const { data: listings = [], isLoading } = useQuery<UsedListing[]>({
-    queryKey: ['used-listings', submittedSearch, selectedCategory],
+    queryKey: ['used-listings', submittedSearch, selectedCategory, minPrice, maxPrice, selectedCondition, isOtherCategory, maxDistance],
     queryFn: () =>
       apiClient
         .get('/api/used-listings', {
           params: {
             search: submittedSearch || undefined,
             category: selectedCategory ?? undefined,
+            minPrice: minPrice ?? undefined,
+            maxPrice: maxPrice ?? undefined,
+            condition: selectedCondition ?? undefined,
           },
         })
         .then(r => {
@@ -314,329 +294,296 @@ export default function UsedListingsPage() {
     else openModal('signin')
   }
 
-  const submitSearch = () => {
-    const next = searchInput.trim()
-    setSearchParams(
-      prev => {
-        if (next) prev.set('q', next)
-        else prev.delete('q')
-        return prev
-      },
-      { replace: true },
-    )
+  const updateParams = (updates: Record<string, string | undefined>) => {
+    setSearchParams(prev => {
+      for (const [key, value] of Object.entries(updates)) {
+        if (value) prev.set(key, value)
+        else prev.delete(key)
+      }
+      return prev
+    }, { replace: true })
   }
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value
+    if (!val) updateParams({ category: undefined })
+    else if (val === 'other') updateParams({ category: 'other' })
+    else updateParams({ category: val })
+  }
+
+  const submitSearch = () => {
+    updateParams({ q: searchInput.trim() || undefined })
+  }
+
   const handleSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') submitSearch()
   }
 
-  const handleCategoryClick = (cat: Category) => {
-    if (cat.id === 0) return
-    setSearchParams(
-      prev => {
-        if (selectedCategory === cat.id) prev.delete('category')
-        else prev.set('category', String(cat.id))
-        return prev
-      },
-      { replace: true },
-    )
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const applyPrice = () => {
+    updateParams({
+      minPrice: priceMin || undefined,
+      maxPrice: priceMax || undefined,
+    })
   }
 
-  const catAdvance = useCallback(() => {
-    setCatCarouselIdx(i => (i + 1) % topCategories.length)
-  }, [topCategories.length])
-
-  useEffect(() => {
-    if (catCarouselPaused || topCategories.length <= 1) return
-    catCarouselTimer.current = setInterval(catAdvance, 3500)
-    return () => { if (catCarouselTimer.current) clearInterval(catCarouselTimer.current) }
-  }, [catCarouselPaused, catAdvance, topCategories.length])
-
-  const catPrev = useCallback(() => {
-    setCatCarouselPaused(true)
-    setCatCarouselIdx(i => (i - 1 + topCategories.length) % topCategories.length)
-    setTimeout(() => setCatCarouselPaused(false), 5000)
-  }, [topCategories.length])
-
-  const catNext = useCallback(() => {
-    setCatCarouselPaused(true)
-    setCatCarouselIdx(i => (i + 1) % topCategories.length)
-    setTimeout(() => setCatCarouselPaused(false), 5000)
-  }, [topCategories.length])
-
-  useEffect(() => {
-    const el = catScrollRef.current
-    if (!el) return
-    const card = el.children[catCarouselIdx] as HTMLElement | undefined
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-  }, [catCarouselIdx])
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
-        setShowCategoryDropdown(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  const clearCategory = () => {
-    setSearchParams(
-      prev => {
-        prev.delete('category')
-        return prev
-      },
-      { replace: true },
-    )
+  const handleConditionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateParams({ condition: e.target.value || undefined })
   }
+
+  const handleDistanceChange = (value: number | undefined) => {
+    updateParams({ maxDistance: value ? String(value) : undefined })
+  }
+
+  const resetFilters = () => {
+    setPriceMin('')
+    setPriceMax('')
+    setSearchInput('')
+    setSearchParams({}, { replace: true })
+  }
+
+  const activeCategoryName = useMemo(
+    () => isOtherCategory ? 'Other Items' : topCategories.find(c => c.id === selectedCategory)?.name,
+    [topCategories, selectedCategory, isOtherCategory],
+  )
+
+  const activeConditionName = useMemo(
+    () => conditions.find(c => c.id === selectedCondition)?.label,
+    [conditions, selectedCondition],
+  )
+
+  const hasActiveFilters = !!(selectedCategory || isOtherCategory || minPrice || maxPrice || selectedCondition || maxDistance || submittedSearch)
 
   return (
-    <div className="min-h-screen bg-surface-muted">
-      <section className="mx-auto w-full max-w-container-max px-margin-mobile pb-8 pt-12 md:px-margin-desktop">
-        <div className="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="max-w-2xl">
-            <h1 className="mb-4 font-headline-lg-mobile text-headline-lg-mobile text-primary md:font-headline-lg md:text-headline-lg">
-              Discover Premium Pre-loved Goods
+    <div className="min-h-screen bg-[#faf6f2]">
+      <div className="mx-auto max-w-[1440px] px-4 py-8 md:px-8">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary md:font-headline-lg md:text-headline-lg">
+              Buy & Sell Used Items
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant">
-              Connect directly with verified sellers in your community. Negotiate instantly, buy securely.
+            <p className="mt-1 text-sm text-[#8c7564]">
+              {listings.length} {listings.length === 1 ? 'item' : 'items'} found
             </p>
           </div>
           <button
             onClick={handleSellClick}
-            className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-6 py-3 font-label-md text-label-md text-on-primary transition-transform hover:scale-[1.02]"
+            className="flex items-center gap-2 rounded-xl bg-[#221b16] px-6 py-3 font-label-md text-label-md text-white transition-all hover:bg-[#3a3028] hover:shadow-lg active:scale-[0.97]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             Sell an Item
           </button>
         </div>
 
-        <div className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-3 rounded-2xl border border-outline-variant/50 bg-surface-base p-2 card-shadow transition-colors focus-within:border-secondary md:flex-row md:p-3">
-          <div className="flex w-full flex-1 items-center px-3">
-            <span className="material-symbols-outlined mr-3 text-outline">search</span>
-            <input
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              onKeyDown={handleSearchKey}
-              placeholder="Search for electronics, furniture, vintage..."
-              type="text"
-              className="w-full border-none bg-transparent p-0 font-body-md text-body-md text-primary outline-none placeholder:text-outline focus:ring-0"
-            />
-          </div>
-          <div className="hidden h-8 w-px bg-outline-variant md:block" />
-          <div ref={dropdownRef} className="relative flex w-full items-center px-3 md:w-auto">
-            <span className="material-symbols-outlined mr-2 text-outline">category</span>
-            <button
-              type="button"
-              onClick={() => setShowCategoryDropdown(o => !o)}
-              className="whitespace-nowrap font-label-md text-label-md text-on-surface-variant transition-colors hover:text-primary"
-            >
-              {selectedCategory
-                ? topCategories.find(c => c.id === selectedCategory)?.name ?? `Category ${selectedCategory}`
-                : 'All Categories'}
-            </button>
-            {showCategoryDropdown && (
-              <div className="absolute left-0 top-full z-30 mt-2 max-h-64 w-56 overflow-y-auto rounded-xl border border-outline-variant/30 bg-white py-2 shadow-xl">
-                <button
-                  type="button"
-                  onClick={() => { setSearchParams(p => { p.delete('category'); return p }, { replace: true }); setShowCategoryDropdown(false) }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">all_inclusive</span>
-                  All Categories
-                </button>
-                {categories.filter(c => c.parentId === null).map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => { setSearchParams(p => { p.set('category', String(cat.id)); return p }, { replace: true }); setShowCategoryDropdown(false) }}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-outline">{resolveCategoryIcon(cat.slug, cat.name)}</span>
-                    {cat.name}
-                  </button>
-                ))}
-                <div className="mx-3 my-1 h-px bg-outline-variant/50" />
-                <button
-                  type="button"
-                  onClick={() => { setSearchParams(p => { return p }, { replace: true }); setShowCategoryDropdown(false) }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">more_horiz</span>
-                  Others
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="hidden h-8 w-px bg-outline-variant md:block" />
+        <div className="mb-6 flex w-full items-center gap-3 rounded-2xl border border-[#e4d6c8]/50 bg-white p-3 shadow-sm transition-colors focus-within:border-[#c4956a]">
+          <span className="material-symbols-outlined ml-1 text-[#8c7564]">search</span>
+          <input
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            onKeyDown={handleSearchKey}
+            placeholder="Search used items..."
+            type="text"
+            className="flex-1 border-none bg-transparent p-0 font-body-md text-body-md text-[#221b16] outline-none placeholder:text-[#8c7564] focus:ring-0"
+          />
           <button
-            type="button"
             onClick={submitSearch}
-            className="w-full whitespace-nowrap rounded-xl bg-secondary px-8 py-3 font-label-md text-label-md text-on-secondary transition-transform hover:scale-[1.02] md:w-auto"
+            className="rounded-xl bg-[#c4956a] px-6 py-2.5 font-label-md text-label-md text-white transition-all hover:bg-[#a87a4e] hover:shadow-md active:scale-[0.97]"
           >
             Search
           </button>
         </div>
-      </section>
 
-      <section
-        className="group relative mb-section-gap w-full border-b border-outline-variant/30 bg-surface-base/50 backdrop-blur-sm no-scrollbar"
-        onMouseEnter={() => setCatCarouselPaused(true)}
-        onMouseLeave={() => setCatCarouselPaused(false)}
-      >
         <button
-          type="button"
-          onClick={catPrev}
-          aria-label="Previous categories"
-          className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-surface-base/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-surface-base hover:scale-110 active:scale-95 md:h-11 md:w-11"
+          onClick={() => setShowMobileFilters(o => !o)}
+          className="mb-4 flex items-center gap-2 rounded-lg border border-[#e4d6c8] bg-white px-4 py-2 text-sm font-semibold text-[#221b16] transition-colors hover:bg-[#f9f5f0] md:hidden"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-primary">
-            <path d="M15 19l-7-7 7-7" />
-          </svg>
+          <span className="material-symbols-outlined text-[18px]">tune</span>
+          {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+          {hasActiveFilters && (
+            <span className="ml-1 flex h-2 w-2 rounded-full bg-[#c4956a]" />
+          )}
         </button>
-        <button
-          type="button"
-          onClick={catNext}
-          aria-label="Next categories"
-          className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-surface-base/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-surface-base hover:scale-110 active:scale-95 md:h-11 md:w-11"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-primary">
-            <path d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-        <div className="mx-auto max-w-container-max px-margin-mobile md:px-margin-desktop">
-          <div
-            ref={catScrollRef}
-            className="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar py-6"
+
+        <div className="flex flex-col gap-8 md:flex-row md:items-start">
+          <aside
+            className={`w-full shrink-0 overflow-y-auto md:w-[260px] md:sticky md:top-6 md:max-h-[calc(100vh-3rem)] ${
+              showMobileFilters ? 'block' : 'hidden md:block'
+            }`}
           >
-            {topCategories.map(cat => {
-              const icon = resolveCategoryIcon(cat.slug, cat.name)
-              const isActive = cat.id !== 0 && cat.id === selectedCategory
-              return (
-                <button
-                  key={cat.id || cat.slug}
-                  type="button"
-                  onClick={() => handleCategoryClick(cat)}
-                  aria-pressed={isActive}
-                  className="group/cat flex shrink-0 cursor-pointer flex-col items-center gap-3"
+            <div className="rounded-2xl border border-[#e4d6c8]/40 bg-white p-5">
+              <div className="mb-5">
+                <h3 className="mb-3 font-headline-sm text-headline-sm text-[#221b16]">Category</h3>
+                <select
+                  value={isOtherCategory ? 'other' : selectedCategory ? String(selectedCategory) : ''}
+                  onChange={handleCategoryChange}
+                  className="w-full rounded-lg border border-[#e4d6c8] px-3 py-2.5 text-sm text-[#221b16] outline-none focus:border-[#c4956a]"
                 >
-                  <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-full transition-all duration-300 ${
-                      isActive
-                        ? 'bg-secondary-container ring-2 ring-secondary'
-                        : 'bg-surface-container-high group-hover/cat:bg-secondary-container'
-                    }`}
-                  >
-                    <span
-                      className={`material-symbols-outlined text-[28px] transition-colors ${
-                        isActive
-                          ? 'text-on-secondary-container'
-                          : 'text-primary group-hover/cat:text-on-secondary-container'
+                  <option value="">All Categories</option>
+                  {topCategories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                  <option value="other">Other Items</option>
+                </select>
+              </div>
+
+              <hr className="my-5 border-[#e4d6c8]/50" />
+
+              <div className="mb-5">
+                <h3 className="mb-3 font-headline-sm text-headline-sm text-[#221b16]">Price Range (৳)</h3>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={priceMin}
+                    onChange={e => setPriceMin(e.target.value)}
+                    placeholder="Min"
+                    className="w-full rounded-lg border border-[#e4d6c8] px-3 py-2 text-sm text-[#221b16] outline-none placeholder:text-[#8c7564] focus:border-[#c4956a]"
+                  />
+                  <span className="text-[#8c7564]">—</span>
+                  <input
+                    type="number"
+                    value={priceMax}
+                    onChange={e => setPriceMax(e.target.value)}
+                    placeholder="Max"
+                    className="w-full rounded-lg border border-[#e4d6c8] px-3 py-2 text-sm text-[#221b16] outline-none placeholder:text-[#8c7564] focus:border-[#c4956a]"
+                  />
+                </div>
+                <button
+                  onClick={applyPrice}
+                  className="mt-2 w-full rounded-lg bg-[#c4956a] px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-[#a87a4e] hover:shadow-md active:scale-[0.97]"
+                >
+                  Apply
+                </button>
+              </div>
+
+              <hr className="my-5 border-[#e4d6c8]/50" />
+
+              <div className="mb-5">
+                <h3 className="mb-3 font-headline-sm text-headline-sm text-[#221b16]">Condition</h3>
+                <select
+                  value={selectedCondition ?? ''}
+                  onChange={handleConditionChange}
+                  className="w-full rounded-lg border border-[#e4d6c8] px-3 py-2.5 text-sm text-[#221b16] outline-none focus:border-[#c4956a]"
+                >
+                  <option value="">All Conditions</option>
+                  {conditions.map(c => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <hr className="my-5 border-[#e4d6c8]/50" />
+
+              <div className="mb-5">
+                <h3 className="mb-3 font-headline-sm text-headline-sm text-[#221b16]">Distance from me</h3>
+                <div className="flex flex-wrap gap-2">
+                  {[undefined, 1, 10, 20, 30, 50, 100].map(d => (
+                    <button
+                      key={d ?? 'any'}
+                      onClick={() => handleDistanceChange(d)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                        maxDistance === d
+                          ? 'bg-[#c4956a] text-white shadow-sm'
+                          : 'border border-[#e4d6c8] text-[#6c5b4f] hover:bg-[#f9f5f0] hover:border-[#c4956a]/50'
                       }`}
                     >
-                      {icon}
-                    </span>
-                  </div>
-                  <span
-                    className={`font-label-sm text-label-sm text-primary whitespace-nowrap ${
-                      isActive ? 'font-semibold' : ''
-                    }`}
-                  >
-                    {cat.name}
-                  </span>
+                      {d == null ? 'Any' : `${d} km`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#e4d6c8] px-4 py-2.5 text-sm font-semibold text-[#6c5b4f] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16]"
+                >
+                  <span className="material-symbols-outlined text-[16px]">close</span>
+                  Reset All Filters
                 </button>
-              )
-            })}
-          </div>
-          <div className="flex items-center justify-center gap-1.5 pb-4">
-            {topCategories.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => { setCatCarouselPaused(true); setCatCarouselIdx(i); setTimeout(() => setCatCarouselPaused(false), 5000) }}
-                className={`rounded-full transition-all duration-500 ${
-                  i === catCarouselIdx ? 'w-5 bg-secondary' : 'w-1.5 bg-outline hover:bg-secondary'
-                }`}
-                style={{ height: '6px' }}
-                aria-label={`Category ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto mb-section-gap max-w-container-max px-margin-mobile md:px-margin-desktop">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-headline-md text-headline-md text-primary">Fresh Listings Near You</h2>
-          <Link
-            to="/used-listings"
-            className="flex items-center gap-1 font-label-md text-label-md text-secondary hover:underline"
-          >
-            View All
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </Link>
-        </div>
-
-        {selectedCategory && activeCategoryName && (
-          <div className="mb-6 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={clearCategory}
-              className="inline-flex items-center gap-1.5 rounded-full border border-secondary/30 bg-secondary-container/10 px-3 py-1.5 font-label-sm text-label-sm font-semibold text-secondary transition-colors hover:bg-secondary-container/20"
-            >
-              Filtered by: {activeCategoryName}
-              <span className="material-symbols-outlined text-[14px]">close</span>
-            </button>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[4/3] animate-pulse rounded-xl bg-surface-container"
-              />
-            ))}
-          </div>
-        ) : listings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-outline-variant/60 bg-surface-base/50 py-20 text-center">
-            <span className="material-symbols-outlined text-[64px] text-outline">inventory_2</span>
-            <div>
-              <p className="font-headline-sm text-headline-sm text-primary">
-                {(() => {
-                  const parts: string[] = []
-                  if (submittedSearch) parts.push(`for "${submittedSearch}"`)
-                  if (activeCategoryName) parts.push(`in ${activeCategoryName}`)
-                  return parts.length > 0 ? `No results ${parts.join(' ')}` : 'No used items found yet'
-                })()}
-              </p>
-              <p className="mt-1 text-sm text-on-surface-variant">
-                {submittedSearch || selectedCategory
-                  ? 'Try a different category or search term.'
-                  : 'Be the first to list a pre-loved item in your area.'}
-              </p>
+              )}
             </div>
-            <button
-              onClick={handleSellClick}
-              className="mt-2 flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary transition-transform hover:scale-[1.02]"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Sell an Item
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.map(item => (
-              <UsedListingCard
-                key={item.id}
-                listing={item}
-                onImageClick={(imgs, idx) => setLightbox({ images: imgs, index: idx })}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+          </aside>
+
+          <main className="min-w-0 flex-1">
+            {hasActiveFilters && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {submittedSearch && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    Search: "{submittedSearch}"
+                  </span>
+                )}
+                {activeCategoryName && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    {activeCategoryName}
+                  </span>
+                )}
+                {minPrice != null && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    Min: ৳{minPrice.toLocaleString()}
+                  </span>
+                )}
+                {maxPrice != null && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    Max: ৳{maxPrice.toLocaleString()}
+                  </span>
+                )}
+                {activeConditionName && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    {activeConditionName}
+                  </span>
+                )}
+                {maxDistance != null && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#c4956a]/30 bg-[#c4956a]/10 px-3 py-1 text-xs font-semibold text-[#a87a4e]">
+                    <span className="material-symbols-outlined text-[12px]">near_me</span>
+                    Within {maxDistance} km
+                  </span>
+                )}
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[4/3] animate-pulse rounded-xl bg-surface-container"
+                  />
+                ))}
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-outline-variant/60 bg-surface-base/50 py-20 text-center">
+                <span className="material-symbols-outlined text-[64px] text-outline">inventory_2</span>
+                <div>
+                  <p className="font-headline-sm text-headline-sm text-primary">
+                    {hasActiveFilters ? 'No items match your filters' : 'No used items found yet'}
+                  </p>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    {hasActiveFilters
+                      ? 'Try adjusting your filters or search terms.'
+                      : 'Be the first to list a pre-loved item.'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleSellClick}
+                  className="mt-2 flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary transition-transform hover:scale-[1.02]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  Sell an Item
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {listings.map(item => (
+                  <UsedListingCard
+                    key={item.id}
+                    listing={item}
+                    onImageClick={(imgs, idx) => setLightbox({ images: imgs, index: idx })}
+                  />
+                ))}
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
 
       {lightbox && (
         <ImageLightbox

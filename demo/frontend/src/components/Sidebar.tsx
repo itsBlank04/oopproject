@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
-import { useState } from "react"
 
 const vendorLinks = [
   { to: "/vendor/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -19,10 +18,9 @@ const technicianLinks = [
   { to: "/repair/jobs", label: "Jobs", icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const { activeRole, setActiveRole } = useAuth()
   const location = useLocation()
-  const [open, setOpen] = useState(false)
 
   const links = activeRole === 'vendor' ? vendorLinks : activeRole === 'technician' ? technicianLinks : []
 
@@ -34,19 +32,27 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Toggle button */}
       <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-6 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/60 bg-white/80 text-[#221b16] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-all hover:bg-white hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.18)] lg:hidden"
+        onClick={onToggle}
+        className="fixed bottom-6 left-6 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/60 bg-white/80 text-[#221b16] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-all hover:bg-white hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.18)]"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-5 w-5">
-          <path d="M3 12h18M3 6h18M3 18h18" />
-        </svg>
+        {open ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-5 w-5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-5 w-5">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+        )}
       </button>
 
-      {/* Mobile overlay */}
-      {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden" onClick={() => setOpen(false)} />}
+      {/* Overlay */}
+      {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden" onClick={onToggle} />}
 
-      <aside className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-[#e4d6c8]/60 bg-white/95 backdrop-blur-xl transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      <aside className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-[#e4d6c8]/60 bg-white/95 backdrop-blur-xl transition-all duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'} lg:top-[60px] lg:h-[calc(100vh-60px)]`}>
         <div className="flex h-20 items-center gap-3 border-b border-[#e4d6c8]/40 px-5">
           <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${modeColor}`}>
             <svg viewBox="0 0 20 20" fill="white" className="h-4 w-4">
@@ -62,8 +68,8 @@ export default function Sidebar() {
             <p className="truncate text-sm font-medium text-[#221b16]">{activeRole === 'vendor' ? 'Vendor Panel' : 'Technician Panel'}</p>
           </div>
           <button
-            onClick={() => setOpen(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#8c7564] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16] lg:hidden"
+            onClick={onToggle}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#8c7564] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-4 w-4">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -91,7 +97,7 @@ export default function Sidebar() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  onClick={() => setOpen(false)}
+                  onClick={() => { if (open) onToggle() }}
                   className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? `${modeColor} text-white shadow-sm`
@@ -112,7 +118,7 @@ export default function Sidebar() {
           <div className="flex items-center justify-between rounded-xl bg-[#f9f5f0] px-3 py-2.5">
             <span className="text-[11px] font-medium text-[#6c5b4f]">Mode Active</span>
             <button
-              onClick={() => { setActiveRole(null); setOpen(false) }}
+              onClick={() => { setActiveRole(null); if (open) onToggle() }}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${modeColorLight}`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-3 w-3">

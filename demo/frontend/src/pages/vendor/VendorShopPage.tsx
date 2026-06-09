@@ -359,6 +359,7 @@ export default function VendorShopPage() {
                       showCategory={false}
                       priceFractionDigits={2}
                       truncateName
+                      vendorId={vendorId}
                     />
                     {isOwner && (
                       <div className="mt-2 rounded-xl border border-[#e4d6c8]/60 bg-white p-3">

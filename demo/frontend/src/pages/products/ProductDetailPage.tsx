@@ -335,19 +335,21 @@ export default function ProductDetailPage() {
                     ? `Add to Cart — ৳${product.priceBdt.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`
                     : 'Out of Stock'}
               </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await apiClient.post(`/api/wishlist/${product.id}`)
-                    toast.success('Added to wishlist')
-                  } catch (err: any) {
-                    toast.error(err.response?.data?.error ?? 'Failed')
-                  }
-                }}
-                className="rounded-xl border border-[#e4d6c8] px-4 py-3 text-lg hover:bg-[#f9f5f0] transition"
-              >
-                ♡
-              </button>
+              {!isOwner && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await apiClient.post(`/api/wishlist/${product.id}`)
+                      toast.success('Added to wishlist')
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.error ?? 'Failed')
+                    }
+                  }}
+                  className="rounded-xl border border-[#e4d6c8] px-4 py-3 text-lg hover:bg-[#f9f5f0] transition"
+                >
+                  ♡
+                </button>
+              )}
             </div>
             {/* Vendor card — Meet the Maker */}
             {vendorProfile && (

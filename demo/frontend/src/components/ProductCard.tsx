@@ -31,6 +31,7 @@ type ProductCardProps = {
   showCategory?: boolean
   priceFractionDigits?: number
   truncateName?: boolean
+  vendorId?: number
 }
 
 function StarRow({ avg, count }: { avg: number; count: number }) {
@@ -54,6 +55,7 @@ export default function ProductCard({
   showCategory = true,
   priceFractionDigits = 0,
   truncateName = false,
+  vendorId,
 }: ProductCardProps) {
   const [index, setIndex] = useState(0)
   const [imgHovered, setImgHovered] = useState(false)
@@ -63,6 +65,7 @@ export default function ProductCard({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
+  const isOwnProduct = !!user && !!vendorId && vendorId === user.id
   const images = product.images?.filter(i => i.imageUrl) ?? []
   const hasMultiple = images.length > 1
 
@@ -78,11 +81,11 @@ export default function ProductCard({
   const { data: wishlist = [] } = useQuery<{ id: number; product: { id: number } }[]>({
     queryKey: ['wishlist'],
     queryFn: () => apiClient.get('/api/wishlist').then(r => Array.isArray(r.data) ? r.data : []),
-    enabled: !!user,
+    enabled: !!user && !isOwnProduct,
     staleTime: 120_000,
     placeholderData: p => p ?? [],
   })
-  const isInWishlist = !!user && wishlist.some(w => w.product.id === product.id)
+  const isInWishlist = !!user && !isOwnProduct && wishlist.some(w => w.product.id === product.id)
 
   const toggleWishlist = useMutation({
     mutationFn: () =>
@@ -173,17 +176,19 @@ export default function ProductCard({
         onMouseEnter={() => setImgHovered(true)}
         onMouseLeave={() => setImgHovered(false)}
       >
-        {/* Top-left: Wishlist heart */}
-        <button
-          type="button"
-          onClick={authToggleWishlist}
-          disabled={toggleWishlist.isPending}
-          className="absolute top-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/75 backdrop-blur-sm border border-white/50 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white disabled:opacity-50"
-        >
-          <svg className={`w-4 h-4 transition-colors duration-200 ${isInWishlist ? 'text-[#E07B3F]' : 'text-[#1A1512]'}`} fill={isInWishlist ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-          </svg>
-        </button>
+        {/* Top-left: Wishlist heart (hidden for own products) */}
+        {!isOwnProduct && (
+          <button
+            type="button"
+            onClick={authToggleWishlist}
+            disabled={toggleWishlist.isPending}
+            className="absolute top-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/75 backdrop-blur-sm border border-white/50 shadow-sm transition-all duration-200 hover:scale-110 hover:bg-white disabled:opacity-50"
+          >
+            <svg className={`w-4 h-4 transition-colors duration-200 ${isInWishlist ? 'text-[#E07B3F]' : 'text-[#1A1512]'}`} fill={isInWishlist ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+        )}
 
         {/* Top-right: Shipping badge */}
         {shippingLabel && (
@@ -261,40 +266,42 @@ export default function ProductCard({
           </div>
         )}
 
-        {/* Action bar overlay (card hover) — Buy Now + Add to Cart */}
-        <div
-          className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 pb-3 pt-6"
-          style={{
-            opacity: cardHovered ? 1 : 0,
-            transform: cardHovered ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'opacity .25s, transform .25s',
-            background: 'linear-gradient(to top, rgba(26,21,18,0.3) 0%, transparent 100%)',
-            pointerEvents: cardHovered ? 'auto' : 'none',
-          }}
-        >
-          <button
-            type="button"
-            onClick={authAddToCart}
-            disabled={addToCart.isPending || !isActive}
-            className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1A1512] shadow-md transition-all duration-200 hover:bg-[#E07B3F] hover:text-white hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        {/* Action bar overlay (card hover) — Buy Now + Add to Cart (hidden for own products) */}
+        {!isOwnProduct && (
+          <div
+            className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 pb-3 pt-6"
+            style={{
+              opacity: cardHovered ? 1 : 0,
+              transform: cardHovered ? 'translateY(0)' : 'translateY(8px)',
+              transition: 'opacity .25s, transform .25s',
+              background: 'linear-gradient(to top, rgba(26,21,18,0.3) 0%, transparent 100%)',
+              pointerEvents: cardHovered ? 'auto' : 'none',
+            }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-            </svg>
-            Add to Cart
-          </button>
-          <button
-            type="button"
-            onClick={authBuyNow}
-            disabled={buyNow.isPending || !isActive}
-            className="flex items-center gap-1.5 rounded-full bg-[#1A1512] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#E07B3F] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-            </svg>
-            Buy Now
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={authAddToCart}
+              disabled={addToCart.isPending || !isActive}
+              className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1A1512] shadow-md transition-all duration-200 hover:bg-[#E07B3F] hover:text-white hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+              </svg>
+              Add to Cart
+            </button>
+            <button
+              type="button"
+              onClick={authBuyNow}
+              disabled={buyNow.isPending || !isActive}
+              className="flex items-center gap-1.5 rounded-full bg-[#1A1512] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#E07B3F] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
+              </svg>
+              Buy Now
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Card body */}
