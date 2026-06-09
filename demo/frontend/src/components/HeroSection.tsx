@@ -55,7 +55,7 @@ const SLIDES: Slide[] = [
     label: 'Great Deals',
     title: 'Used & Refurbished',
     description: 'Quality pre-owned items at unbeatable prices. Every listing is verified so you can buy with confidence.',
-    cta: { text: 'Browse used items', to: '/used-listings' },
+    cta: { text: 'Browse used items', to: '/used' },
     icon: 'inventory_2',
     gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]',
     ringColor: 'ring-[#c4956a]/20',

@@ -126,6 +126,20 @@ export default function HotProducts() {
             </div>
           )}
 
+          {/* Latest Products empty state */}
+          {activeTab === 'latest' && !isLoading && latestProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#f9f5f0] bg-[#f9f5f0] py-20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12 text-[#e4d6c8]">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+              <p className="mt-4 text-sm text-[#8c7564]">
+                No latest products to show yet. Once products are listed, they will appear here.
+              </p>
+            </div>
+          )}
+
           {/* Top Rating empty state */}
           {activeTab === 'topRating' && !isLoading && topRatedProducts.length === 0 && (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-[#f9f5f0] bg-[#f9f5f0] py-20">

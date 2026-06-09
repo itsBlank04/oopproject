@@ -103,7 +103,7 @@ export default function Navbar() {
           </Link>
           <div className="hidden items-center gap-0.5 md:flex">
             {[
-              { to: '/used-listings', label: 'Used Items' },
+              { to: '/used', label: 'Used Items' },
               { to: '/repair', label: 'Repairs' },
               { to: '/auctions', label: 'Auctions' },
             ].map(link => (

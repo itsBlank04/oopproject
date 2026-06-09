@@ -25,6 +25,7 @@ import VendorShopManagerPage from './pages/vendor/VendorShopManagerPage'
 import VendorFinancialPage from './pages/vendor/VendorFinancialPage'
 import VendorReviewsPage from './pages/vendor/VendorReviewsPage'
 import VendorShopSetupPage from './pages/vendor/VendorShopSetupPage'
+import UsedMarketplacePage from './pages/used/UsedMarketplacePage'
 import UsedListingsPage from './pages/used/UsedListingsPage'
 import UsedListingDetailPage from './pages/used/UsedListingDetailPage'
 import CreateUsedListingPage from './pages/used/CreateUsedListingPage'
@@ -72,6 +73,7 @@ export default function App() {
         <Route path="/order-success/:id" element={<SiteLayout><OrderSuccessPage /></SiteLayout>} />
 
         {/* Used Items */}
+        <Route path="/used" element={<SiteLayout><UsedMarketplacePage /></SiteLayout>} />
         <Route path="/used-listings" element={<SiteLayout><UsedListingsPage /></SiteLayout>} />
         <Route path="/used-listings/new" element={<SiteLayout><CreateUsedListingPage /></SiteLayout>} />
         <Route path="/used-listings/:id" element={<SiteLayout><UsedListingDetailPage /></SiteLayout>} />
