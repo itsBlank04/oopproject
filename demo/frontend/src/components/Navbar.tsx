@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { useAuthModal } from "../contexts/AuthModalContext"
 import { useState, useEffect, useRef } from "react"
@@ -14,6 +14,7 @@ export default function Navbar() {
   const { user, logout, hasRole, activeRole, setActiveRole, subscribedRoles } = useAuth()
   const { openModal } = useAuthModal()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -72,6 +73,18 @@ export default function Navbar() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [searchOpen])
+
+  // Redirect when mode changes and user is on the previous mode's page
+  const prevRole = useRef(activeRole)
+  useEffect(() => {
+    const prev = prevRole.current
+    prevRole.current = activeRole
+    if (prev === 'vendor' && activeRole !== 'vendor' && location.pathname.startsWith('/vendor')) {
+      navigate(activeRole === 'technician' ? '/repair/dashboard' : '/', { replace: true })
+    } else if (prev === 'technician' && activeRole !== 'technician' && location.pathname.startsWith('/repair')) {
+      navigate(activeRole === 'vendor' ? '/vendor/dashboard' : '/', { replace: true })
+    }
+  }, [activeRole, location.pathname, navigate])
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return

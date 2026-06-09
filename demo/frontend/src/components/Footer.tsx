@@ -53,7 +53,7 @@ function SocialIcon({ href, label, children }: { href: string; label: string; ch
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-[#a89a85]/30 text-[#a89a85] transition-all hover:border-[#d7c7b8] hover:bg-[#d7c7b8]/10 hover:text-[#f5ede4]"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d7c7b8] text-[#8a7a6a] transition-all hover:border-[#a28672] hover:bg-[#f0e8df] hover:text-[#221b16]"
     >
       {children}
     </a>
@@ -79,15 +79,15 @@ export default function Footer() {
       ]
 
   return (
-    <footer className="border-t border-[#e4d6c8]/30 bg-[#1a1410]">
+    <footer className="border-t border-[#e4d6c8] bg-[#faf7f4]">
       <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 lg:px-8">
         {/* Brand row */}
-        <div className="mb-12 flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
           <Link to="/" className="flex items-center">
             <img src="/logo.png" alt="AtomDrops" className="h-auto w-auto max-h-16 max-w-32 object-contain" />
           </Link>
 
-          <p className="max-w-xs text-xs leading-relaxed text-[#a89a85]">
+          <p className="max-w-xs text-xs leading-relaxed text-[#8a7a6a]">
             Your trusted marketplace for verified pre-owned tech, furniture, and repairs across Bangladesh.
           </p>
 
@@ -107,11 +107,14 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Faded divider */}
+        <div className="my-12 h-px bg-gradient-to-r from-transparent via-[#d7c7b8] to-transparent" />
+
         {/* Links grid */}
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {sections.map(section => (
             <div key={section.title}>
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a89a85]">
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a28672]">
                 {section.title}
               </p>
               <ul className="space-y-2.5">
@@ -119,7 +122,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       to={link.to}
-                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#f5ede4]"
+                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#221b16]"
                     >
                       {link.label}
                     </Link>
@@ -131,7 +134,7 @@ export default function Footer() {
 
           {/* Account column */}
           <div>
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a89a85]">
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a28672]">
               Account
             </p>
             <ul className="space-y-2.5">
@@ -140,14 +143,14 @@ export default function Footer() {
                   {'action' in link ? (
                     <button
                       onClick={link.action}
-                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#f5ede4]"
+                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#221b16]"
                     >
                       {link.label}
                     </button>
                   ) : (
                     <Link
                       to={link.to}
-                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#f5ede4]"
+                      className="text-sm text-[#8a7a6a] transition-colors hover:text-[#221b16]"
                     >
                       {link.label}
                     </Link>
@@ -159,8 +162,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 border-t border-[#a89a85]/20 pt-6 text-center">
-          <p className="text-xs text-[#6c5b4f]">
+        <div className="mt-14 border-t border-[#e4d6c8] pt-6 text-center">
+          <p className="text-xs text-[#8a7a6a]">
             © {new Date().getFullYear()} AtomDrops · Made in Dhaka, Bangladesh · All rights reserved
           </p>
         </div>

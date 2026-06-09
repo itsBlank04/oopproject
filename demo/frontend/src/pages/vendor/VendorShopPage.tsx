@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import ImageLightbox from '../../components/ImageLightbox'
 import ProductCard from '../../components/ProductCard'
+import MediaUploader from '../../components/MediaUploader'
 import { toast } from 'react-hot-toast'
-import { Star, MapPin, ShieldCheck, Heart, Share2, Info, BookOpen, Clock } from 'lucide-react'
+import { Star, MapPin, ShieldCheck, Heart, Share2, Info, BookOpen, Clock, Plus, Package, Trash2 } from 'lucide-react'
 
 export type ShopPublicProfile = {
   id: number
@@ -61,11 +62,18 @@ function StarRating({ value }: { value: number }) {
 export default function VendorShopPage() {
   const { slug } = useParams<{ slug: string }>()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
   
   // Follower state for real-time toggle responsiveness
   const [isFollowing, setIsFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(0)
+
+  // Owner product management
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({ name: '', description: '', priceBdt: '', categoryId: '' })
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [stockCache, setStockCache] = useState<Record<number, { stockQty: number; lowStockThreshold: number }>>({})
 
   const { data: shop, isLoading: shopLoading } = useQuery<ShopPublicProfile>({
     queryKey: ['shop-by-slug', slug],
@@ -96,6 +104,73 @@ export default function VendorShopPage() {
     queryFn: () => apiClient.get(`/api/users/${vendorId}/reviews`).then((r) => r.data),
     enabled: !!vendorId,
   })
+
+  const { data: categories } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.get('/api/categories').then((r) => r.data.value ?? r.data),
+  })
+
+  const fetchInventoryBatch = useCallback(async (productIds: number[]) => {
+    if (!isOwner) return
+    const results = await Promise.allSettled(
+      productIds.map(id =>
+        apiClient.get(`/api/products/${id}/inventory`).then(r => ({ id, data: r.data as { stockQty: number; lowStockThreshold: number } }))
+      )
+    )
+    const cache: Record<number, { stockQty: number; lowStockThreshold: number }> = {}
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value.data) {
+        cache[r.value.id] = { stockQty: r.value.data.stockQty, lowStockThreshold: r.value.data.lowStockThreshold }
+      }
+    }
+    setStockCache(prev => ({ ...prev, ...cache }))
+  }, [isOwner])
+
+  useEffect(() => {
+    if (products.length > 0) fetchInventoryBatch(products.map(p => p.id))
+  }, [products, fetchInventoryBatch])
+
+  const createProduct = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post('/api/products', {
+        name: form.name,
+        description: form.description,
+        priceBdt: parseFloat(form.priceBdt),
+        category: { id: parseInt(form.categoryId) },
+        shop: { id: shopId }
+      })
+      const pid = res.data.id
+      for (const url of imageUrls) {
+        await apiClient.post(`/api/products/${pid}/images`, { imageUrl: url }).catch(() => {})
+      }
+      return res
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shop-products', shopId] })
+      queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
+      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard'] })
+      setShowForm(false)
+      setForm({ name: '', description: '', priceBdt: '', categoryId: '' })
+      setImageUrls([])
+      toast.success('Product created')
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error ?? 'Failed to create'),
+  })
+
+  const deleteProduct = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiClient.delete(`/api/products/${productId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shop-products', shopId] })
+      toast.success('Product deleted')
+    },
+    onError: () => toast.error('Failed to delete product'),
+  })
+
+  const syncStock = useCallback((productId: number, stockQty: number, lowStockThreshold: number) => {
+    apiClient.put(`/api/products/${productId}/inventory`, { stockQty, lowStockThreshold }).catch(() => {})
+  }, [])
 
   const handleFollowToggle = async () => {
     if (!shopId) return
@@ -210,7 +285,15 @@ export default function VendorShopPage() {
 
             {/* Right: Action Buttons */}
             <div className="flex gap-2">
-              {!isOwner && (
+              {isOwner ? (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#3a3028]"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Product
+                </button>
+              ) : (
                 <button
                   onClick={handleFollowToggle}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
@@ -268,15 +351,72 @@ export default function VendorShopPage() {
             ) : (
               <div className="grid gap-6 sm:grid-cols-2">
                 {products.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    onImageClick={(images, index) => setLightbox({ images, index })}
-                    aspectSquare
-                    showCategory={false}
-                    priceFractionDigits={2}
-                    truncateName
-                  />
+                  <div key={p.id} className="group relative">
+                    <ProductCard
+                      product={p}
+                      onImageClick={(images, index) => setLightbox({ images, index })}
+                      aspectSquare
+                      showCategory={false}
+                      priceFractionDigits={2}
+                      truncateName
+                    />
+                    {isOwner && (
+                      <div className="mt-2 rounded-xl border border-[#e4d6c8]/60 bg-white p-3">
+                        {/* Stock controls */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-3.5 w-3.5 text-[#8c7564]" />
+                            <span className="text-[11px] font-medium text-[#6c5b4f]">Stock</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                const cur = stockCache[p.id]?.stockQty ?? 0
+                                const next = Math.max(0, cur - 1)
+                                setStockCache(prev => ({ ...prev, [p.id]: { ...prev[p.id] ?? { lowStockThreshold: 5 }, stockQty: next } }))
+                                syncStock(p.id, next, stockCache[p.id]?.lowStockThreshold ?? 5)
+                              }}
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d7c7b8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
+                            >−</button>
+                            <span className={`min-w-[2rem] text-center text-xs font-semibold ${
+                              (stockCache[p.id]?.stockQty ?? 0) === 0 ? 'text-red-500' :
+                              (stockCache[p.id]?.stockQty ?? 0) <= (stockCache[p.id]?.lowStockThreshold ?? 5) ? 'text-amber-500' : 'text-emerald-600'
+                            }`}>
+                              {stockCache[p.id]?.stockQty ?? '…'}
+                            </span>
+                            <button
+                              onClick={() => {
+                                const cur = stockCache[p.id]?.stockQty ?? 0
+                                const next = cur + 1
+                                setStockCache(prev => ({ ...prev, [p.id]: { ...prev[p.id] ?? { lowStockThreshold: 5 }, stockQty: next } }))
+                                syncStock(p.id, next, stockCache[p.id]?.lowStockThreshold ?? 5)
+                              }}
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-[#d7c7b8] text-xs text-[#6c5b4f] hover:bg-[#f9f5f0]"
+                            >+</button>
+                          </div>
+                        </div>
+                        {/* Stock status bar */}
+                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#f0e8df]">
+                          <div className={`h-full rounded-full transition-all ${
+                            (stockCache[p.id]?.stockQty ?? 0) === 0 ? 'bg-red-400' :
+                            (stockCache[p.id]?.stockQty ?? 0) <= (stockCache[p.id]?.lowStockThreshold ?? 5) ? 'bg-amber-400' : 'bg-emerald-400'
+                          }`}
+                            style={{ width: `${Math.min(100, ((stockCache[p.id]?.stockQty ?? 0) / 20) * 100)}%` }}
+                          />
+                        </div>
+                        {/* Delete button */}
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Delete this product?')) deleteProduct.mutate(p.id)
+                          }}
+                          className="mt-1.5 flex items-center gap-1 text-[10px] text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -346,6 +486,67 @@ export default function VendorShopPage() {
           initialIndex={lightbox.index}
           onClose={() => setLightbox(null)}
         />
+      )}
+
+      {/* Add Product Panel */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setShowForm(false)} />
+          <div className="relative w-full max-w-lg bg-white shadow-2xl overflow-y-auto">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#e4d6c8]/60 bg-white px-6 py-4">
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Add Product</h2>
+              <button onClick={() => setShowForm(false)} className="rounded-lg p-1.5 text-[#6c5b4f] hover:bg-[#f9f5f0]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="space-y-5 px-6 py-6">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Shop</label>
+                <input readOnly value={shop?.name} className="w-full rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#6c5b4f]" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Product Name</label>
+                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Enter product name" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672]" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Description</label>
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe your product" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672] resize-none" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Price (BDT)</label>
+                <input type="number" value={form.priceBdt} onChange={e => setForm(f => ({ ...f, priceBdt: e.target.value }))} placeholder="0.00" min="0" step="0.01" className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] placeholder:text-[#a28672] outline-none focus:border-[#a28672]" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Category</label>
+                <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} className="w-full rounded-xl border border-[#d7c7b8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none focus:border-[#a28672]">
+                  <option value="">Select category</option>
+                  {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8c7564]">Photos</label>
+                <MediaUploader folder="products" onUpload={(urls) => setImageUrls(prev => [...prev, ...urls])} maxFiles={10} allowVideo={false} />
+                {imageUrls.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {imageUrls.map((url, i) => (
+                      <div key={i} className="relative h-14 w-14 overflow-hidden rounded-lg border border-[#e4d6c8]">
+                        <img src={url} alt="" className="h-full w-full object-cover" />
+                        <button onClick={() => setImageUrls(prev => prev.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] text-white">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => createProduct.mutate()}
+                disabled={!form.name || !form.priceBdt || !form.categoryId || createProduct.isPending}
+                className="w-full rounded-xl bg-[#221b16] py-3 text-sm font-semibold text-white transition-all hover:bg-[#3a3028] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {createProduct.isPending ? 'Creating…' : 'Create Product'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
