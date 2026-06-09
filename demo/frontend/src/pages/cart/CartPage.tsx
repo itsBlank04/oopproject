@@ -32,7 +32,7 @@ type Cart = {
 
 const STATUS_META: Record<string, { label: string; color: string; dot: string; desc: string }> = {
   ACTIVE: { label: 'Active', color: 'text-emerald-700', dot: 'bg-emerald-500', desc: 'Continue shopping' },
-  PENDING_CHECKOUT: { label: 'Checkout in progress', color: 'text-blue-700', dot: 'bg-blue-500', desc: 'Completing your purchase' },
+  PENDING_CHECKOUT: { label: 'Checkout in progress', color: 'text-[#6c5b4f]', dot: 'bg-[#6c5b4f]', desc: 'Completing your purchase' },
   COMPLETED: { label: 'Completed', color: 'text-emerald-700', dot: 'bg-emerald-500', desc: 'Order placed successfully' },
   CANCELLED: { label: 'Cancelled', color: 'text-red-700', dot: 'bg-red-500', desc: 'Checkout was cancelled' },
   ABANDONED: { label: 'Abandoned', color: 'text-amber-700', dot: 'bg-amber-400', desc: 'Cart expired due to inactivity' },
@@ -43,7 +43,7 @@ function StatusBanner({ status }: { status: string }) {
   const meta = STATUS_META[status] || STATUS_META.ACTIVE
   return (
     <div className={`flex items-center gap-3 rounded-xl px-4 py-3 ${
-      status === 'PENDING_CHECKOUT' ? 'bg-blue-50 ring-1 ring-blue-200/60' :
+      status === 'PENDING_CHECKOUT' ? 'bg-[#f9f5f0] ring-1 ring-[#e4d6c8]/60' :
       status === 'COMPLETED' ? 'bg-emerald-50 ring-1 ring-emerald-200/60' :
       status === 'CANCELLED' ? 'bg-red-50 ring-1 ring-red-200/60' :
       status === 'ABANDONED' ? 'bg-amber-50 ring-1 ring-amber-200/60' :
@@ -261,15 +261,15 @@ export default function CartPage() {
         {/* PENDING_CHECKOUT state */}
         {status === 'PENDING_CHECKOUT' && (
           <div className="anim-fade anim-fade-2 rounded-2xl bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 mb-4">
-              <svg className="h-7 w-7 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f9f5f0] mb-4">
+              <svg className="h-7 w-7 text-[#6c5b4f] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
             </div>
             <p className="font-semibold text-[#221b16]">Checkout in progress</p>
             <p className="text-sm text-[#8c7564] mt-1">Complete your checkout to place the order</p>
             <div className="flex items-center justify-center gap-3 mt-5">
-              <button onClick={() => navigate('/checkout')} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition">
+              <button onClick={() => navigate('/checkout')} className="rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#3a3028] transition">
                 Continue checkout
               </button>
             </div>

@@ -29,8 +29,8 @@ export default function Sidebar() {
   if (activeRole === null) return null
 
   const modeLabel = activeRole === 'vendor' ? 'Merchant Mode' : 'Repair Mode'
-  const modeColor = activeRole === 'vendor' ? 'bg-[#221b16]' : 'bg-blue-600'
-  const modeColorLight = activeRole === 'vendor' ? 'bg-[#221b16]/10 text-[#221b16] hover:bg-[#221b16]/20' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+  const modeColor = 'bg-[#221b16]'
+  const modeColorLight = 'bg-[#221b16]/10 text-[#221b16] hover:bg-[#221b16]/20'
 
   return (
     <>

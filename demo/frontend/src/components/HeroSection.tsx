@@ -89,7 +89,7 @@ export default function HeroSection() {
           </p>
           <Link
             to="/products"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#c4956a] px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-[#c4956a]"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#c4956a] px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]"
           >
             Shop now
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">

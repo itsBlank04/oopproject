@@ -112,7 +112,7 @@ export default function VendorFinancialPage() {
           <div className="rounded-2xl border border-[#e4d6c8]/60 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7564]">Products</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f9f5f0] text-[#6c5b4f]">
                 <Calendar className="h-4 w-4" />
               </div>
             </div>

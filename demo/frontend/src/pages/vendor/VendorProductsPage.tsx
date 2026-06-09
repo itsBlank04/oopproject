@@ -414,7 +414,7 @@ export default function VendorProductsPage() {
                     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                       p.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                       p.status === 'DRAFT' ? 'bg-gray-100 text-gray-600' :
-                      'bg-blue-100 text-blue-700'
+                      'bg-[#f9f5f0] text-[#6c5b4f]'
                     }`}>{p.status}</span>
                     {p.shop && (
                       <span className="rounded-full bg-slate-800 text-white px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider flex items-center gap-1">

@@ -427,14 +427,14 @@ export default function AuctionDetailPage() {
                             onChange={event => { setSelectedLot(lot.id); setBidDrafts(previous => ({ ...previous, [lot.id]: event.target.value })) }}
                             className="rounded-2xl border border-[#e4d6c8] bg-white px-4 py-3 text-sm font-bold text-[#221b16] outline-none transition placeholder:text-[#8c7564] focus:border-[#c4956a]" />
                           <button onClick={() => submitBid(lot)} disabled={bidMutation.isPending && selectedLot === lot.id}
-                            className="rounded-2xl bg-[#c4956a] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#c4956a] disabled:cursor-not-allowed disabled:opacity-60">
+                            className="rounded-2xl bg-[#c4956a] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60">
                             {bidMutation.isPending && selectedLot === lot.id ? 'Locking...' : 'Place bid'}
                           </button>
                         </div>
                         <div className="mt-3 grid gap-2 sm:grid-cols-3">
                           {[nextBid, nextBid + increment, nextBid + increment * 2].map(value => (
                             <button key={value} onClick={() => submitBid(lot, value)}
-                              className="rounded-2xl border border-[#c4956a]/40 bg-[#c4956a]/10 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#c4956a] transition hover:bg-[#c4956a] hover:text-white">
+                              className="rounded-2xl border border-[#c4956a]/40 bg-[#c4956a]/10 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#c4956a] transition-all hover:bg-[#a87a4e] hover:text-white active:scale-[0.97]">
                               Quick {money(value)}
                             </button>
                           ))}
@@ -444,7 +444,7 @@ export default function AuctionDetailPage() {
                     )}
 
                     {!user && isLive && lot.status === 'ACTIVE' && (
-                      <Link to="/auth/login" className="mt-5 block rounded-3xl bg-[#c4956a] px-5 py-4 text-center text-sm font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#c4956a]">Sign in to place bids</Link>
+                      <Link to="/auth/login" className="mt-5 block rounded-3xl bg-[#c4956a] px-5 py-4 text-center text-sm font-black uppercase tracking-[0.16em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]">Sign in to place bids</Link>
                     )}
 
                     {isOwner && (
@@ -541,7 +541,7 @@ export default function AuctionDetailPage() {
             <h3 className="mt-2 font-[Fraunces] text-3xl text-[#221b16]">Auction Rules</h3>
             <p className="mt-3 text-sm leading-7 text-[#6c5b4f]">Accept the rules to participate. Bids are binding, lower stale bids are rejected, shill bidding is monitored, and unpaid wins may restrict future bidding.</p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <button onClick={() => acceptRules.mutate()} disabled={acceptRules.isPending} className="rounded-2xl bg-[#c4956a] px-5 py-2.5 text-sm font-black uppercase tracking-[0.14em] text-white disabled:opacity-60 hover:bg-[#c4956a]">Accept rules</button>
+              <button onClick={() => acceptRules.mutate()} disabled={acceptRules.isPending} className="rounded-2xl bg-[#c4956a] px-5 py-2.5 text-sm font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-md active:scale-[0.97] disabled:opacity-60">Accept rules</button>
               <button onClick={() => setRulesOpen(false)} className="rounded-2xl border border-[#e4d6c8] px-5 py-2.5 text-sm font-bold text-[#221b16]">Cancel</button>
             </div>
           </div>

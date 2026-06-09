@@ -277,7 +277,7 @@ export default function TechnicianDashboardPage() {
 
               <div className="glass-card p-6 rounded-2xl shadow-sm hover:scale-[1.02] transition duration-200">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-700">
+                  <div className="h-12 w-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-700">
                     <span className="material-symbols-outlined text-[28px]">handyman</span>
                   </div>
                   <div>
@@ -289,7 +289,7 @@ export default function TechnicianDashboardPage() {
 
               <div className="glass-card p-6 rounded-2xl shadow-sm hover:scale-[1.02] transition duration-200">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-primary">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700">
                     <span className="material-symbols-outlined text-[28px]">pending_actions</span>
                   </div>
                   <div>
@@ -374,7 +374,7 @@ export default function TechnicianDashboardPage() {
                         {r.emergency ? (
                           <span className="rounded bg-red-100 text-[9px] font-bold text-red-800 px-2.5 py-0.5 uppercase tracking-wider animate-pulse">Emergency</span>
                         ) : (
-                          <span className="rounded bg-blue-100 text-[9px] font-bold text-blue-800 px-2.5 py-0.5 uppercase tracking-wider">Open</span>
+                          <span className="rounded bg-[#f9f5f0] text-[9px] font-bold text-[#6c5b4f] px-2.5 py-0.5 uppercase tracking-wider">Open</span>
                         )}
                       </div>
 

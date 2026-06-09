@@ -40,20 +40,20 @@ const STATUS_FLOW: Record<string, { next: { status: string; label: string; varia
       { status: 'PACKED', label: 'Mark Packed', variant: 'primary' },
       { status: 'CANCELLED', label: 'Cancel', variant: 'danger' },
     ],
-    label: 'Approved', color: 'bg-blue-50 text-blue-700', dot: 'bg-blue-500',
+    label: 'Approved', color: 'bg-[#f9f5f0] text-[#6c5b4f]', dot: 'bg-[#6c5b4f]',
   },
   PACKED: {
     next: [
       { status: 'SHIPPED', label: 'Mark Shipped', variant: 'primary' },
       { status: 'CANCELLED', label: 'Cancel', variant: 'danger' },
     ],
-    label: 'Packed', color: 'bg-indigo-50 text-indigo-700', dot: 'bg-indigo-500',
+    label: 'Packed', color: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500',
   },
   SHIPPED: {
     next: [
       { status: 'DELIVERED', label: 'Mark Delivered', variant: 'primary' },
     ],
-    label: 'Shipped', color: 'bg-purple-50 text-purple-700', dot: 'bg-purple-500',
+    label: 'Shipped', color: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500',
   },
   DELIVERED: {
     next: [],

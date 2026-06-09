@@ -126,7 +126,7 @@ export default function ProductListPage() {
                         className="absolute inset-x-0 bottom-0 rounded-t-[2px] transition-all duration-500 ease-out"
                         style={{
                           height: inRange ? '100%' : '6%',
-                          background: 'linear-gradient(to top, #6366f1, #8b5cf6)',
+                          background: 'linear-gradient(to top, #c4956a, #d4a85a)',
                           opacity: inRange ? 1 : 0.08,
                         }}
                       />
@@ -151,17 +151,17 @@ export default function ProductListPage() {
                   style={{
                     left: `${(minPrice / 200000) * 100}%`,
                     width: `${((maxPrice - minPrice) / 200000) * 100}%`,
-                    background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
+                    background: 'linear-gradient(to right, #c4956a, #d4a85a)',
                   }}
                 />
               </div>
               <div
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 cursor-pointer rounded-full border-2 border-indigo-500 bg-white shadow-sm transition-shadow hover:shadow-md active:shadow-sm"
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 cursor-pointer rounded-full border-2 border-[#c4956a] bg-white shadow-sm transition-shadow hover:shadow-md active:shadow-sm"
                 style={{ left: `calc(${(minPrice / 200000) * 100}% - 7px)` }}
                 onPointerDown={handlePointerDown('min')}
               />
               <div
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 cursor-pointer rounded-full border-2 border-indigo-500 bg-white shadow-sm transition-shadow hover:shadow-md active:shadow-sm"
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 cursor-pointer rounded-full border-2 border-[#c4956a] bg-white shadow-sm transition-shadow hover:shadow-md active:shadow-sm"
                 style={{ left: `calc(${(maxPrice / 200000) * 100}% - 7px)` }}
                 onPointerDown={handlePointerDown('max')}
               />

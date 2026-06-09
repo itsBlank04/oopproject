@@ -169,9 +169,9 @@ export default function RepairRequestsPage() {
 
   const statusColor = (s: string) => {
     switch (s) {
-      case 'OPEN': return 'bg-blue-100 text-blue-800'
+      case 'OPEN': return 'bg-[#f9f5f0] text-[#6c5b4f]'
       case 'QUOTED': return 'bg-amber-100 text-amber-800'
-      case 'BOOKED': return 'bg-indigo-100 text-indigo-800'
+      case 'BOOKED': return 'bg-[#f0e8df] text-[#5c4e42]'
       case 'COMPLETED': return 'bg-emerald-100 text-emerald-800'
       case 'CANCELLED': return 'bg-red-100 text-red-800'
       default: return 'bg-surface-container-low text-on-surface-variant'

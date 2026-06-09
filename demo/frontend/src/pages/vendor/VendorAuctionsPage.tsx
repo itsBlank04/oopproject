@@ -210,7 +210,7 @@ export default function VendorAuctionsPage() {
               <p className="mt-3 text-sm leading-7 text-[#6c5b4f]">Create a draft, add honest lot details and photos, accept the rules, then publish. Published lots are locked so buyers compete against a stable listing.</p>
             </div>
             <button onClick={openCreate}
-              className="rounded-2xl bg-[#c4956a] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#c4956a]">
+              className="rounded-2xl bg-[#c4956a] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]">
               + New Auction
             </button>
           </div>
@@ -238,7 +238,7 @@ export default function VendorAuctionsPage() {
                     <h3 className="font-semibold text-[#221b16]">{a.title}</h3>
                     <p className="text-xs text-[#8c7564]">{a.type} · {a.lots?.length || 0} lot(s)</p>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${a.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : a.status === 'PREPARING' ? 'bg-amber-100 text-amber-700' : a.status === 'CREATED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${a.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : a.status === 'PREPARING' ? 'bg-amber-100 text-amber-700' : a.status === 'CREATED' ? 'bg-[#f9f5f0] text-[#6c5b4f]' : 'bg-gray-100 text-gray-600'}`}>
                     {a.status}
                   </span>
                 </div>

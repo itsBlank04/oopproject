@@ -55,9 +55,9 @@
   --color-on-error-container: #93000a;
 
   /* ─── Accent tokens ─── */
-  --color-auction-gold: #F59E0B;
-  --color-repair-purple: #8B5CF6;
-  --color-action-teal: #0D9488;
+  --color-auction-gold: #c4956a;
+  --color-repair-purple: #c4956a;
+  --color-action-teal: #6c5b4f;
 
   /* ─── Layout tokens (matches reference) ─── */
   --spacing-margin-mobile: 20px;

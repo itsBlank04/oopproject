@@ -37,9 +37,9 @@ type PaymentInfo = {
 
 const STATUS_META: Record<string, { label: string; color: string; badge: string; dot: string }> = {
   PLACED: { label: 'Pending', color: 'text-amber-700', badge: 'bg-amber-50 text-amber-700 border-amber-200/60', dot: 'bg-amber-400' },
-  APPROVED: { label: 'Approved', color: 'text-blue-700', badge: 'bg-blue-50 text-blue-700 border-blue-200/60', dot: 'bg-blue-500' },
-  PACKED: { label: 'Packed', color: 'text-indigo-700', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200/60', dot: 'bg-indigo-500' },
-  SHIPPED: { label: 'Shipped', color: 'text-purple-700', badge: 'bg-purple-50 text-purple-700 border-purple-200/60', dot: 'bg-purple-500' },
+  APPROVED: { label: 'Approved', color: 'text-amber-700', badge: 'bg-amber-50 text-amber-700 border-amber-200/60', dot: 'bg-amber-400' },
+  PACKED: { label: 'Packed', color: 'text-amber-700', badge: 'bg-amber-50 text-amber-700 border-amber-200/60', dot: 'bg-amber-400' },
+  SHIPPED: { label: 'Shipped', color: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/60', dot: 'bg-emerald-500' },
   DELIVERED: { label: 'Delivered', color: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/60', dot: 'bg-emerald-500' },
   PAID: { label: 'Paid', color: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/60', dot: 'bg-emerald-500' },
   CANCELLED: { label: 'Cancelled', color: 'text-red-700', badge: 'bg-red-50 text-red-600 border-red-200/60', dot: 'bg-red-500' },
