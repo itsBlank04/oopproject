@@ -62,6 +62,7 @@ const SLIDES: Slide[] = [
 
 export default function HeroSection() {
   const [current, setCurrent] = useState(0)
+  const [hovering, setHovering] = useState(false)
   const slide = SLIDES[current]
 
   const next = useCallback(() => setCurrent(c => (c + 1) % SLIDES.length), [])
@@ -73,7 +74,34 @@ export default function HeroSection() {
   }, [next])
 
   return (
-    <section className="relative overflow-hidden bg-white">
+    <section
+      className="relative overflow-hidden bg-white group"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      {/* Floating glass arrows */}
+      <button
+        onClick={prev}
+        aria-label="Previous slide"
+        className={`absolute left-4 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 ${
+          hovering ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+        } hover:bg-white/80 hover:scale-110 active:scale-95`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 text-[#221b16]">
+          <path d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button
+        onClick={next}
+        aria-label="Next slide"
+        className={`absolute right-4 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 ${
+          hovering ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+        } hover:bg-white/80 hover:scale-110 active:scale-95`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 text-[#221b16]">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-6 py-14 md:flex-row md:gap-16 md:py-20 lg:px-8 lg:py-24">
         {/* Left */}
         <div className="w-full max-w-lg md:w-1/2">
