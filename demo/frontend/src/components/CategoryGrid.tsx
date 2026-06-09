@@ -14,55 +14,88 @@ const CATEGORIES = [
   { name: 'Automotive', filter: null, icon: 'directions_car', gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]' },
 ]
 
+const COUNT = CATEGORIES.length
+
 export default function CategoryGrid() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const trackRef = useRef<HTMLDivElement>(null)
   const [autoIdx, setAutoIdx] = useState(0)
   const [paused, setPaused] = useState(false)
+  const scrollingRef = useRef(false)
 
-  const scrollTo = useCallback((i: number) => {
+  const scrollTo = useCallback((index: number) => {
     const el = scrollRef.current
     if (!el) return
-    const card = el.children[i] as HTMLElement | undefined
+    scrollingRef.current = true
+    const card = el.children[index] as HTMLElement | undefined
     if (card) {
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     }
+    setTimeout(() => { scrollingRef.current = false }, 600)
   }, [])
+
+  const advance = useCallback(() => {
+    setAutoIdx(i => {
+      const next = i + 1
+      if (next >= COUNT) {
+        scrollTo(COUNT) // scroll to second copy of first card
+        return 0
+      }
+      scrollTo(next)
+      return next
+    })
+  }, [scrollTo])
 
   const handlePrev = useCallback(() => {
     setPaused(true)
     setAutoIdx(i => {
-      const next = (i - 1 + CATEGORIES.length) % CATEGORIES.length
-      scrollTo(next)
-      return next
+      const prev = (i - 1 + COUNT) % COUNT
+      scrollTo(prev)
+      return prev
     })
-    setTimeout(() => setPaused(false), 3000)
+    setTimeout(() => setPaused(false), 5000)
   }, [scrollTo])
 
   const handleNext = useCallback(() => {
     setPaused(true)
     setAutoIdx(i => {
-      const next = (i + 1) % CATEGORIES.length
-      scrollTo(next)
+      const next = (i + 1) % COUNT
+      if (next === 0) {
+        scrollTo(COUNT)
+      } else {
+        scrollTo(next)
+      }
       return next
     })
-    setTimeout(() => setPaused(false), 3000)
+    setTimeout(() => setPaused(false), 5000)
   }, [scrollTo])
 
   const handleDotClick = useCallback((i: number) => {
     setPaused(true)
     setAutoIdx(i)
     scrollTo(i)
-    setTimeout(() => setPaused(false), 3000)
+    setTimeout(() => setPaused(false), 5000)
   }, [scrollTo])
 
+  // Auto-advance timer (elevator-style: one card at a time)
   useEffect(() => {
     if (paused) return
-    const timer = setInterval(() => {
-      setAutoIdx(i => (i + 1) % CATEGORIES.length)
-    }, 3500)
+    const timer = setInterval(advance, 3500)
     return () => clearInterval(timer)
-  }, [paused])
+  }, [paused, advance])
+
+  // Seamless wrap: when scroll passes halfway, instantly jump back
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const check = () => {
+      const halfway = (el.scrollWidth / 2)
+      if (el.scrollLeft >= halfway - 20) {
+        el.scrollLeft = 0
+      }
+    }
+    el.addEventListener('scroll', check, { passive: true })
+    return () => el.removeEventListener('scroll', check)
+  }, [])
 
   return (
     <section className="bg-[#faf6f2] px-6 py-16 lg:px-8 lg:py-20">
@@ -92,7 +125,7 @@ export default function CategoryGrid() {
           <button
             onClick={handlePrev}
             aria-label="Previous categories"
-            className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
+            className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
               <path d="M15 19l-7-7 7-7" />
@@ -108,34 +141,28 @@ export default function CategoryGrid() {
             </svg>
           </button>
 
-          {/* Auto-scrolling track */}
+          {/* Scrollable track */}
           <div
             ref={scrollRef}
-            className="overflow-hidden no-scrollbar"
+            className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar pb-2"
           >
-            <div
-              ref={trackRef}
-              className={`flex gap-4 ${paused ? '' : 'animate-category-scroll'}`}
-              style={{ width: 'max-content' }}
-            >
-              {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
-                <Link
-                  key={`${cat.name}-${i}`}
-                  to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
-                  className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
-                  style={{
-                    animation: `fadeIn 0.5s ease-out ${(i % CATEGORIES.length) * 0.05}s both`,
-                  }}
-                >
-                  <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
-                    <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
-                  </div>
-                  <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
-                    {cat.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
+            {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
+              <Link
+                key={`${cat.name}-${i}`}
+                to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
+                className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
+                style={{
+                  animation: `fadeIn 0.5s ease-out ${(i % COUNT) * 0.05}s both`,
+                }}
+              >
+                <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                  <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
+                </div>
+                <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
           </div>
 
           {/* Dots */}
