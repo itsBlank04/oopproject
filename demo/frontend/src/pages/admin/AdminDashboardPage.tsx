@@ -137,15 +137,15 @@ export default function AdminDashboardPage() {
 
   const verificationLevels = ['STANDARD', 'VERIFIED', 'PREMIUM', 'TRUSTED']
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f6f1ea]"><div className="font-[Fraunces] text-lg text-[#5c4e42]">Loading admin…</div></div>
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]"><div className="font-[Fraunces] text-lg text-[#64748b]">Loading admin…</div></div>
 
   if (!user || !hasRole('ADMIN')) return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f6f1ea] p-8">
-      <div className="max-w-lg rounded-2xl border border-[#dccfc2] bg-white p-10 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f6f1ea] text-2xl">⚜</div>
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#a07850]">Restricted</p>
-        <h1 className="mt-2 font-[Fraunces] text-3xl text-[#221b16]">Admin Access Required</h1>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#6d5d50]">Sign in with the primary admin account to access the governance panel.</p>
+    <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-8">
+      <div className="max-w-lg rounded-2xl border border-[#e0e7ff] bg-white p-10 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f8fafc] text-2xl">⚜</div>
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#818cf8]">Restricted</p>
+        <h1 className="mt-2 font-[Fraunces] text-3xl text-[#1e293b]">Admin Access Required</h1>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#64748b]">Sign in with the primary admin account to access the governance panel.</p>
       </div>
     </div>
   )
@@ -168,20 +168,20 @@ export default function AdminDashboardPage() {
   const visibleUserRows = userRows.slice(0, 30)
 
   return (
-    <div className="min-h-screen bg-[#f6f1ea] text-[#221b16]">
+    <div className="min-h-screen bg-[#f8fafc] text-[#1e293b]">
       {/* HEADER */}
-      <header className="border-b border-[#dccfc2] bg-[#221b16] text-[#fcf6ef]">
+      <header className="border-b border-[#e0e7ff] bg-[#1e293b] text-[#f8fafc]">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4a85a]">AtomDrops Governance</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#818cf8]">AtomDrops Governance</p>
             <h1 className="mt-2 font-[Fraunces] text-4xl">Admin Control Room</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-[#bfb0a0]">Users, marketplace, orders, auctions, cases, settings, and audit — all in one command centre.</p>
           </div>
-          <div className="flex items-center gap-4 rounded-xl border border-[#5c4e42] bg-[#2e261f] px-5 py-3 text-sm">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d4a85a] text-xs font-bold text-[#221b16]">A</div>
+          <div className="flex items-center gap-4 rounded-xl border border-[#64748b] bg-[#334155] px-5 py-3 text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#818cf8] text-xs font-bold text-[#1e293b]">A</div>
             <div>
               <p className="text-[#bfb0a0] text-xs">Signed in as</p>
-              <p className="font-semibold text-[#fcf6ef]">{user.displayName}</p>
+              <p className="font-semibold text-[#f8fafc]">{user.displayName}</p>
             </div>
           </div>
         </div>
@@ -190,10 +190,10 @@ export default function AdminDashboardPage() {
       <div className="mx-auto max-w-7xl px-6 py-6">
         <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
           {/* SIDEBAR */}
-          <aside className="h-fit rounded-xl border border-[#dccfc2] bg-white p-1.5 shadow-sm">
+          <aside className="h-fit rounded-xl border border-[#e0e7ff] bg-white p-1.5 shadow-sm">
             {tabs.map(item => (
               <button key={item.id} onClick={() => setTab(item.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-sm font-semibold transition-all ${tab === item.id ? 'bg-[#221b16] text-[#fcf6ef] shadow-sm' : 'text-[#5c4e42] hover:bg-[#f6f1ea]'}`}>
+                className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-sm font-semibold transition-all ${tab === item.id ? 'bg-[#1e293b] text-[#f8fafc] shadow-sm' : 'text-[#64748b] hover:bg-[#f8fafc]'}`}>
                 <span className="w-5 text-center text-base">{item.icon}</span>
                 {item.label}
               </button>
@@ -205,8 +205,8 @@ export default function AdminDashboardPage() {
             {tab === 'overview' && <>
               <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {metricRows.map(([label, value]) => (
-                  <div key={label} className="rounded-xl border border-[#dccfc2] bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a07850]">{label}</p>
+                  <div key={label} className="rounded-xl border border-[#e0e7ff] bg-white p-5 shadow-sm transition hover:shadow-md">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#818cf8]">{label}</p>
                     <p className="mt-1 font-[Fraunces] text-3xl">{value}</p>
                   </div>
                 ))}
@@ -224,17 +224,17 @@ export default function AdminDashboardPage() {
               </div>
             </>}
 
-            {tab === 'users' && <section className="overflow-hidden rounded-xl border border-[#dccfc2] bg-white shadow-sm">
-              <div className="flex flex-col gap-3 border-b border-[#e3d6c9] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            {tab === 'users' && <section className="overflow-hidden rounded-xl border border-[#e0e7ff] bg-white shadow-sm">
+              <div className="flex flex-col gap-3 border-b border-[#e0e7ff] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="font-[Fraunces] text-xl">User Governance</h2>
                 <div className="flex items-center gap-3">
-                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" className="w-56 rounded-lg border border-[#dccfc2] px-3.5 py-2 text-sm outline-none transition focus:border-[#221b16]" />
-                  <span className="text-xs font-medium text-[#7a6858]">{visibleUserRows.length} of {userRows.length}</span>
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" className="w-56 rounded-lg border border-[#e0e7ff] px-3.5 py-2 text-sm outline-none transition focus:border-[#1e293b]" />
+                  <span className="text-xs font-medium text-[#64748b]">{visibleUserRows.length} of {userRows.length}</span>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1000px] text-left text-sm">
-                  <thead className="bg-[#f6f1ea] text-[11px] font-bold uppercase tracking-[0.15em] text-[#7a6858]">
+                  <thead className="bg-[#f8fafc] text-[11px] font-bold uppercase tracking-[0.15em] text-[#64748b]">
                     <tr><th className="px-5 py-3.5">User</th><th className="px-5 py-3.5">Status</th><th className="px-5 py-3.5">Flags</th><th className="px-5 py-3.5">Roles</th><th className="px-5 py-3.5">Actions</th></tr>
                   </thead>
                   <tbody>
@@ -242,17 +242,17 @@ export default function AdminDashboardPage() {
                       const primary = row.email.toLowerCase() === PRIMARY_ADMIN_EMAIL
                       const roles = primary ? ['ADMIN'] : roleDrafts[row.id] ?? row.roles ?? []
                       return (
-                        <tr key={row.id} className="border-t border-[#e8dcd0] transition hover:bg-[#faf7f3]">
-                          <td className="px-5 py-4"><p className="font-semibold">{row.displayName}</p><p className="text-xs text-[#7a6858]">{row.email}</p></td>
+                        <tr key={row.id} className="border-t border-[#eef2ff] transition hover:bg-[#f8fafc]">
+                          <td className="px-5 py-4"><p className="font-semibold">{row.displayName}</p><p className="text-xs text-[#64748b]">{row.email}</p></td>
                           <td className="px-5 py-4"><Pill value={row.status} /></td>
                           <td className="px-5 py-4">
-                            {primary ? <span className="text-xs text-[#7a6858]">—</span> : (
+                            {primary ? <span className="text-xs text-[#64748b]">—</span> : (
                               <div className="flex items-center gap-2">
                                 <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${(row.redFlagCount || 0) > 2 ? 'bg-rose-100 text-rose-700' : (row.redFlagCount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                   {row.redFlagCount || 0}
                                 </span>
                                 <input value={redFlagReasons[row.id] ?? ''} onChange={e => setRedFlagReasons(prev => ({ ...prev, [row.id]: e.target.value }))}
-                                  placeholder="Reason…" className="w-32 rounded border border-[#dccfc2] px-2 py-1 text-xs outline-none focus:border-[#221b16]" />
+                                  placeholder="Reason…" className="w-32 rounded border border-[#e0e7ff] px-2 py-1 text-xs outline-none focus:border-[#1e293b]" />
                                 <button onClick={() => {
                                   const reason = redFlagReasons[row.id]?.trim() || 'Suspicious activity'
                                   act({ label: 'Red flag added', title: 'Add red flag', description: `Add a red flag to ${row.displayName} (${row.email})? Reason: ${reason}`, tone: 'danger', request: () => apiClient.post(`/api/admin/users/${row.id}/red-flag`, { reason }) })
@@ -262,17 +262,17 @@ export default function AdminDashboardPage() {
                           </td>
                           <td className="px-5 py-4">
                             <div className="flex flex-wrap gap-1.5">
-                              {primary ? <span className="rounded-full border border-[#221b16] bg-[#221b16] px-2.5 py-0.5 text-xs font-bold text-[#fcf6ef]">ADMIN</span> :
+                              {primary ? <span className="rounded-full border border-[#1e293b] bg-[#1e293b] px-2.5 py-0.5 text-xs font-bold text-[#f8fafc]">ADMIN</span> :
                                 marketplaceRoles.map(role => (
                                   <button key={role} onClick={() => toggleRole(row.id, role, row.roles || [])}
-                                    className={`rounded-full border px-2.5 py-0.5 text-xs font-bold transition ${roles.includes(role) ? 'border-[#221b16] bg-[#221b16] text-[#fcf6ef]' : 'border-[#dccfc2] text-[#5c4e42] hover:bg-[#f6f1ea]'}`}>{role}</button>
+                                    className={`rounded-full border px-2.5 py-0.5 text-xs font-bold transition ${roles.includes(role) ? 'border-[#1e293b] bg-[#1e293b] text-[#f8fafc]' : 'border-[#e0e7ff] text-[#64748b] hover:bg-[#f8fafc]'}`}>{role}</button>
                                 ))
                               }
                             </div>
                           </td>
                           <td className="px-5 py-4">
                             <div className="flex flex-wrap gap-1.5">
-                              {primary ? <span className="rounded-lg border border-[#dccfc2] px-3 py-1.5 text-xs font-semibold text-[#7a6858]">Primary</span> : <>
+                              {primary ? <span className="rounded-lg border border-[#e0e7ff] px-3 py-1.5 text-xs font-semibold text-[#64748b]">Primary</span> : <>
                                 <Btn onClick={() => act({ label: 'Roles saved', title: 'Update roles', description: `Change roles for ${row.displayName} to ${roles.join(', ') || 'none'}?`, request: () => apiClient.put(`/api/admin/users/${row.id}/roles`, { roles }) })}>Roles</Btn>
                                 {row.status === 'SUSPENDED' || row.status === 'BANNED'
                                   ? <Btn onClick={() => act({ label: 'User unbanned', title: 'Unban user', description: `Restore access for ${row.displayName}?`, request: () => apiClient.put(`/api/admin/users/${row.id}/unban`) })}>Unban</Btn>
@@ -288,13 +288,13 @@ export default function AdminDashboardPage() {
                   </tbody>
                 </table>
               </div>
-              {userRows.length > 30 && <p className="border-t border-[#e3d6c9] px-5 py-3 text-xs text-[#7a6858]">Narrow the search to see users beyond the first 30.</p>}
+              {userRows.length > 30 && <p className="border-t border-[#e0e7ff] px-5 py-3 text-xs text-[#64748b]">Narrow the search to see users beyond the first 30.</p>}
             </section>}
 
             {tab === 'market' && <div className="grid gap-4 xl:grid-cols-3">
               <Panel title="New Products" count={products.data?.length || 0}>
                 {(products.data || []).slice(0, 20).map(item => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e3d6c9] px-5 py-3.5">
+                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e0e7ff] px-5 py-3.5">
                     <Row title={item.name} meta={`${item.vendor?.displayName || 'Vendor'} · ${money(item.priceBdt)}`} status={item.status} />
                     <div className="flex gap-1">
                       {item.status !== 'HIDDEN' && <DangerBtn onClick={() => act({ label: 'Product hidden', title: 'Hide product', description: `Hide "${item.name}" from the marketplace? Reversible.`, tone: 'danger', request: () => apiClient.put(`/api/admin/products/${item.id}/hide`) })}>Hide</DangerBtn>}
@@ -305,7 +305,7 @@ export default function AdminDashboardPage() {
               </Panel>
               <Panel title="Used Listings" count={usedListings.data?.length || 0}>
                 {(usedListings.data || []).slice(0, 20).map(item => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e3d6c9] px-5 py-3.5">
+                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e0e7ff] px-5 py-3.5">
                     <Row title={item.title} meta={`${item.seller?.displayName || 'Seller'} · ${money(item.priceBdt)}`} status={item.status} />
                     <div className="flex gap-1">
                       {item.status !== 'HIDDEN' && <DangerBtn onClick={() => act({ label: 'Listing hidden', title: 'Hide listing', description: `Hide "${item.title}" from the marketplace? Reversible.`, tone: 'danger', request: () => apiClient.put(`/api/admin/used-listings/${item.id}/hide`) })}>Hide</DangerBtn>}
@@ -316,7 +316,7 @@ export default function AdminDashboardPage() {
               </Panel>
               <Panel title="Repair Services" count={serviceListings.data?.length || 0}>
                 {(serviceListings.data || []).slice(0, 20).map(item => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e3d6c9] px-5 py-3.5">
+                  <div key={item.id} className="flex items-center justify-between gap-3 border-t border-[#e0e7ff] px-5 py-3.5">
                     <Row title={item.title} meta={`${money(item.priceMinBdt)} – ${money(item.priceMaxBdt)}`} status={item.status} />
                     <DangerBtn onClick={() => act({ label: 'Service deleted', title: 'Delete service', description: `Permanently delete "${item.title}"? Cannot be undone.`, tone: 'danger', request: () => apiClient.delete(`/api/admin/service-listings/${item.id}`) })}>Delete</DangerBtn>
                   </div>
@@ -326,11 +326,11 @@ export default function AdminDashboardPage() {
 
             {tab === 'orders' && <Panel title="Order Oversight" count={orders.data?.length || 0}>
               {(orders.data || []).slice(0, 50).map(item => (
-                <div key={item.id} className="flex flex-col gap-2 border-t border-[#e3d6c9] px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+                <div key={item.id} className="flex flex-col gap-2 border-t border-[#e0e7ff] px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
                   <Row title={`Order #${item.id}`} meta={`${item.customer?.displayName || 'Customer'} · ${money(item.totalBdt)} · ${item.items?.length || 0} item(s)`} status={item.status} />
                   <div className="flex items-center gap-2">
                     <select value={orderOverrides[item.id] ?? item.status} onChange={e => setOrderOverrides(prev => ({ ...prev, [item.id]: e.target.value }))}
-                      className="rounded-lg border border-[#dccfc2] px-2.5 py-1.5 text-xs outline-none focus:border-[#221b16]">
+                      className="rounded-lg border border-[#e0e7ff] px-2.5 py-1.5 text-xs outline-none focus:border-[#1e293b]">
                       {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                     <Btn onClick={() => act({ label: 'Order status overridden', title: 'Override order status', description: `Set Order #${item.id} (${item.customer?.displayName || 'Customer'}) status to ${orderOverrides[item.id] ?? item.status}?`, request: () => apiClient.put(`/api/admin/orders/${item.id}/status`, { status: orderOverrides[item.id] ?? item.status }) })}>Override</Btn>
@@ -344,10 +344,10 @@ export default function AdminDashboardPage() {
               {(auctions.data || []).map(item => {
                 const modifiable = !['CREATED', 'CANCELLED', 'REJECTED', 'CLOSED'].includes(item.status)
                 return (
-                <div key={item.id} className="flex flex-col gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                <div key={item.id} className="flex flex-col gap-3 border-t border-[#e0e7ff] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{item.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-[#7a6858]">{item.type} · {item.vendor?.displayName || 'Vendor'} · {item.lots?.length || 0} lot(s)</p>
+                    <p className="mt-0.5 truncate text-xs text-[#64748b]">{item.type} · {item.vendor?.displayName || 'Vendor'} · {item.lots?.length || 0} lot(s)</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Pill value={item.status} />
@@ -386,28 +386,28 @@ export default function AdminDashboardPage() {
 
             {tab === 'settings' && <Panel title="Platform Settings" count={settings.data?.length || 0}>
                 {(settings.data || []).map(item => (
-                  <div key={item.key} className="grid gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:grid-cols-[1fr_200px_auto] lg:items-center">
-                    <div><p className="font-semibold">{item.key}</p><p className="text-xs text-[#7a6858]">{item.description || item.dataType}</p></div>
-                    <input value={settingDrafts[item.key] ?? item.value} onChange={e => setSettingDrafts(p => ({ ...p, [item.key]: e.target.value }))} className="rounded-lg border border-[#dccfc2] px-3 py-2 text-sm outline-none transition focus:border-[#221b16]" />
+                  <div key={item.key} className="grid gap-3 border-t border-[#e0e7ff] px-5 py-4 lg:grid-cols-[1fr_200px_auto] lg:items-center">
+                    <div><p className="font-semibold">{item.key}</p><p className="text-xs text-[#64748b]">{item.description || item.dataType}</p></div>
+                    <input value={settingDrafts[item.key] ?? item.value} onChange={e => setSettingDrafts(p => ({ ...p, [item.key]: e.target.value }))} className="rounded-lg border border-[#e0e7ff] px-3 py-2 text-sm outline-none transition focus:border-[#1e293b]" />
                     <Btn onClick={() => act({ label: 'Setting updated', title: 'Save setting', description: `Update "${item.key}" to "${settingDrafts[item.key] ?? item.value}"?`, request: () => apiClient.put(`/api/admin/platform-settings/${encodeURIComponent(item.key)}`, { value: settingDrafts[item.key] ?? item.value }) })}>Save</Btn>
                   </div>
                 ))}
               </Panel>}
 
             {tab === 'notices' && <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
-              <div className="rounded-xl border border-[#dccfc2] bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-[#e0e7ff] bg-white p-5 shadow-sm">
                 <h2 className="font-[Fraunces] text-xl">Create Notice</h2>
                 <div className="mt-4 space-y-3">
-                  <input value={notice.title} onChange={e => setNotice(p => ({ ...p, title: e.target.value }))} placeholder="Title" className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />
-                  <textarea value={notice.body} onChange={e => setNotice(p => ({ ...p, body: e.target.value }))} placeholder="Body" rows={4} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />
-                  <input value={notice.targetRoles} onChange={e => setNotice(p => ({ ...p, targetRoles: e.target.value }))} placeholder="Target roles (comma-separated)" className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />
-                  <input type="datetime-local" value={notice.startsAt} onChange={e => setNotice(p => ({ ...p, startsAt: e.target.value }))} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />
+                  <input value={notice.title} onChange={e => setNotice(p => ({ ...p, title: e.target.value }))} placeholder="Title" className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />
+                  <textarea value={notice.body} onChange={e => setNotice(p => ({ ...p, body: e.target.value }))} placeholder="Body" rows={4} className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />
+                  <input value={notice.targetRoles} onChange={e => setNotice(p => ({ ...p, targetRoles: e.target.value }))} placeholder="Target roles (comma-separated)" className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />
+                  <input type="datetime-local" value={notice.startsAt} onChange={e => setNotice(p => ({ ...p, startsAt: e.target.value }))} className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />
                   <Btn onClick={() => act({ label: 'Notice created', title: 'Publish notice', description: notice.title ? `Publish "${notice.title}" to ${notice.targetRoles || 'all roles'}?` : 'Publish this notice?', request: () => apiClient.post('/api/admin/system-notifications', { ...notice, startsAt: new Date(notice.startsAt).toISOString() }) })}>Publish Notice</Btn>
                 </div>
               </div>
               <Panel title="System Notices" count={notices.data?.length || 0}>
                 {(notices.data || []).map(item => (
-                  <div key={item.id} className="flex flex-col gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div key={item.id} className="flex flex-col gap-3 border-t border-[#e0e7ff] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                     <Row title={item.title} meta={`${item.type} · ${dateLabel(item.startsAt)}`} status={item.active ? 'ACTIVE' : 'INACTIVE'} />
                     <div className="flex gap-1.5">
                       <Btn onClick={() => act({ label: 'Notice toggled', title: item.active ? 'Disable notice' : 'Enable notice', description: `${item.active ? 'Disable' : 'Enable'} "${item.title}"? ${item.active ? 'Users will stop seeing it.' : 'Users will start seeing it.'}`, request: () => apiClient.put(`/api/admin/system-notifications/${item.id}`, { isActive: !item.active }) })}>{item.active ? 'Disable' : 'Enable'}</Btn>
@@ -420,10 +420,10 @@ export default function AdminDashboardPage() {
 
             {tab === 'upgrades' && <Panel title="Role Upgrades" count={upgrades.data?.length || 0}>
               {(upgrades.data || []).map(item => (
-                <div key={item.id} className="flex flex-col gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                <div key={item.id} className="flex flex-col gap-3 border-t border-[#e0e7ff] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
                     <p className="font-semibold">{item.user?.displayName || 'Unknown'}</p>
-                    <p className="truncate text-xs text-[#7a6858]">{item.user?.email || '—'} · {item.role} · {dateLabel(item.createdAt)}</p>
+                    <p className="truncate text-xs text-[#64748b]">{item.user?.email || '—'} · {item.role} · {dateLabel(item.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Pill value={item.status} />
@@ -444,7 +444,7 @@ export default function AdminDashboardPage() {
 
             {tab === 'plans' && <Panel title="Subscription Plans" count={plans.data?.length || 0}>
               {/* Plan form */}
-              <div className="border-b border-[#e3d6c9] p-5 space-y-3">
+              <div className="border-b border-[#e0e7ff] p-5 space-y-3">
                 <h3 className="font-semibold text-sm">{editingPlanId ? 'Edit Plan' : 'New Plan'}</h3>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <PlanField label="Name" value={planForm.name || ''} onChange={v => setPlanForm(p => ({ ...p, name: v }))} />
@@ -455,8 +455,8 @@ export default function AdminDashboardPage() {
                   <PlanField label="Discount %" value={String(planForm.discountPercent ?? 0)} onChange={v => setPlanForm(p => ({ ...p, discountPercent: Number(v) }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#7a6858] mb-1">Features (one per line)</label>
-                  <textarea value={planForm.features || ''} onChange={e => setPlanForm(p => ({ ...p, features: e.target.value }))} rows={3} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2 text-sm outline-none transition focus:border-[#221b16]" />
+                  <label className="block text-xs font-semibold text-[#64748b] mb-1">Features (one per line)</label>
+                  <textarea value={planForm.features || ''} onChange={e => setPlanForm(p => ({ ...p, features: e.target.value }))} rows={3} className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2 text-sm outline-none transition focus:border-[#1e293b]" />
                 </div>
                 <div className="flex gap-2">
                   <Btn onClick={() => {
@@ -477,10 +477,10 @@ export default function AdminDashboardPage() {
               </div>
               {/* Plan list */}
               {(plans.data || []).map(p => (
-                <div key={p.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                <div key={p.id} className="flex items-center justify-between border-t border-[#e0e7ff] px-5 py-4">
                   <div>
                     <p className="font-semibold">{p.displayName}</p>
-                    <p className="text-xs text-[#7a6858]">{p.name} · {p.maxShops} shops · {money(p.priceMonthlyBdt)}/mo · {money(p.priceYearlyBdt)}/yr</p>
+                    <p className="text-xs text-[#64748b]">{p.name} · {p.maxShops} shops · {money(p.priceMonthlyBdt)}/mo · {money(p.priceYearlyBdt)}/yr</p>
                   </div>
                   <div className="flex gap-1.5">
                     <Btn onClick={() => resetPlanForm(p)}>Edit</Btn>
@@ -492,31 +492,31 @@ export default function AdminDashboardPage() {
 
             {tab === 'deals' && <Panel title="Subscription Deals" count={deals.data?.length || 0}>
               {/* Deal form */}
-              <div className="border-b border-[#e3d6c9] p-5 space-y-3">
+              <div className="border-b border-[#e0e7ff] p-5 space-y-3">
                 <h3 className="font-semibold text-sm">{editingDealId ? 'Edit Deal' : 'New Deal'}</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <PlanField label="Title" value={dealForm.title || ''} onChange={v => setDealForm(p => ({ ...p, title: v }))} />
                   <PlanField label="Type" value={dealForm.dealType || 'DISCOUNT'} onChange={v => setDealForm(p => ({ ...p, dealType: v }))}
                     render={() => <select value={dealForm.dealType || 'DISCOUNT'} onChange={e => setDealForm(p => ({ ...p, dealType: e.target.value }))}
-                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]"
+                      className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]"
                     ><option value="FREE_TRIAL">Free Trial</option><option value="DISCOUNT">Discount</option><option value="FREE_MONTHS">Free Months</option></select>} />
                   <PlanField label="Value" value={String(dealForm.value ?? 0)} onChange={v => setDealForm(p => ({ ...p, value: Number(v) }))} />
                   <PlanField label="Linked Plan" value={String(dealForm.plan?.id ?? '')} onChange={v => setDealForm(p => ({ ...p, plan: v ? { id: Number(v), displayName: '' } : undefined }))}
                     render={() => <select value={String(dealForm.plan?.id ?? '')} onChange={e => setDealForm(p => ({ ...p, plan: e.target.value ? { id: Number(e.target.value), displayName: '' } : undefined }))}
-                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]"
+                      className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]"
                     ><option value="">All Plans</option>{(plans.data || []).map(pl => <option key={pl.id} value={pl.id}>{pl.displayName}</option>)}</select>} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#7a6858] mb-1">Description</label>
-                  <textarea value={dealForm.description || ''} onChange={e => setDealForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2 text-sm outline-none transition focus:border-[#221b16]" />
+                  <label className="block text-xs font-semibold text-[#64748b] mb-1">Description</label>
+                  <textarea value={dealForm.description || ''} onChange={e => setDealForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2 text-sm outline-none transition focus:border-[#1e293b]" />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <PlanField label="Starts At" value={dealForm.startsAt || ''} onChange={v => setDealForm(p => ({ ...p, startsAt: v }))}
                     render={() => <input type="datetime-local" value={dealForm.startsAt?.slice(0, 16) || ''} onChange={e => setDealForm(p => ({ ...p, startsAt: e.target.value }))}
-                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />} />
+                      className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />} />
                   <PlanField label="Ends At" value={dealForm.endsAt || ''} onChange={v => setDealForm(p => ({ ...p, endsAt: v }))}
                     render={() => <input type="datetime-local" value={dealForm.endsAt?.slice(0, 16) || ''} onChange={e => setDealForm(p => ({ ...p, endsAt: e.target.value }))}
-                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />} />
+                      className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />} />
                 </div>
                 <div className="flex gap-2">
                   <Btn onClick={() => {
@@ -543,10 +543,10 @@ export default function AdminDashboardPage() {
               </div>
               {/* Deal list */}
               {(deals.data || []).map(d => (
-                <div key={d.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                <div key={d.id} className="flex items-center justify-between border-t border-[#e0e7ff] px-5 py-4">
                   <div>
                     <p className="font-semibold">{d.title}</p>
-                    <p className="text-xs text-[#7a6858]">{d.dealType} · {money(d.value)} · {d.plan ? d.plan.displayName : 'All plans'} · {d.isActive ? 'Active' : 'Inactive'}</p>
+                    <p className="text-xs text-[#64748b]">{d.dealType} · {money(d.value)} · {d.plan ? d.plan.displayName : 'All plans'} · {d.isActive ? 'Active' : 'Inactive'}</p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${d.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>{d.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
@@ -560,8 +560,8 @@ export default function AdminDashboardPage() {
             {tab === 'verification' && <div className="grid gap-4 xl:grid-cols-2">
               <Panel title="Vendor Verification" count={vendors.data?.length || 0}>
                 {(vendors.data || []).map(item => (
-                  <div key={item.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
-                    <div className="min-w-0"><p className="truncate font-semibold">{item.shopName}</p><p className="text-xs text-[#7a6858]">{item.user?.displayName || 'Vendor'}</p></div>
+                  <div key={item.id} className="flex items-center justify-between border-t border-[#e0e7ff] px-5 py-4">
+                    <div className="min-w-0"><p className="truncate font-semibold">{item.shopName}</p><p className="text-xs text-[#64748b]">{item.user?.displayName || 'Vendor'}</p></div>
                     <div className="flex items-center gap-2">
                       <Pill value={item.verificationStatus} />
                       {item.verificationStatus !== 'VERIFIED' && <Btn onClick={() => act({ label: 'Vendor verified', title: 'Verify vendor', description: `Mark "${item.shopName}" (${item.user?.displayName || 'Vendor'}) as verified?`, request: () => apiClient.put(`/api/admin/vendors/${item.id}/verify`) })}>Verify</Btn>}
@@ -571,13 +571,13 @@ export default function AdminDashboardPage() {
               </Panel>
               <Panel title="Shop Verification Levels" count={adminShops.data?.length || 0}>
                 {(adminShops.data || []).map(shop => (
-                  <div key={shop.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
-                    <div className="min-w-0"><p className="truncate font-semibold">{shop.name}</p><p className="text-xs text-[#7a6858]">{shop.vendor?.displayName || 'Vendor'} · {shop.slug}</p></div>
+                  <div key={shop.id} className="flex items-center justify-between border-t border-[#e0e7ff] px-5 py-4">
+                    <div className="min-w-0"><p className="truncate font-semibold">{shop.name}</p><p className="text-xs text-[#64748b]">{shop.vendor?.displayName || 'Vendor'} · {shop.slug}</p></div>
                     <div className="flex items-center gap-2">
                       <select value={shop.verificationLevel} onChange={e => {
                         const newLevel = e.target.value
                         act({ label: 'Verification updated', title: 'Update verification', description: `Set "${shop.name}" verification to ${newLevel}?`, request: () => apiClient.put(`/api/admin/shops/${shop.id}/verification`, { verificationLevel: newLevel }) })
-                      }} className="rounded-lg border border-[#dccfc2] px-2.5 py-1.5 text-xs outline-none focus:border-[#221b16]">
+                      }} className="rounded-lg border border-[#e0e7ff] px-2.5 py-1.5 text-xs outline-none focus:border-[#1e293b]">
                         {verificationLevels.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                       <Pill value={shop.verificationLevel} />
@@ -596,29 +596,29 @@ export default function AdminDashboardPage() {
 }
 
 function SectionHeader({ title, aside }: { title: string; aside?: ReactNode }) {
-  return <div className="flex flex-col gap-3 border-b border-[#e3d6c9] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+  return <div className="flex flex-col gap-3 border-b border-[#e0e7ff] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
     <h2 className="font-[Fraunces] text-xl">{title}</h2>
     {aside}
   </div>
 }
 
 function Panel({ title, count, children }: { title: string; count: number; children: ReactNode }) {
-  return <section className="overflow-hidden rounded-xl border border-[#dccfc2] bg-white shadow-sm">
-    <SectionHeader title={title} aside={<span className="rounded-full bg-[#f6f1ea] px-3 py-1 text-xs font-bold text-[#5c4e42]">{count}</span>} />
-    <div>{children || <p className="px-5 py-8 text-sm text-[#7a6858]">No records.</p>}</div>
+  return <section className="overflow-hidden rounded-xl border border-[#e0e7ff] bg-white shadow-sm">
+    <SectionHeader title={title} aside={<span className="rounded-full bg-[#f8fafc] px-3 py-1 text-xs font-bold text-[#64748b]">{count}</span>} />
+    <div>{children || <p className="px-5 py-8 text-sm text-[#64748b]">No records.</p>}</div>
   </section>
 }
 
 function Row({ title, meta, status }: { title: string; meta: string; status?: string }) {
   return <div className="min-w-0 px-5 py-3.5">
     <p className="truncate font-semibold">{title}</p>
-    <p className="mt-0.5 truncate text-xs text-[#7a6858]">{meta}</p>
+    <p className="mt-0.5 truncate text-xs text-[#64748b]">{meta}</p>
     {status && <div className="mt-1.5"><Pill value={status} /></div>}
   </div>
 }
 
 function CaseRow({ title, meta, status, resolve, dismiss, onDelete }: { title: string; meta: string; status: string; resolve?: () => void; dismiss?: () => void; onDelete?: () => void }) {
-  return <div className="flex flex-col gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+  return <div className="flex flex-col gap-3 border-t border-[#e0e7ff] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
     <Row title={title} meta={meta} status={status} />
     <div className="flex gap-1.5">
       {status === 'OPEN' && resolve && <Btn onClick={resolve}>Resolve</Btn>}
@@ -630,13 +630,13 @@ function CaseRow({ title, meta, status, resolve, dismiss, onDelete }: { title: s
 
 function PlanField({ label, value, onChange, render }: { label: string; value: string; onChange: (v: string) => void; render?: () => ReactNode }) {
   return <div>
-    <label className="block text-xs font-semibold text-[#7a6858] mb-1">{label}</label>
-    {render ? render() : <input value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />}
+    <label className="block text-xs font-semibold text-[#64748b] mb-1">{label}</label>
+    {render ? render() : <input value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-lg border border-[#e0e7ff] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#1e293b]" />}
   </div>
 }
 
 function Btn({ children, onClick }: { children: ReactNode; onClick: () => void }) {
-  return <button onClick={onClick} className="rounded-lg bg-[#221b16] px-3.5 py-1.5 text-xs font-bold text-[#fcf6ef] transition hover:bg-[#3a3028] active:scale-[0.97]">{children}</button>
+  return <button onClick={onClick} className="rounded-lg bg-[#1e293b] px-3.5 py-1.5 text-xs font-bold text-[#f8fafc] transition hover:bg-[#4338ca] active:scale-[0.97]">{children}</button>
 }
 
 function DangerBtn({ children, onClick }: { children: ReactNode; onClick: () => void }) {

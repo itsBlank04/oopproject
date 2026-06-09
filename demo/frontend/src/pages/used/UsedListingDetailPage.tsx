@@ -45,21 +45,21 @@ export default function UsedListingDetailPage() {
     onError: (e: any) => showResult(e.response?.data?.error || 'Failed to send offer', 'error'),
   })
 
-  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Loading...</div>
-  if (!item) return <div className="flex min-h-screen items-center justify-center bg-[#f9f5f0] text-[#8c7564]">Item not found</div>
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] text-[#94A3B8]">Loading...</div>
+  if (!item) return <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] text-[#94A3B8]">Item not found</div>
 
   const images = item.images || []
   const videos = item.videos || []
   const allMedia = [...images.map((i: any) => ({ ...i, type: 'image', url: i.imageUrl })), ...videos.map((v: any) => ({ ...v, type: 'video', url: v.videoUrl }))]
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
+    <div className="min-h-screen bg-[#f8fafc] px-6 py-10">
       <div className="mx-auto max-w-5xl">
-        <Link to="/used-listings" className="text-sm text-[#8c7564] hover:underline">← Back to listings</Link>
+        <Link to="/used-listings" className="text-sm text-[#94A3B8] hover:underline">← Back to listings</Link>
         <div className="mt-6 grid gap-8 lg:grid-cols-2">
           {/* Media gallery */}
           <div>
-            <div className="aspect-square overflow-hidden rounded-2xl bg-[#f0e8df]">
+            <div className="aspect-square overflow-hidden rounded-2xl bg-[#eef2ff]">
               {allMedia.length > 0 ? (
                   allMedia[selectedImage]?.type === 'video' ? (
                   <video src={allMedia[selectedImage]?.url} controls className="h-full w-full object-cover rounded-2xl" />
@@ -69,7 +69,7 @@ export default function UsedListingDetailPage() {
                   </button>
                 )
               ) : (
-                <div className="flex h-full items-center justify-center text-lg text-[#a28672]">No image</div>
+                <div className="flex h-full items-center justify-center text-lg text-[#94A3B8]">No image</div>
               )}
             </div>
             {allMedia.length > 1 && (
@@ -77,7 +77,7 @@ export default function UsedListingDetailPage() {
                 {allMedia.map((m: any, i: number) => (
                   <button key={i} onClick={() => setSelectedImage(i)}
                     className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                      selectedImage === i ? 'border-[#221b16]' : 'border-[#e4d6c8] hover:border-[#b8a494]'
+                      selectedImage === i ? 'border-[#1e293b]' : 'border-[#e0e7ff] hover:border-[#cbd5e1]'
                     }`}>
                     {m.type === 'video' ? (
                       <>
@@ -92,7 +92,7 @@ export default function UsedListingDetailPage() {
               </div>
             )}
             {allMedia.length > 0 && (
-              <p className="mt-2 text-xs text-[#8c7564]">
+              <p className="mt-2 text-xs text-[#94A3B8]">
                 {images.length} photo{images.length !== 1 ? 's' : ''}{videos.length > 0 ? ` · ${videos.length} video${videos.length !== 1 ? 's' : ''}` : ''}
               </p>
             )}
@@ -100,32 +100,32 @@ export default function UsedListingDetailPage() {
 
           {/* Info & offer */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-[#a28672]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
-            <h1 className="mt-2 font-[Fraunces] text-3xl text-[#221b16]">{item.title}</h1>
-            <p className="mt-4 text-3xl font-bold text-[#221b16]">৳{item.askingPriceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
-            <p className="mt-4 text-sm leading-relaxed text-[#6c5b4f]">{item.description}</p>
-            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
+            <p className="text-xs uppercase tracking-wider text-[#94A3B8]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
+            <h1 className="mt-2 font-[Fraunces] text-3xl text-[#1e293b]">{item.title}</h1>
+            <p className="mt-4 text-3xl font-bold text-[#1e293b]">৳{item.askingPriceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#64748b]">{item.description}</p>
+            <div className="mt-4 rounded-xl border border-[#e0e7ff] bg-white p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#221b16]">Sold by {item.seller?.displayName}</p>
-                  <p className="text-xs text-[#8c7564]">Listed {new Date(item.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm font-semibold text-[#1e293b]">Sold by {item.seller?.displayName}</p>
+                  <p className="text-xs text-[#94A3B8]">Listed {new Date(item.createdAt).toLocaleDateString()}</p>
                 </div>
                 {user && item.seller?.id !== user.id && (
                   <button onClick={handleChat}
-                    className="rounded-lg border border-[#d7c7b8] px-3 py-1.5 text-xs font-semibold text-[#221b16] transition hover:bg-[#f0e8df]">
+                    className="rounded-lg border border-[#cbd5e1] px-3 py-1.5 text-xs font-semibold text-[#1e293b] transition hover:bg-[#eef2ff]">
                     Chat with Seller
                   </button>
                 )}
               </div>
             </div>
             {user && item.seller?.id !== user.id && item.status === 'ACTIVE' && (
-              <div className="mt-6 space-y-3 rounded-2xl border border-[#e4d6c8] bg-white p-5">
-                <p className="font-semibold text-[#221b16]">Make an Offer</p>
+              <div className="mt-6 space-y-3 rounded-2xl border border-[#e0e7ff] bg-white p-5">
+                <p className="font-semibold text-[#1e293b]">Make an Offer</p>
                 <input type="number" value={offerAmount} onChange={e => setOfferAmount(e.target.value)}
-                  placeholder="Your offer in ৳" className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+                  placeholder="Your offer in ৳" className="w-full rounded-xl border border-[#cbd5e1] px-4 py-2.5 text-sm outline-none focus:border-[#1e293b]" />
                 <textarea value={offerMsg} onChange={e => setOfferMsg(e.target.value)}
                   placeholder="Message to seller (optional)" rows={2}
-                  className="w-full rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
+                  className="w-full rounded-xl border border-[#cbd5e1] px-4 py-2.5 text-sm outline-none focus:border-[#1e293b]" />
                 <button onClick={() => {
                   if (!item) return
                   const amount = parseFloat(offerAmount)
@@ -136,7 +136,7 @@ export default function UsedListingDetailPage() {
                     request: () => offerMutation.mutateAsync(),
                   })
                 }} disabled={!offerAmount || offerMutation.isPending}
-                  className="w-full rounded-xl bg-[#221b16] py-3 font-semibold text-[#f9f5f0] disabled:opacity-50">
+                  className="w-full rounded-xl bg-[#1e293b] py-3 font-semibold text-[#f8fafc] disabled:opacity-50">
                   {offerMutation.isPending ? 'Sending...' : 'Send Offer'}
                 </button>
               </div>

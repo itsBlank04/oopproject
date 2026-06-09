@@ -99,12 +99,12 @@ export default function AuthModal() {
 
           <h1
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            className="mt-5 text-[2rem] font-bold leading-[1.15] tracking-tight text-[#1a1a1a] lg:text-[2.25rem]"
+            className="mt-5 text-[2rem] font-bold leading-[1.15] tracking-tight text-[#1e293b] lg:text-[2.25rem]"
           >
             {isSignin ? 'Welcome\nBack' : 'Join\nAtomDrops'}
           </h1>
 
-          <div className="mt-5 h-px w-10 bg-[#1a1a1a]/20" />
+          <div className="mt-5 h-px w-10 bg-[#1e293b]/20" />
 
           <p className="mt-5 max-w-[18rem] text-sm leading-relaxed text-[#6b6b6b]">
             {isSignin
@@ -119,7 +119,7 @@ export default function AuthModal() {
           <button
             type="button"
             onClick={closeModal}
-            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#8a8a8a] transition-colors hover:bg-[#f5f5f5] hover:text-[#1a1a1a]"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#8a8a8a] transition-colors hover:bg-[#f5f5f5] hover:text-[#1e293b]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -131,7 +131,7 @@ export default function AuthModal() {
 
           {/* Title */}
           <div className="mb-1">
-            <h2 className="text-xl font-bold text-[#1a1a1a] md:text-[1.375rem]">
+            <h2 className="text-xl font-bold text-[#1e293b] md:text-[1.375rem]">
               {isSignin ? 'Sign In' : 'Create Account'}
             </h2>
             <p className="mt-0.5 text-sm text-[#6b6b6b]">
@@ -145,7 +145,7 @@ export default function AuthModal() {
               type="button"
               onClick={() => { setShowPassword(false); setTab('signin') }}
               className={`flex-1 rounded-[8px] py-2.5 text-sm font-semibold transition-all duration-200 ${
-                isSignin ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#6b6b6b] hover:text-[#1a1a1a]'
+                isSignin ? 'bg-white text-[#1e293b] shadow-sm' : 'text-[#6b6b6b] hover:text-[#1e293b]'
               }`}
             >
               Sign In
@@ -154,7 +154,7 @@ export default function AuthModal() {
               type="button"
               onClick={() => { setShowPassword(false); setTab('register') }}
               className={`flex-1 rounded-[8px] py-2.5 text-sm font-semibold transition-all duration-200 ${
-                !isSignin ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#6b6b6b] hover:text-[#1a1a1a]'
+                !isSignin ? 'bg-white text-[#1e293b] shadow-sm' : 'text-[#6b6b6b] hover:text-[#1e293b]'
               }`}
             >
               Create Account
@@ -186,7 +186,7 @@ export default function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] hover:text-[#1a1a1a] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] hover:text-[#1e293b] transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -253,7 +253,7 @@ export default function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] hover:text-[#1a1a1a] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] hover:text-[#1e293b] transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -291,7 +291,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => { setShowPassword(false); setTab('register'); loginForm.reset() }}
-                  className="font-semibold text-[#1a1a1a] transition-colors hover:text-[#8a6c4e]"
+                  className="font-semibold text-[#1e293b] transition-colors hover:text-[#94A3B8]"
                 >
                   Create one
                 </button>
@@ -302,7 +302,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => { setShowPassword(false); setTab('signin'); registerForm.reset() }}
-                  className="font-semibold text-[#1a1a1a] transition-colors hover:text-[#8a6c4e]"
+                  className="font-semibold text-[#1e293b] transition-colors hover:text-[#94A3B8]"
                 >
                   Sign in
                 </button>

@@ -29,14 +29,14 @@ export default function Sidebar() {
   if (activeRole === null) return null
 
   const modeLabel = activeRole === 'vendor' ? 'Merchant Mode' : 'Repair Mode'
-  const modeColor = activeRole === 'vendor' ? 'bg-[#221b16]' : 'bg-blue-600'
-  const modeColorLight = activeRole === 'vendor' ? 'bg-[#221b16]/10 text-[#221b16] hover:bg-[#221b16]/20' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+  const modeColor = activeRole === 'vendor' ? 'bg-[#1e293b]' : 'bg-blue-600'
+  const modeColorLight = activeRole === 'vendor' ? 'bg-[#1e293b]/10 text-[#1e293b] hover:bg-[#1e293b]/20' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-6 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/60 bg-white/80 text-[#221b16] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-all hover:bg-white hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.18)] lg:hidden"
+        className="fixed bottom-6 left-6 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/60 bg-white/80 text-[#1e293b] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-all hover:bg-white hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.18)] lg:hidden"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-5 w-5">
           <path d="M3 12h18M3 6h18M3 18h18" />
@@ -46,8 +46,8 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden" onClick={() => setOpen(false)} />}
 
-      <aside className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-[#e4d6c8]/60 bg-white/95 backdrop-blur-xl transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="flex h-20 items-center gap-3 border-b border-[#e4d6c8]/40 px-5">
+      <aside className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-[#e0e7ff]/60 bg-white/95 backdrop-blur-xl transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="flex h-20 items-center gap-3 border-b border-[#e0e7ff]/40 px-5">
           <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${modeColor}`}>
             <svg viewBox="0 0 20 20" fill="white" className="h-4 w-4">
               {activeRole === 'vendor' ? (
@@ -58,12 +58,12 @@ export default function Sidebar() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#a28672]">{modeLabel}</p>
-            <p className="truncate text-sm font-medium text-[#221b16]">{activeRole === 'vendor' ? 'Vendor Panel' : 'Technician Panel'}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#94A3B8]">{modeLabel}</p>
+            <p className="truncate text-sm font-medium text-[#1e293b]">{activeRole === 'vendor' ? 'Vendor Panel' : 'Technician Panel'}</p>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#a28672] transition-colors hover:bg-[#f0e8df] hover:text-[#221b16] lg:hidden"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#94A3B8] transition-colors hover:bg-[#eef2ff] hover:text-[#1e293b] lg:hidden"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-4 w-4">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -73,18 +73,18 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="mb-4 mx-3 flex items-center gap-2.5 rounded-xl bg-[#f9f5f0] px-3 py-2.5">
+          <div className="mb-4 mx-3 flex items-center gap-2.5 rounded-xl bg-[#f8fafc] px-3 py-2.5">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-[#221b16]">{activeRole === 'vendor' ? 'Merchant' : 'Craftsman'}</p>
+              <p className="text-[11px] font-medium text-[#1e293b]">{activeRole === 'vendor' ? 'Merchant' : 'Craftsman'}</p>
               <p className="text-[9px] font-medium uppercase tracking-wider text-emerald-600">Active</p>
             </div>
           </div>
           <div className="space-y-0.5">
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a28672]/60">Navigation</p>
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94A3B8]/60">Navigation</p>
             {links.map(link => {
               const isActive = location.pathname === link.to || location.pathname.startsWith(link.to + '/')
               return (
@@ -95,10 +95,10 @@ export default function Sidebar() {
                   className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? `${modeColor} text-white shadow-sm`
-                      : 'text-[#6c5b4f] hover:bg-[#f9f5f0] hover:text-[#221b16]'
+                      : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#1e293b]'
                   }`}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? '' : 'text-[#a28672] group-hover:text-[#221b16]'}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? '' : 'text-[#94A3B8] group-hover:text-[#1e293b]'}`}>
                     <path d={link.icon} />
                   </svg>
                   <span>{link.label}</span>
@@ -108,9 +108,9 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        <div className="border-t border-[#e4d6c8]/40 p-3">
-          <div className="flex items-center justify-between rounded-xl bg-[#f9f5f0] px-3 py-2.5">
-            <span className="text-[11px] font-medium text-[#6c5b4f]">Mode Active</span>
+        <div className="border-t border-[#e0e7ff]/40 p-3">
+          <div className="flex items-center justify-between rounded-xl bg-[#f8fafc] px-3 py-2.5">
+            <span className="text-[11px] font-medium text-[#64748b]">Mode Active</span>
             <button
               onClick={() => { setActiveRole(null); setOpen(false) }}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${modeColorLight}`}

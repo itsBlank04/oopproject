@@ -50,7 +50,7 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#221b16]/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1e293b]/50 p-4 backdrop-blur-sm"
       onClick={onCancel}
       role="dialog"
       aria-modal="true"
@@ -66,24 +66,24 @@ export default function ConfirmDialog({
           type="button"
           onClick={onCancel}
           aria-label="Close"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-[#8c7564] transition hover:bg-[#f6f1ea] hover:text-[#221b16]"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-[#94A3B8] transition hover:bg-[#f8fafc] hover:text-[#1e293b]"
         >
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
             <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
           </svg>
         </button>
         <div className="px-6 pt-6">
-          <h2 id="confirm-title" className="font-[Fraunces] text-xl text-[#221b16]">
+          <h2 id="confirm-title" className="font-[Fraunces] text-xl text-[#1e293b]">
             {title}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[#6d5d50]">{description}</p>
+          <p className="mt-2 text-sm leading-6 text-[#64748b]">{description}</p>
         </div>
-        <div className="mt-6 flex gap-3 border-t border-[#f0e8df] bg-[#faf7f3] px-6 py-4">
+        <div className="mt-6 flex gap-3 border-t border-[#eef2ff] bg-[#f8fafc] px-6 py-4">
           <button
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="flex-1 rounded-xl border border-[#dccfc2] py-2.5 text-sm font-semibold text-[#5c4e42] transition hover:bg-white disabled:opacity-50"
+            className="flex-1 rounded-xl border border-[#e0e7ff] py-2.5 text-sm font-semibold text-[#64748b] transition hover:bg-white disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -95,7 +95,7 @@ export default function ConfirmDialog({
             className={`flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition disabled:opacity-60 ${
               tone === 'danger'
                 ? 'bg-rose-600 hover:bg-rose-700'
-                : 'bg-[#221b16] hover:bg-[#3a3028]'
+                : 'bg-[#1e293b] hover:bg-[#4338ca]'
             }`}
           >
             {pending ? 'Working…' : confirmLabel}

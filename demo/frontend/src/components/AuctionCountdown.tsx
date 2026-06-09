@@ -29,11 +29,11 @@ export default function AuctionCountdown({ endTime }: AuctionCountdownProps) {
   const expired = Number.isNaN(endMs) || timeLeft <= 0
 
   if (expired) {
-    return <span className="text-sm font-medium text-[#8c7564]">Closed</span>
+    return <span className="text-sm font-medium text-[#94A3B8]">Closed</span>
   }
 
   return (
-    <span className="text-sm font-medium text-[#221b16] tabular-nums">
+    <span className="text-sm font-medium text-[#1e293b] tabular-nums">
       {formatTimeLeft(timeLeft)} left
     </span>
   )

@@ -33,29 +33,29 @@ export default function WishlistPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] px-6 py-10">
+    <div className="min-h-screen bg-[#f8fafc] px-6 py-10">
       <div className="mx-auto max-w-4xl">
-        <h1 className="font-[Fraunces] text-3xl text-[#221b16]">My Wishlist</h1>
+        <h1 className="font-[Fraunces] text-3xl text-[#1e293b]">My Wishlist</h1>
         {isLoading ? (
-          <div className="mt-12 text-center text-[#8c7564]">Loading...</div>
+          <div className="mt-12 text-center text-[#94A3B8]">Loading...</div>
         ) : items.length === 0 ? (
-          <div className="mt-12 rounded-2xl border border-[#e4d6c8] bg-white p-10 text-center">
-            <p className="text-lg text-[#8c7564]">Your wishlist is empty</p>
-            <Link to="/products" className="mt-4 inline-block rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0]">
+          <div className="mt-12 rounded-2xl border border-[#e0e7ff] bg-white p-10 text-center">
+            <p className="text-lg text-[#94A3B8]">Your wishlist is empty</p>
+            <Link to="/products" className="mt-4 inline-block rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc]">
               Browse Products
             </Link>
           </div>
         ) : (
           <div className="mt-8 space-y-4">
             {items.map((w: any) => (
-              <div key={w.id} className="flex items-center gap-4 rounded-2xl border border-[#e4d6c8] bg-white p-4">
+              <div key={w.id} className="flex items-center gap-4 rounded-2xl border border-[#e0e7ff] bg-white p-4">
                 <button type="button" onClick={() => setLightboxUrl(w.product?.images?.[0]?.imageUrl)}
-                  className="h-20 w-20 rounded-xl bg-[#f0e8df] flex items-center justify-center text-xs text-[#a28672] shrink-0 overflow-hidden">
+                  className="h-20 w-20 rounded-xl bg-[#eef2ff] flex items-center justify-center text-xs text-[#94A3B8] shrink-0 overflow-hidden">
                   {w.product?.images?.[0] ? <img src={w.product.images[0].imageUrl} loading="lazy" className="h-full w-full rounded-xl object-cover" /> : 'No img'}
                 </button>
                 <div className="flex-1">
-                  <Link to={`/products/${w.product?.id}`} className="font-semibold text-[#221b16] hover:underline">{w.product?.name}</Link>
-                  <p className="mt-1 text-lg font-bold text-[#221b16]">৳{w.product?.priceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+                  <Link to={`/products/${w.product?.id}`} className="font-semibold text-[#1e293b] hover:underline">{w.product?.name}</Link>
+                  <p className="mt-1 text-lg font-bold text-[#1e293b]">৳{w.product?.priceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
                 </div>
                 <button onClick={() => removeMutation.mutate(w.product?.id)} className="rounded-xl border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                   Remove

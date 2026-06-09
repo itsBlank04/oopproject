@@ -83,7 +83,7 @@ export default function ProductListPage() {
   const filtered = products.filter((p: Product) => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] px-2 py-3 sm:px-4 sm:py-2">
+    <div className="min-h-screen bg-[#f8fafc] px-2 py-3 sm:px-4 sm:py-2">
       <div className="mx-auto max-w-[1800px] rounded-2xl bg-white shadow-[0_8px_40px_rgba(0,0,0,0.08)] min-h-[calc(100vh-3rem)] flex overflow-hidden">
         {/* Mobile filter backdrop */}
         {showMobileFilters && (
@@ -196,7 +196,7 @@ export default function ProductListPage() {
 
         {/* Product grid */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <h1 className="mb-4 text-xl font-semibold text-[#221b16]">Products</h1>
+          <h1 className="mb-4 text-xl font-semibold text-[#1e293b]">Products</h1>
           <div className="mb-4 flex items-center justify-between md:hidden">
             <span className="text-sm text-gray-500">{filtered.length} items</span>
             <button

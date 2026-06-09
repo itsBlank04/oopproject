@@ -224,14 +224,14 @@ export default function VendorShopManagerPage() {
   const slotLimitReached = summary ? (summary.maxShops !== -1 && summary.currentShopCount >= summary.maxShops) : false
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] py-12 px-6">
+    <div className="min-h-screen bg-[#f8fafc] py-12 px-6">
       <div className="mx-auto max-w-5xl">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
-            <h1 className="font-[Fraunces] text-4xl font-bold text-[#221b16]">Shop Manager</h1>
-            <p className="text-[#8c7564] text-sm mt-2">Create, design, and manage permissions for your online storefront outlets.</p>
+            <h1 className="font-[Fraunces] text-4xl font-bold text-[#1e293b]">Shop Manager</h1>
+            <p className="text-[#94A3B8] text-sm mt-2">Create, design, and manage permissions for your online storefront outlets.</p>
           </div>
 
           <div className="flex gap-2">
@@ -239,8 +239,8 @@ export default function VendorShopManagerPage() {
               onClick={() => setActiveTab('list')}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'list' 
-                  ? 'bg-[#8c7564] text-white shadow-sm' 
-                  : 'bg-white border border-[#e4d6c8] text-[#8c7564] hover:bg-gray-50'
+                  ? 'bg-[#94A3B8] text-white shadow-sm' 
+                  : 'bg-white border border-[#e0e7ff] text-[#94A3B8] hover:bg-gray-50'
               }`}
             >
               My Shops ({shops.length})
@@ -251,7 +251,7 @@ export default function VendorShopManagerPage() {
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                 slotLimitReached
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                  : 'bg-white border border-[#e4d6c8] text-[#8c7564] hover:bg-gray-50'
+                  : 'bg-white border border-[#e0e7ff] text-[#94A3B8] hover:bg-gray-50'
               }`}
             >
               <Plus className="h-4 w-4" />
@@ -278,18 +278,18 @@ export default function VendorShopManagerPage() {
             {shopsLoading ? (
               <div className="space-y-4">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-40 animate-pulse rounded-2xl bg-[#e4d6c8]/30" />
+                  <div key={i} className="h-40 animate-pulse rounded-2xl bg-[#e0e7ff]/30" />
                 ))}
               </div>
             ) : shops.length === 0 ? (
-              <div className="text-center p-16 bg-white rounded-2xl border border-[#e4d6c8]/40">
-                <Store className="mx-auto h-12 w-12 text-[#a89280] mb-4" />
-                <h3 className="font-[Fraunces] text-lg font-semibold text-[#221b16]">No Shops Found</h3>
-                <p className="text-[#8c7564] text-xs max-w-sm mx-auto mt-2 mb-6">Create your first shop outlet to start uploading products and scheduling auctions.</p>
+              <div className="text-center p-16 bg-white rounded-2xl border border-[#e0e7ff]/40">
+                <Store className="mx-auto h-12 w-12 text-[#94A3B8] mb-4" />
+                <h3 className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">No Shops Found</h3>
+                <p className="text-[#94A3B8] text-xs max-w-sm mx-auto mt-2 mb-6">Create your first shop outlet to start uploading products and scheduling auctions.</p>
                 <button
                   disabled={slotLimitReached}
                   onClick={() => setActiveTab('create')}
-                  className="px-4 py-2.5 bg-[#8c7564] text-white rounded-xl text-xs font-semibold hover:bg-[#6c5b4f] transition-all disabled:bg-gray-300"
+                  className="px-4 py-2.5 bg-[#94A3B8] text-white rounded-xl text-xs font-semibold hover:bg-[#64748b] transition-all disabled:bg-gray-300"
                 >
                   Create Outlet
                 </button>
@@ -297,13 +297,13 @@ export default function VendorShopManagerPage() {
             ) : (
               <div className="grid gap-6">
                 {shops.map((shop) => (
-                  <div key={shop.id} className="bg-white border border-[#e4d6c8]/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <div key={shop.id} className="bg-white border border-[#e0e7ff]/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex gap-4 items-center">
-                      <div className="h-16 w-16 overflow-hidden rounded-xl bg-[#e4d6c8] border border-gray-100 flex-shrink-0">
+                      <div className="h-16 w-16 overflow-hidden rounded-xl bg-[#e0e7ff] border border-gray-100 flex-shrink-0">
                         {shop.logoUrl ? (
                           <img src={shop.logoUrl} alt={shop.name} className="h-full w-full object-cover" />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center font-[Fraunces] text-2xl text-[#6c5b4f]">
+                          <div className="flex h-full w-full items-center justify-center font-[Fraunces] text-2xl text-[#64748b]">
                             {shop.name.charAt(0)}
                           </div>
                         )}
@@ -311,7 +311,7 @@ export default function VendorShopManagerPage() {
                       
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-[Fraunces] text-xl font-bold text-[#221b16]">{shop.name}</h3>
+                          <h3 className="font-[Fraunces] text-xl font-bold text-[#1e293b]">{shop.name}</h3>
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             shop.status === 'ACTIVE' 
                               ? 'bg-emerald-100 text-emerald-800' 
@@ -326,7 +326,7 @@ export default function VendorShopManagerPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-[#8c7564] flex items-center gap-1">
+                        <p className="text-xs text-[#94A3B8] flex items-center gap-1">
                           <MapPin className="h-3 w-3" /> {shop.location || 'Dhaka, Bangladesh'}
                         </p>
                         <p className="text-[10px] text-gray-400">Slug: {shop.slug}</p>
@@ -336,25 +336,25 @@ export default function VendorShopManagerPage() {
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
                       <Link 
                         to={`/vendor/dashboard?shop=${shop.id}`} 
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e0e7ff] text-[#94A3B8] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
                       </Link>
                       <Link 
                         to={`/shop/${shop.slug}`} 
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e0e7ff] text-[#94A3B8] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         Visit Shop <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                       <button
                         onClick={() => handleOpenEdit(shop)}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e0e7ff] text-[#94A3B8] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <Settings className="h-3.5 w-3.5" /> Customize
                       </button>
                       <button
                         onClick={() => setManagingStaffShop(shop)}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e0e7ff] text-[#94A3B8] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <Users className="h-3.5 w-3.5" /> Staff
                       </button>
@@ -368,28 +368,28 @@ export default function VendorShopManagerPage() {
 
         {/* Tab 2: Create Shop */}
         {activeTab === 'create' && (
-          <div className="bg-white border border-[#e4d6c8]/60 rounded-2xl p-8 shadow-sm max-w-xl mx-auto">
-            <h2 className="font-[Fraunces] text-2xl text-[#221b16] font-bold mb-6">Create New Shop</h2>
+          <div className="bg-white border border-[#e0e7ff]/60 rounded-2xl p-8 shadow-sm max-w-xl mx-auto">
+            <h2 className="font-[Fraunces] text-2xl text-[#1e293b] font-bold mb-6">Create New Shop</h2>
             <form onSubmit={handleCreateShopSubmit} className="space-y-5">
               
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Shop Name</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Shop Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. ATOM Gadget Spot"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Primary Category</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Primary Category</label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564] bg-white"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8] bg-white"
                 >
                   <option value="">Select Category</option>
                   {categories.map((c) => (
@@ -399,57 +399,57 @@ export default function VendorShopManagerPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Description</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Description</label>
                 <textarea
                   rows={3}
                   placeholder="Tell customers what products you specialize in..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Location / Outlet Address</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Location / Outlet Address</label>
                 <input
                   type="text"
                   placeholder="e.g. Multiplan Center, Dhaka"
                   value={newLoc}
                   onChange={(e) => setNewLoc(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Shop Policies (Returns, Warranty, Shipping details)</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Shop Policies (Returns, Warranty, Shipping details)</label>
                 <textarea
                   rows={3}
                   placeholder="e.g. 7-day refund policy, standard delivery takes 3 days..."
                   value={newPolicies}
                   onChange={(e) => setNewPolicies(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Logo Image URL</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Logo Image URL</label>
                 <input
                   type="url"
                   placeholder="https://example.com/logo.jpg"
                   value={newLogo}
                   onChange={(e) => setNewLogo(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#8c7564]">Banner Image URL</label>
+                <label className="block text-xs font-semibold text-[#94A3B8]">Banner Image URL</label>
                 <input
                   type="url"
                   placeholder="https://example.com/banner.jpg"
                   value={newBanner}
                   onChange={(e) => setNewBanner(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#8c7564]"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#94A3B8]"
                 />
               </div>
 
@@ -459,7 +459,7 @@ export default function VendorShopManagerPage() {
                 type="submit"
                 disabled={createShopMutation.isPending}
                 className={`w-full py-3 text-white rounded-xl text-sm font-semibold transition-all ${
-                  createShopMutation.isPending ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8c7564] hover:bg-[#6c5b4f]'
+                  createShopMutation.isPending ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#94A3B8] hover:bg-[#64748b]'
                 }`}
               >
                 {createShopMutation.isPending ? 'Creating...' : 'Create Outlet'}
@@ -471,7 +471,7 @@ export default function VendorShopManagerPage() {
         {/* Modal: Edit Shop Customization */}
         {editingShop && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="w-full max-w-lg rounded-2xl border border-[#e4d6c8] bg-white p-6 shadow-xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-full max-w-lg rounded-2xl border border-[#e0e7ff] bg-white p-6 shadow-xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
               
               <button
                 onClick={() => setEditingShop(null)}
@@ -480,27 +480,27 @@ export default function VendorShopManagerPage() {
                 &times;
               </button>
 
-              <h3 className="font-[Fraunces] text-2xl text-[#221b16] font-bold mb-6">Shop Settings</h3>
+              <h3 className="font-[Fraunces] text-2xl text-[#1e293b] font-bold mb-6">Shop Settings</h3>
               
               <form onSubmit={handleEditShopSubmit} className="space-y-5">
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#8c7564]">Shop Name</label>
+                    <label className="block text-xs font-semibold text-[#94A3B8]">Shop Name</label>
                     <input
                       type="text"
                       required
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-[#8c7564]">Status</label>
+                    <label className="block text-xs font-semibold text-[#94A3B8]">Status</label>
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value as any)}
-                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564] bg-white"
+                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8] bg-white"
                     >
                       <option value="ACTIVE">ACTIVE</option>
                       <option value="PAUSED">PAUSED</option>
@@ -510,54 +510,54 @@ export default function VendorShopManagerPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#8c7564]">Logo Image URL</label>
+                  <label className="block text-xs font-semibold text-[#94A3B8]">Logo Image URL</label>
                   <input
                     type="url"
                     placeholder="https://example.com/logo.jpg"
                     value={editLogo}
                     onChange={(e) => setEditLogo(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#8c7564]">Banner Image URL</label>
+                  <label className="block text-xs font-semibold text-[#94A3B8]">Banner Image URL</label>
                   <input
                     type="url"
                     placeholder="https://example.com/banner.jpg"
                     value={editBanner}
                     onChange={(e) => setEditBanner(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#8c7564]">Description</label>
+                  <label className="block text-xs font-semibold text-[#94A3B8]">Description</label>
                   <textarea
                     rows={3}
                     value={editDesc}
                     onChange={(e) => setEditDesc(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#8c7564]">Location</label>
+                  <label className="block text-xs font-semibold text-[#94A3B8]">Location</label>
                   <input
                     type="text"
                     value={editLoc}
                     onChange={(e) => setEditLoc(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#8c7564]">Policies</label>
+                  <label className="block text-xs font-semibold text-[#94A3B8]">Policies</label>
                   <textarea
                     rows={3}
                     value={editPolicies}
                     onChange={(e) => setEditPolicies(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
 
@@ -567,14 +567,14 @@ export default function VendorShopManagerPage() {
                   <button
                     type="button"
                     onClick={() => setEditingShop(null)}
-                    className="w-1/2 py-2.5 border border-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all text-[#8c7564]"
+                    className="w-1/2 py-2.5 border border-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all text-[#94A3B8]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={updateShopMutation.isPending}
-                    className="w-1/2 py-2.5 bg-[#8c7564] text-white rounded-xl text-xs font-semibold hover:bg-[#6c5b4f] transition-all"
+                    className="w-1/2 py-2.5 bg-[#94A3B8] text-white rounded-xl text-xs font-semibold hover:bg-[#64748b] transition-all"
                   >
                     Save Changes
                   </button>
@@ -587,7 +587,7 @@ export default function VendorShopManagerPage() {
         {/* Modal: Staff Management */}
         {managingStaffShop && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="w-full max-w-lg rounded-2xl border border-[#e4d6c8] bg-white p-6 shadow-xl relative max-h-[85vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-full max-w-lg rounded-2xl border border-[#e0e7ff] bg-white p-6 shadow-xl relative max-h-[85vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
               
               <button
                 onClick={() => setManagingStaffShop(null)}
@@ -597,29 +597,29 @@ export default function VendorShopManagerPage() {
               </button>
 
               <div className="mb-6">
-                <h3 className="font-[Fraunces] text-2xl text-[#221b16] font-bold">Staff Management</h3>
-                <p className="text-xs text-[#8c7564] mt-1">Manage managers, inventory, and support accounts for <span className="font-semibold text-[#221b16]">{managingStaffShop.name}</span></p>
+                <h3 className="font-[Fraunces] text-2xl text-[#1e293b] font-bold">Staff Management</h3>
+                <p className="text-xs text-[#94A3B8] mt-1">Manage managers, inventory, and support accounts for <span className="font-semibold text-[#1e293b]">{managingStaffShop.name}</span></p>
               </div>
 
               {/* Add Staff Form */}
               <form onSubmit={handleAddStaffSubmit} className="flex gap-2 mb-6 items-end">
                 <div className="flex-1 space-y-1">
-                  <label className="block text-[10px] font-semibold text-[#8c7564]">User ID (Numeric)</label>
+                  <label className="block text-[10px] font-semibold text-[#94A3B8]">User ID (Numeric)</label>
                   <input
                     type="text"
                     required
                     placeholder="Enter user ID number"
                     value={staffEmailOrId}
                     onChange={(e) => setStaffEmailOrId(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#8c7564]"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#94A3B8]"
                   />
                 </div>
                 <div className="w-32 space-y-1">
-                  <label className="block text-[10px] font-semibold text-[#8c7564]">Role</label>
+                  <label className="block text-[10px] font-semibold text-[#94A3B8]">Role</label>
                   <select
                     value={staffRole}
                     onChange={(e) => setStaffRole(e.target.value as any)}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#8c7564] bg-white"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#94A3B8] bg-white"
                   >
                     <option value="MANAGER">MANAGER</option>
                     <option value="INVENTORY">INVENTORY</option>
@@ -629,7 +629,7 @@ export default function VendorShopManagerPage() {
                 <button
                   type="submit"
                   disabled={addStaffMutation.isPending}
-                  className="px-4 py-2 bg-[#8c7564] text-white rounded-xl text-xs font-semibold hover:bg-[#6c5b4f] transition-all flex items-center gap-1"
+                  className="px-4 py-2 bg-[#94A3B8] text-white rounded-xl text-xs font-semibold hover:bg-[#64748b] transition-all flex items-center gap-1"
                 >
                   <UserPlus className="h-3.5 w-3.5" /> Add
                 </button>
@@ -639,16 +639,16 @@ export default function VendorShopManagerPage() {
 
               {/* Staff List */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-[#221b16] uppercase tracking-wider">Current Staff List</h4>
+                <h4 className="text-xs font-bold text-[#1e293b] uppercase tracking-wider">Current Staff List</h4>
                 
                 {staffList.length === 0 ? (
-                  <p className="text-xs text-[#8c7564] italic">No custom staff members added yet.</p>
+                  <p className="text-xs text-[#94A3B8] italic">No custom staff members added yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {staffList.map((staff) => (
-                      <div key={staff.id} className="flex items-center justify-between p-3 border border-[#e4d6c8]/40 rounded-xl bg-gray-50/50">
+                      <div key={staff.id} className="flex items-center justify-between p-3 border border-[#e0e7ff]/40 rounded-xl bg-gray-50/50">
                         <div>
-                          <p className="text-xs font-bold text-[#221b16]">{staff.user.displayName}</p>
+                          <p className="text-xs font-bold text-[#1e293b]">{staff.user.displayName}</p>
                           <p className="text-[10px] text-gray-400">{staff.user.email} (ID: {staff.user.id})</p>
                         </div>
                         <div className="flex items-center gap-3">

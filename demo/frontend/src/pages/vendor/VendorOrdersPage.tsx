@@ -119,17 +119,17 @@ export default function VendorOrdersPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf6f2]">
+      <div className="flex min-h-screen items-center justify-center bg-[#f8fafc]">
         <div className="text-center">
-          <p className="text-sm text-[#6c5b4f]">Sign in as a vendor</p>
-          <Link to="/auth/login" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#1a1512] px-5 py-2.5 text-sm font-semibold text-[#faf6f2] transition">Sign in</Link>
+          <p className="text-sm text-[#64748b]">Sign in as a vendor</p>
+          <Link to="/auth/login" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#1e293b] px-5 py-2.5 text-sm font-semibold text-[#f8fafc] transition">Sign in</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#faf6f2]">
+    <div className="min-h-screen bg-[#f8fafc]">
       <style>{`
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -143,14 +143,14 @@ export default function VendorOrdersPage() {
         {/* Header */}
         <div className="anim-fade anim-fade-1">
           <div className="flex items-center gap-4 mb-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1a1512] shadow-sm">
-              <svg className="h-5 w-5 text-[#faf6f2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1e293b] shadow-sm">
+              <svg className="h-5 w-5 text-[#f8fafc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
             </div>
             <div>
-              <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">Orders</h1>
-              <p className="text-xs text-[#8c7564] mt-0.5">Manage incoming orders, approve or reject, and track fulfillment</p>
+              <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1e293b] tracking-tight">Orders</h1>
+              <p className="text-xs text-[#94A3B8] mt-0.5">Manage incoming orders, approve or reject, and track fulfillment</p>
             </div>
           </div>
 
@@ -164,13 +164,13 @@ export default function VendorOrdersPage() {
                 <button key={s} onClick={() => setFilter(s)}
                   className={`relative shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
                     active
-                      ? isDestructive ? 'bg-red-600 text-white shadow-sm' : 'bg-[#1a1512] text-[#faf6f2] shadow-sm'
-                      : 'border border-[#d7c7b8] text-[#6c5b4f] hover:bg-white hover:border-[#b8a494]'
+                      ? isDestructive ? 'bg-red-600 text-white shadow-sm' : 'bg-[#1e293b] text-[#f8fafc] shadow-sm'
+                      : 'border border-[#cbd5e1] text-[#64748b] hover:bg-white hover:border-[#cbd5e1]'
                   }`}>
                   {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
                   {count > 0 && (
                     <span className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold ${
-                      active ? 'bg-white/20 text-white' : 'bg-[#f0e8df] text-[#6c5b4f]'
+                      active ? 'bg-white/20 text-white' : 'bg-[#eef2ff] text-[#64748b]'
                     }`}>{count}</span>
                   )}
                 </button>
@@ -184,26 +184,26 @@ export default function VendorOrdersPage() {
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="animate-pulse rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+                <div key={i} className="animate-pulse rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-[#f5f0eb]" />
+                    <div className="h-10 w-10 rounded-full bg-[#f8fafc]" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-1/3 rounded bg-[#f5f0eb]" />
-                      <div className="h-3 w-1/4 rounded bg-[#f5f0eb]" />
+                      <div className="h-4 w-1/3 rounded bg-[#f8fafc]" />
+                      <div className="h-3 w-1/4 rounded bg-[#f8fafc]" />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="anim-fade rounded-2xl border-2 border-dashed border-[#e4d6c8] p-12 sm:p-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f0eb]">
-                <svg className="h-8 w-8 text-[#b8a494]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <div className="anim-fade rounded-2xl border-2 border-dashed border-[#e0e7ff] p-12 sm:p-16 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f8fafc]">
+                <svg className="h-8 w-8 text-[#cbd5e1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                 </svg>
               </div>
-              <p className="mt-4 font-semibold text-[#1a1512]">No {filter === 'ALL' ? '' : filter.toLowerCase()} orders</p>
-              <p className="mt-1 text-sm text-[#8c7564]">Orders will appear here when customers make purchases</p>
+              <p className="mt-4 font-semibold text-[#1e293b]">No {filter === 'ALL' ? '' : filter.toLowerCase()} orders</p>
+              <p className="mt-1 text-sm text-[#94A3B8]">Orders will appear here when customers make purchases</p>
             </div>
           ) : (
             <div className="space-y-4 anim-fade">
@@ -212,54 +212,54 @@ export default function VendorOrdersPage() {
                 const isExpanded = expandedId === order.id
                 const totalItems = order.items?.reduce((s, i) => s + i.qty, 0) || 0
                 return (
-                  <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.03}s` }}>
+                  <div key={order.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e0e7ff]/40 transition-all hover:shadow-md" style={{ animationDelay: `${idx * 0.03}s` }}>
                     {/* Header */}
                     <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 cursor-pointer select-none"
                       onClick={() => setExpandedId(isExpanded ? null : order.id)}>
                       <button type="button" onClick={() => order.customer?.avatarUrl ? setLightboxUrl(order.customer.avatarUrl) : null}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f0e8df]">
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eef2ff]">
                         {order.customer?.avatarUrl ? (
                           <img src={order.customer.avatarUrl} alt="" loading="lazy" className="h-full w-full rounded-full object-cover" />
                         ) : (
-                          <span className="text-sm font-bold text-[#6c5b4f]">{order.customer?.displayName?.[0] || '?'}</span>
+                          <span className="text-sm font-bold text-[#64748b]">{order.customer?.displayName?.[0] || '?'}</span>
                         )}
                       </button>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-[#1a1512]">#{order.id}</span>
+                          <span className="text-sm font-semibold text-[#1e293b]">#{order.id}</span>
                           <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${flow.color}`}>{flow.label}</span>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-[#8c7564]">
+                        <p className="mt-0.5 truncate text-xs text-[#94A3B8]">
                           {order.customer?.displayName} · {totalItems} item{totalItems !== 1 ? 's' : ''} · {formatDate(order.createdAt)}
                         </p>
                       </div>
                       <div className="text-right shrink-0 ml-2">
-                        <p className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+                        <p className="font-[Fraunces] text-lg font-semibold text-[#1e293b]">৳{order.totalBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
                       </div>
-                      <svg className={`h-5 w-5 shrink-0 text-[#b8a494] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                      <svg className={`h-5 w-5 shrink-0 text-[#cbd5e1] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                     </div>
 
                     {/* Expanded */}
                     {isExpanded && (
-                      <div className="border-t border-[#e4d6c8]/40 px-4 sm:px-5 pb-5">
+                      <div className="border-t border-[#e0e7ff]/40 px-4 sm:px-5 pb-5">
                         <div className="mt-4 space-y-2">
                           {(order.items || []).map(item => (
-                            <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#faf6f2] p-3">
+                            <div key={item.id} className="flex items-center gap-3 rounded-xl bg-[#f8fafc] p-3">
                               <button type="button" onClick={() => { const u = item.product?.images?.[0]?.imageUrl; if (u) setLightboxUrl(u) }}
-                                className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f0e8df]">
+                                className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#eef2ff]">
                                 {item.product?.images?.[0]?.imageUrl ? (
                                   <img src={item.product.images[0].imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                                 ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-xs text-[#a28672]">
+                                  <div className="flex h-full w-full items-center justify-center text-xs text-[#94A3B8]">
                                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                                   </div>
                                 )}
                               </button>
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-[#1a1512] truncate">{item.product?.name || 'Product'}</p>
-                                <p className="text-xs text-[#8c7564]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
+                                <p className="text-sm font-medium text-[#1e293b] truncate">{item.product?.name || 'Product'}</p>
+                                <p className="text-xs text-[#94A3B8]">Qty: {item.qty} · ৳{item.unitPriceBdt?.toLocaleString()} each</p>
                               </div>
-                              <p className="shrink-0 text-sm font-semibold text-[#1a1512]">৳{(item.unitPriceBdt * item.qty).toLocaleString('en-BD')}</p>
+                              <p className="shrink-0 text-sm font-semibold text-[#1e293b]">৳{(item.unitPriceBdt * item.qty).toLocaleString('en-BD')}</p>
                             </div>
                           ))}
                         </div>
@@ -283,10 +283,10 @@ export default function VendorOrdersPage() {
                               disabled={updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id}
                               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition active:scale-[0.97] disabled:opacity-50 ${
                                 action.variant === 'primary'
-                                  ? 'bg-[#1a1512] text-[#faf6f2] hover:bg-[#2d241e]'
+                                  ? 'bg-[#1e293b] text-[#f8fafc] hover:bg-[#334155]'
                                   : action.variant === 'danger'
                                   ? 'border border-red-200 text-red-600 hover:bg-red-50'
-                                  : 'border border-[#d7c7b8] text-[#1a1512] hover:bg-[#faf6f2]'
+                                  : 'border border-[#cbd5e1] text-[#1e293b] hover:bg-[#f8fafc]'
                               }`}>
                               {updateStatusMutation.isPending && updateStatusMutation.variables?.orderId === order.id ? (
                                 <span className="flex items-center gap-1.5">
@@ -309,7 +309,7 @@ export default function VendorOrdersPage() {
                           ))}
                           <div className="ml-auto flex gap-2">
                             <Link to={`/messages?orderId=${order.id}`}
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-3.5 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-[#faf6f2]">
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#cbd5e1] px-3.5 py-2 text-xs font-semibold text-[#1e293b] transition hover:bg-[#f8fafc]">
                               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
                               Chat
                             </Link>
