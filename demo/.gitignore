@@ -32,9 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 
-# Dependencies
-node_modules/
-
 # Runtime artifacts
 *.log
 *.err
@@ -42,9 +39,6 @@ hs_err_pid*.log
 dogfood-output/
 cookies.txt
 agent-browser
-
-# Environment files
-.env
 
 # Test credentials
 reg-*.json
