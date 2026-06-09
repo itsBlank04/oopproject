@@ -11,6 +11,7 @@ type Slide = {
   icon: string
   gradient: string
   ringColor: string
+  image?: string
 }
 
 const SLIDES: Slide[] = [
@@ -35,6 +36,7 @@ const SLIDES: Slide[] = [
     icon: 'gavel',
     gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]',
     ringColor: 'ring-[#c4956a]/20',
+    image: '/auction-hero.png',
   },
   {
     id: 3,
@@ -132,9 +134,6 @@ export default function HeroSection() {
             </Link>
           </div>
           <div className="mt-10 flex items-center gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#e4d6c8]">
-              {String(current + 1).padStart(2, '0')}
-            </p>
             <div className="flex gap-1.5">
               {SLIDES.map((_, i) => (
                 <button
@@ -174,21 +173,32 @@ export default function HeroSection() {
         {/* Right */}
         <div className="flex w-full items-center justify-center md:w-1/2" key={`visual-${current}`}>
           <div className="animate-hero-fade-scale flex flex-col items-center" style={{ animationDelay: '0.15s' }}>
-            <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
-              {/* Glass circle */}
-              <div
-                className={`absolute inset-0 rounded-full bg-gradient-to-br ${slide.gradient} ring-1 ${slide.ringColor} backdrop-blur-3xl`}
-              />
-              <div className="absolute inset-4 rounded-full bg-white/40 backdrop-blur-xl" />
-              <div className="relative flex flex-col items-center gap-3">
-                <span className="material-symbols-outlined text-6xl text-[#6c5b4f]/80 sm:text-7xl lg:text-8xl">
-                  {slide.icon}
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
-                  {slide.label}
-                </span>
+            {slide.image ? (
+              <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2] ring-1 ring-[#c4956a]/20" />
+                <div className="absolute inset-3 rounded-full bg-white/30 backdrop-blur-xl" />
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="relative z-10 h-[85%] w-[85%] rounded-full object-cover shadow-lg"
+                />
               </div>
-            </div>
+            ) : (
+              <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
+                <div
+                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${slide.gradient} ring-1 ${slide.ringColor} backdrop-blur-3xl`}
+                />
+                <div className="absolute inset-4 rounded-full bg-white/40 backdrop-blur-xl" />
+                <div className="relative flex flex-col items-center gap-3">
+                  <span className="material-symbols-outlined text-6xl text-[#6c5b4f]/80 sm:text-7xl lg:text-8xl">
+                    {slide.icon}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
+                    {slide.label}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
