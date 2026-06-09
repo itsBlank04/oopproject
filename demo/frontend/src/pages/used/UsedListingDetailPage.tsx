@@ -35,7 +35,8 @@ export default function UsedListingDetailPage() {
 
   const offerMutation = useMutation({
     mutationFn: () => apiClient.post(`/api/used-listings/${id}/offers`, {
-      offerAmountBdt: parseFloat(offerAmount), message: offerMsg
+      offerBdt: parseFloat(offerAmount),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     }),
     onSuccess: () => {
       setOfferAmount('')
@@ -100,9 +101,9 @@ export default function UsedListingDetailPage() {
 
           {/* Info & offer */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-[#8c7564]">{item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
+            <p className="text-xs uppercase tracking-wider text-[#8c7564]">{item.condition?.label || item.conditionLevel?.label || 'Used'} · {item.category?.name}</p>
             <h1 className="mt-2 font-[Fraunces] text-3xl text-[#221b16]">{item.title}</h1>
-            <p className="mt-4 text-3xl font-bold text-[#221b16]">৳{item.askingPriceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
+            <p className="mt-4 text-3xl font-bold text-[#221b16]">৳{item.priceBdt?.toLocaleString('en-BD', { minimumFractionDigits: 2 })}</p>
             <p className="mt-4 text-sm leading-relaxed text-[#6c5b4f]">{item.description}</p>
             <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
               <div className="flex items-center justify-between">

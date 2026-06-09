@@ -196,6 +196,11 @@ public class UsedListingController {
         return usedItemRepairRepository.save(repair);
     }
 
+    @GetMapping("/conditions")
+    public List<ConditionLevel> getConditions() {
+        return conditionLevelRepository.findAll();
+    }
+
     @GetMapping("/mine")
     public List<UsedListing> getMine(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");

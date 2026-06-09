@@ -436,7 +436,7 @@ export default function UsedListingsPage() {
                 : 'All Categories'}
             </button>
             {showCategoryDropdown && (
-              <div className="absolute left-0 top-full z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-xl border border-outline-variant/50 bg-surface-base py-2 shadow-lg">
+              <div className="absolute left-0 top-full z-30 mt-2 max-h-64 w-56 overflow-y-auto rounded-xl border border-outline-variant/30 bg-white py-2 shadow-xl">
                 <button
                   type="button"
                   onClick={() => { setSearchParams(p => { p.delete('category'); return p }, { replace: true }); setShowCategoryDropdown(false) }}

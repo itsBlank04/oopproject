@@ -10,7 +10,7 @@ export default function CreateUsedListingPage() {
   const [saving, setSaving] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [videoUrls, setVideoUrls] = useState<string[]>([])
-  const [form, setForm] = useState({ title: '', description: '', askingPriceBdt: '', categoryId: '' })
+  const [form, setForm] = useState({ title: '', description: '', priceBdt: '', categoryId: '', conditionId: '', offersEnabled: false })
 
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ['categories'],
@@ -19,14 +19,23 @@ export default function CreateUsedListingPage() {
     placeholderData: (prev) => prev,
   })
 
+  const { data: conditions = [] } = useQuery<any[]>({
+    queryKey: ['conditions'],
+    queryFn: () => apiClient.get('/api/used-listings/conditions').then(r => (Array.isArray(r.data) ? r.data : [])),
+    staleTime: 300_000,
+  })
+
   const submit = async () => {
-    if (!form.title || !form.askingPriceBdt) { toast.error('Title and price are required'); return }
+    if (!form.title || !form.priceBdt) { toast.error('Title and price are required'); return }
     setSaving(true)
     try {
       const res = await apiClient.post('/api/used-listings', {
-        ...form,
-        askingPriceBdt: parseFloat(form.askingPriceBdt),
+        title: form.title,
+        description: form.description,
+        priceBdt: parseFloat(form.priceBdt),
         categoryId: form.categoryId ? parseInt(form.categoryId) : null,
+        conditionId: form.conditionId ? parseInt(form.conditionId) : null,
+        offersEnabled: form.offersEnabled,
       })
       const listingId = res.data.id
 
@@ -65,8 +74,8 @@ export default function CreateUsedListingPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-semibold text-[#221b16]">Asking Price (৳) *</label>
-              <input type="number" value={form.askingPriceBdt} onChange={e => setForm({ ...form, askingPriceBdt: e.target.value })}
+              <label className="text-sm font-semibold text-[#221b16]">Price (৳) *</label>
+              <input type="number" value={form.priceBdt} onChange={e => setForm({ ...form, priceBdt: e.target.value })}
                 placeholder="25,000"
                 className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]" />
             </div>
@@ -77,6 +86,24 @@ export default function CreateUsedListingPage() {
                 <option value="">Select category</option>
                 {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-semibold text-[#221b16]">Condition</label>
+              <select value={form.conditionId} onChange={e => setForm({ ...form, conditionId: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-[#e4d6c8] px-4 py-2.5 text-sm outline-none focus:border-[#221b16]">
+                <option value="">Select condition</option>
+                {conditions.map((c: any) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            </div>
+            <div className="flex items-end pb-2.5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.offersEnabled} onChange={e => setForm({ ...form, offersEnabled: e.target.checked })}
+                  className="h-4 w-4 rounded border-[#e4d6c8] text-[#221b16] focus:ring-[#221b16]" />
+                <span className="text-sm font-semibold text-[#221b16]">Allow offers</span>
+              </label>
             </div>
           </div>
 

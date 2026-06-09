@@ -116,56 +116,57 @@ export default function CategoryGrid() {
           </Link>
         </div>
 
-        <div
-          className="group relative mt-10"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          {/* Glass arrows */}
-          <button
-            onClick={handlePrev}
-            aria-label="Previous categories"
-            className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
-              <path d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={handleNext}
-            aria-label="Next categories"
-            className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
-              <path d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Scrollable track */}
+        <div className="mt-10">
+          {/* Carousel wrapper — arrows aligned to card row only */}
           <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar pb-2"
+            className="group relative"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
           >
-            {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
-              <Link
-                key={`${cat.name}-${i}`}
-                to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
-                className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
-                style={{
-                  animation: `fadeIn 0.5s ease-out ${(i % COUNT) * 0.05}s both`,
-                }}
-              >
-                <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
-                  <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
-                </div>
-                <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
+            <button
+              onClick={handlePrev}
+              aria-label="Previous categories"
+              className="absolute left-1 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={handleNext}
+              aria-label="Next categories"
+              className="absolute right-1 top-1/2 z-10 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-white/90 hover:scale-110 active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#221b16]">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar pb-2"
+            >
+              {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
+                <Link
+                  key={`${cat.name}-${i}`}
+                  to={cat.filter ? `/products?category=${cat.filter}` : '/products'}
+                  className="group relative flex min-w-[140px] shrink-0 flex-col items-center rounded-2xl bg-white px-4 py-8 shadow-sm ring-1 ring-[#e4d6c8]/50 transition-all duration-300 hover:shadow-lg hover:ring-[#c4956a]/30 sm:min-w-[160px]"
+                  style={{
+                    animation: `fadeIn 0.5s ease-out ${(i % COUNT) * 0.05}s both`,
+                  }}
+                >
+                  <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                    <span className="material-symbols-outlined text-[28px] text-[#6c5b4f]">{cat.icon}</span>
+                  </div>
+                  <span className="mt-4 text-center text-sm font-medium text-[#221b16] transition-colors group-hover:text-[#6c5b4f]">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {/* Dots */}
+          {/* Dots — outside carousel wrapper, unaffected by arrow positioning */}
           <div className="mt-8 flex items-center justify-center gap-1.5">
             {CATEGORIES.map((_, i) => (
               <button
