@@ -265,19 +265,6 @@ body {
   animation: hero-fade-scale 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* ─── Infinite category carousel scroll ─── */
-@keyframes category-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-.animate-category-scroll {
-  animation: category-scroll 45s linear infinite;
-}
-
 /* ─── Auth form fields ─── */
 .auth-field {
   width: 100%;
