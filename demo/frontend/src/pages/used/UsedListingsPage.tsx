@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
@@ -264,6 +264,12 @@ export default function UsedListingsPage() {
 
   const [searchInput, setSearchInput] = useState(rawSearch)
   const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
+  const [catCarouselIdx, setCatCarouselIdx] = useState(0)
+  const [catCarouselPaused, setCatCarouselPaused] = useState(false)
+  const catScrollRef = useRef<HTMLDivElement>(null)
+  const catCarouselTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
@@ -272,7 +278,7 @@ export default function UsedListingsPage() {
   })
 
   const topCategories = useMemo(() => {
-    const top = categories.filter(c => c.parentId === null).slice(0, 5)
+    const top = categories.filter(c => c.parentId === null).slice(0, 12)
     return top.length > 0 ? top : FALLBACK_CATEGORIES
   }, [categories])
 
@@ -336,6 +342,44 @@ export default function UsedListingsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const catAdvance = useCallback(() => {
+    setCatCarouselIdx(i => (i + 1) % topCategories.length)
+  }, [topCategories.length])
+
+  useEffect(() => {
+    if (catCarouselPaused || topCategories.length <= 1) return
+    catCarouselTimer.current = setInterval(catAdvance, 3500)
+    return () => { if (catCarouselTimer.current) clearInterval(catCarouselTimer.current) }
+  }, [catCarouselPaused, catAdvance, topCategories.length])
+
+  const catPrev = useCallback(() => {
+    setCatCarouselPaused(true)
+    setCatCarouselIdx(i => (i - 1 + topCategories.length) % topCategories.length)
+    setTimeout(() => setCatCarouselPaused(false), 5000)
+  }, [topCategories.length])
+
+  const catNext = useCallback(() => {
+    setCatCarouselPaused(true)
+    setCatCarouselIdx(i => (i + 1) % topCategories.length)
+    setTimeout(() => setCatCarouselPaused(false), 5000)
+  }, [topCategories.length])
+
+  useEffect(() => {
+    const el = catScrollRef.current
+    if (!el) return
+    const card = el.children[catCarouselIdx] as HTMLElement | undefined
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [catCarouselIdx])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+        setShowCategoryDropdown(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const clearCategory = () => {
     setSearchParams(
       prev => {
@@ -380,13 +424,49 @@ export default function UsedListingsPage() {
             />
           </div>
           <div className="hidden h-8 w-px bg-outline-variant md:block" />
-          <div className="group flex w-full cursor-pointer items-center px-3 md:w-auto">
-            <span className="material-symbols-outlined mr-2 text-outline transition-colors group-hover:text-primary">
-              location_on
-            </span>
-            <span className="whitespace-nowrap font-label-md text-label-md text-on-surface-variant transition-colors group-hover:text-primary">
-              Dhaka, Bangladesh
-            </span>
+          <div ref={dropdownRef} className="relative flex w-full items-center px-3 md:w-auto">
+            <span className="material-symbols-outlined mr-2 text-outline">category</span>
+            <button
+              type="button"
+              onClick={() => setShowCategoryDropdown(o => !o)}
+              className="whitespace-nowrap font-label-md text-label-md text-on-surface-variant transition-colors hover:text-primary"
+            >
+              {selectedCategory
+                ? topCategories.find(c => c.id === selectedCategory)?.name ?? `Category ${selectedCategory}`
+                : 'All Categories'}
+            </button>
+            {showCategoryDropdown && (
+              <div className="absolute left-0 top-full z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-xl border border-outline-variant/50 bg-surface-base py-2 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => { setSearchParams(p => { p.delete('category'); return p }, { replace: true }); setShowCategoryDropdown(false) }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-outline">all_inclusive</span>
+                  All Categories
+                </button>
+                {categories.filter(c => c.parentId === null).map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => { setSearchParams(p => { p.set('category', String(cat.id)); return p }, { replace: true }); setShowCategoryDropdown(false) }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-outline">{resolveCategoryIcon(cat.slug, cat.name)}</span>
+                    {cat.name}
+                  </button>
+                ))}
+                <div className="mx-3 my-1 h-px bg-outline-variant/50" />
+                <button
+                  type="button"
+                  onClick={() => { setSearchParams(p => { return p }, { replace: true }); setShowCategoryDropdown(false) }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-outline">more_horiz</span>
+                  Others
+                </button>
+              </div>
+            )}
           </div>
           <div className="hidden h-8 w-px bg-outline-variant md:block" />
           <button
@@ -399,46 +479,89 @@ export default function UsedListingsPage() {
         </div>
       </section>
 
-      <section className="mb-section-gap w-full overflow-x-auto border-b border-outline-variant/30 bg-surface-base/50 backdrop-blur-sm no-scrollbar">
-        <div className="mx-auto flex min-w-max max-w-container-max gap-8 px-margin-mobile py-6 md:px-margin-desktop">
-          {topCategories.map(cat => {
-            const icon = resolveCategoryIcon(cat.slug, cat.name)
-            const isActive = cat.id !== 0 && cat.id === selectedCategory
-            return (
-              <button
-                key={cat.id || cat.slug}
-                type="button"
-                onClick={() => handleCategoryClick(cat)}
-                aria-pressed={isActive}
-                className="group flex cursor-pointer flex-col items-center gap-3"
-              >
-                <div
-                  className={`flex h-16 w-16 items-center justify-center rounded-full transition-colors ${
-                    isActive
-                      ? 'bg-secondary-container'
-                      : 'bg-surface-container-high group-hover:bg-secondary-container'
-                  }`}
+      <section
+        className="group relative mb-section-gap w-full border-b border-outline-variant/30 bg-surface-base/50 backdrop-blur-sm no-scrollbar"
+        onMouseEnter={() => setCatCarouselPaused(true)}
+        onMouseLeave={() => setCatCarouselPaused(false)}
+      >
+        <button
+          type="button"
+          onClick={catPrev}
+          aria-label="Previous categories"
+          className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-surface-base/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-surface-base hover:scale-110 active:scale-95 md:h-11 md:w-11"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-primary">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={catNext}
+          aria-label="Next categories"
+          className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-surface-base/70 backdrop-blur-xl border border-white/40 shadow-lg transition-all duration-500 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-surface-base hover:scale-110 active:scale-95 md:h-11 md:w-11"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-primary">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <div className="mx-auto max-w-container-max px-margin-mobile md:px-margin-desktop">
+          <div
+            ref={catScrollRef}
+            className="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar py-6"
+          >
+            {topCategories.map(cat => {
+              const icon = resolveCategoryIcon(cat.slug, cat.name)
+              const isActive = cat.id !== 0 && cat.id === selectedCategory
+              return (
+                <button
+                  key={cat.id || cat.slug}
+                  type="button"
+                  onClick={() => handleCategoryClick(cat)}
+                  aria-pressed={isActive}
+                  className="group/cat flex shrink-0 cursor-pointer flex-col items-center gap-3"
                 >
-                  <span
-                    className={`material-symbols-outlined text-[28px] transition-colors ${
+                  <div
+                    className={`flex h-16 w-16 items-center justify-center rounded-full transition-all duration-300 ${
                       isActive
-                        ? 'text-on-secondary-container'
-                        : 'text-primary group-hover:text-on-secondary-container'
+                        ? 'bg-secondary-container ring-2 ring-secondary'
+                        : 'bg-surface-container-high group-hover/cat:bg-secondary-container'
                     }`}
                   >
-                    {icon}
+                    <span
+                      className={`material-symbols-outlined text-[28px] transition-colors ${
+                        isActive
+                          ? 'text-on-secondary-container'
+                          : 'text-primary group-hover/cat:text-on-secondary-container'
+                      }`}
+                    >
+                      {icon}
+                    </span>
+                  </div>
+                  <span
+                    className={`font-label-sm text-label-sm text-primary whitespace-nowrap ${
+                      isActive ? 'font-semibold' : ''
+                    }`}
+                  >
+                    {cat.name}
                   </span>
-                </div>
-                <span
-                  className={`font-label-sm text-label-sm text-primary ${
-                    isActive ? 'font-semibold' : ''
-                  }`}
-                >
-                  {cat.name}
-                </span>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
+          <div className="flex items-center justify-center gap-1.5 pb-4">
+            {topCategories.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => { setCatCarouselPaused(true); setCatCarouselIdx(i); setTimeout(() => setCatCarouselPaused(false), 5000) }}
+                className={`rounded-full transition-all duration-500 ${
+                  i === catCarouselIdx ? 'w-5 bg-secondary' : 'w-1.5 bg-outline hover:bg-secondary'
+                }`}
+                style={{ height: '6px' }}
+                aria-label={`Category ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
