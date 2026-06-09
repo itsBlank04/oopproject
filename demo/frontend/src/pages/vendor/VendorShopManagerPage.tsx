@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
+import { toast } from 'react-hot-toast'
 import { 
   Store, Plus, Settings, Users, ArrowRight, MapPin, 
-  Trash2, UserPlus 
+  Trash2, UserPlus, LayoutDashboard, ShieldCheck
 } from 'lucide-react'
 
 type Category = {
@@ -101,6 +102,7 @@ export default function VendorShopManagerPage() {
   const createShopMutation = useMutation({
     mutationFn: (newShop: any) => apiClient.post('/api/shops', newShop).then((r) => r.data),
     onSuccess: () => {
+      toast.success('Shop created successfully!')
       queryClient.invalidateQueries({ queryKey: ['vendor-shops-list'] })
       queryClient.invalidateQueries({ queryKey: ['subscription-summary'] })
       setActiveTab('list')
@@ -122,6 +124,7 @@ export default function VendorShopManagerPage() {
     mutationFn: (args: { id: number; updates: any }) =>
       apiClient.put(`/api/shops/${args.id}`, args.updates).then((r) => r.data),
     onSuccess: () => {
+      toast.success('Shop updated successfully!')
       queryClient.invalidateQueries({ queryKey: ['vendor-shops-list'] })
       setEditingShop(null)
     },
@@ -242,23 +245,18 @@ export default function VendorShopManagerPage() {
             >
               My Shops ({shops.length})
             </button>
-            <button
-              disabled={slotLimitReached}
-              onClick={() => {
-                setActiveTab('create')
-                setCreateError('')
-              }}
+            <Link
+              to={slotLimitReached ? '#' : '/vendor/shops/setup'}
+              onClick={(e) => { if (slotLimitReached) e.preventDefault() }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                 slotLimitReached
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                  : activeTab === 'create'
-                  ? 'bg-[#8c7564] text-white shadow-sm'
                   : 'bg-white border border-[#e4d6c8] text-[#8c7564] hover:bg-gray-50'
               }`}
             >
               <Plus className="h-4 w-4" />
               Create Shop
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -321,6 +319,12 @@ export default function VendorShopManagerPage() {
                           }`}>
                             {shop.status}
                           </span>
+                          {shop.verificationLevel !== 'STANDARD' && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
+                              <ShieldCheck className="h-3 w-3" />
+                              {shop.verificationLevel}
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-[#8c7564] flex items-center gap-1">
                           <MapPin className="h-3 w-3" /> {shop.location || 'Dhaka, Bangladesh'}
@@ -330,6 +334,12 @@ export default function VendorShopManagerPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                      <Link 
+                        to={`/vendor/dashboard?shop=${shop.id}`} 
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                      >
+                        <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+                      </Link>
                       <Link 
                         to={`/shop/${shop.slug}`} 
                         className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"

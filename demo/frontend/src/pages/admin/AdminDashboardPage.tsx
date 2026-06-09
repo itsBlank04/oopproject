@@ -5,7 +5,7 @@ import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConfirmAction } from '../../hooks/useConfirmAction'
 
-type AdminTab = 'overview' | 'users' | 'market' | 'orders' | 'auctions' | 'cases' | 'settings' | 'notices' | 'upgrades' | 'audit'
+type AdminTab = 'overview' | 'users' | 'market' | 'orders' | 'auctions' | 'cases' | 'settings' | 'notices' | 'upgrades' | 'audit' | 'plans' | 'deals' | 'verification'
 type User = { id: number; email: string; displayName: string; phone?: string; status: string; roles: string[]; redFlagCount?: number; redFlagNotes?: string; createdAt?: string }
 type Auction = { id: number; title: string; type: string; status: string; vendor?: { displayName: string }; lots?: unknown[]; endTime?: string }
 type Report = { id: number; entityType: string; entityId: number; reason: string; status: string; reporter?: { displayName: string }; reported?: { displayName: string } }
@@ -19,6 +19,9 @@ type UsedListing = { id: number; title: string; status: string; priceBdt?: numbe
 type ServiceListing = { id: number; title: string; status: string; priceMinBdt?: number; priceMaxBdt?: number }
 type RoleUpgrade = { id: number; user: { id: number; displayName: string; email: string; roles: string[] }; role: string; amountBdt: number; status: string; activatedAt?: string; createdAt: string }
 type Order = { id: number; status: string; totalBdt?: number; customer?: { displayName: string }; items?: unknown[] }
+type SubscriptionPlan = { id: number; name: string; displayName: string; maxShops: number; priceMonthlyBdt: number; priceYearlyBdt: number; discountPercent: number; features?: string }
+type SubscriptionDeal = { id: number; title: string; description?: string; dealType: string; value: number; plan?: { id: number; displayName: string }; startsAt: string; endsAt: string; isActive: boolean }
+type AdminShop = { id: number; name: string; slug: string; status: string; verificationLevel: string; vendor?: { displayName: string }; location?: string }
 
 const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', icon: '◈' },
@@ -31,6 +34,9 @@ const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'notices', label: 'Notices', icon: '▣' },
   { id: 'upgrades', label: 'Upgrades', icon: '⬆' },
   { id: 'audit', label: 'Audit', icon: '▤' },
+  { id: 'plans', label: 'Plans', icon: '📋' },
+  { id: 'deals', label: 'Deals', icon: '🏷' },
+  { id: 'verification', label: 'Verification', icon: '✓' },
 ]
 
 const PRIMARY_ADMIN_EMAIL = 'admin@login.com'
@@ -69,6 +75,10 @@ export default function AdminDashboardPage() {
   const [redFlagReasons, setRedFlagReasons] = useState<Record<number, string>>({})
   const [orderOverrides, setOrderOverrides] = useState<Record<number, string>>({})
   const [notice, setNotice] = useState({ title: '', body: '', type: 'INFO', targetRoles: 'CUSTOMER,VENDOR,TECHNICIAN', startsAt: new Date().toISOString().slice(0, 16) })
+  const [planForm, setPlanForm] = useState<Partial<SubscriptionPlan>>({ name: '', displayName: '', maxShops: 1, priceMonthlyBdt: 0, priceYearlyBdt: 0, discountPercent: 0, features: '' })
+  const [dealForm, setDealForm] = useState<Partial<SubscriptionDeal>>({ title: '', description: '', dealType: 'DISCOUNT', value: 0, plan: undefined, startsAt: new Date().toISOString().slice(0, 16), endsAt: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 16) })
+  const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
+  const [editingDealId, setEditingDealId] = useState<number | null>(null)
 
   const enabled = !!user && hasRole('ADMIN')
 
@@ -86,6 +96,9 @@ export default function AdminDashboardPage() {
   const vendors = useQuery<VendorProfile[]>({ queryKey: ['admin-vendors'], queryFn: () => apiClient.get('/api/admin/vendors').then(r => r.data), enabled })
   const auditLogs = useQuery<AuditLog[]>({ queryKey: ['admin-audit-logs'], queryFn: () => apiClient.get('/api/admin/audit-logs').then(r => r.data), enabled })
   const upgrades = useQuery<RoleUpgrade[]>({ queryKey: ['admin-upgrades'], queryFn: () => apiClient.get('/api/admin/upgrades').then(r => r.data), enabled })
+  const plans = useQuery<SubscriptionPlan[]>({ queryKey: ['admin-plans'], queryFn: () => apiClient.get('/api/admin/subscription/plans').then(r => r.data), enabled })
+  const deals = useQuery<SubscriptionDeal[]>({ queryKey: ['admin-deals'], queryFn: () => apiClient.get('/api/admin/subscription/deals').then(r => r.data), enabled })
+  const adminShops = useQuery<AdminShop[]>({ queryKey: ['admin-shops'], queryFn: () => apiClient.get('/api/admin/shops').then(r => r.data), enabled })
 
   const refresh = () => qc.invalidateQueries({ predicate: q => String(q.queryKey[0]).startsWith('admin-') })
 
@@ -111,6 +124,18 @@ export default function AdminDashboardPage() {
     const draft = roleDrafts[userId] ?? current
     setRoleDrafts(prev => ({ ...prev, [userId]: draft.includes(role) ? draft.filter(r => r !== role) : [...draft, role] }))
   }
+
+  function resetPlanForm(p?: SubscriptionPlan) {
+    setPlanForm(p ? { ...p } : { name: '', displayName: '', maxShops: 1, priceMonthlyBdt: 0, priceYearlyBdt: 0, discountPercent: 0, features: '' })
+    setEditingPlanId(p?.id ?? null)
+  }
+
+  function resetDealForm(d?: SubscriptionDeal) {
+    setDealForm(d ? { ...d, plan: d.plan ? { id: d.plan.id, displayName: d.plan.displayName } : undefined, startsAt: new Date(d.startsAt).toISOString().slice(0, 16), endsAt: new Date(d.endsAt).toISOString().slice(0, 16) } : { title: '', description: '', dealType: 'DISCOUNT', value: 0, plan: undefined, startsAt: new Date().toISOString().slice(0, 16), endsAt: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 16) })
+    setEditingDealId(d?.id ?? null)
+  }
+
+  const verificationLevels = ['STANDARD', 'VERIFIED', 'PREMIUM', 'TRUSTED']
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-[#f6f1ea]"><div className="font-[Fraunces] text-lg text-[#5c4e42]">Loading admin…</div></div>
 
@@ -359,8 +384,7 @@ export default function AdminDashboardPage() {
               </Panel>
             </div>}
 
-            {tab === 'settings' && <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
-              <Panel title="Platform Settings" count={settings.data?.length || 0}>
+            {tab === 'settings' && <Panel title="Platform Settings" count={settings.data?.length || 0}>
                 {(settings.data || []).map(item => (
                   <div key={item.key} className="grid gap-3 border-t border-[#e3d6c9] px-5 py-4 lg:grid-cols-[1fr_200px_auto] lg:items-center">
                     <div><p className="font-semibold">{item.key}</p><p className="text-xs text-[#7a6858]">{item.description || item.dataType}</p></div>
@@ -368,19 +392,7 @@ export default function AdminDashboardPage() {
                     <Btn onClick={() => act({ label: 'Setting updated', title: 'Save setting', description: `Update "${item.key}" to "${settingDrafts[item.key] ?? item.value}"?`, request: () => apiClient.put(`/api/admin/platform-settings/${encodeURIComponent(item.key)}`, { value: settingDrafts[item.key] ?? item.value }) })}>Save</Btn>
                   </div>
                 ))}
-              </Panel>
-              <Panel title="Vendor Verification" count={vendors.data?.length || 0}>
-                {(vendors.data || []).map(item => (
-                  <div key={item.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
-                    <div className="min-w-0"><p className="truncate font-semibold">{item.shopName}</p><p className="text-xs text-[#7a6858]">{item.user?.displayName || 'Vendor'}</p></div>
-                    <div className="flex items-center gap-2">
-                      <Pill value={item.verificationStatus} />
-                      {item.verificationStatus !== 'VERIFIED' && <Btn onClick={() => act({ label: 'Vendor verified', title: 'Verify vendor', description: `Mark "${item.shopName}" (${item.user?.displayName || 'Vendor'}) as verified?`, request: () => apiClient.put(`/api/admin/vendors/${item.id}/verify`) })}>Verify</Btn>}
-                    </div>
-                  </div>
-                ))}
-              </Panel>
-            </div>}
+              </Panel>}
 
             {tab === 'notices' && <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
               <div className="rounded-xl border border-[#dccfc2] bg-white p-5 shadow-sm">
@@ -429,6 +441,151 @@ export default function AdminDashboardPage() {
             {tab === 'audit' && <Panel title="Audit Logs" count={auditLogs.data?.length || 0}>
               {(auditLogs.data || []).slice().reverse().map(item => <Row key={item.id} title={item.action} meta={`${item.actor?.displayName || 'System'} · ${item.entityType}${item.entityId ? ` #${item.entityId}` : ''}`} status={dateLabel(item.createdAt)} />)}
             </Panel>}
+
+            {tab === 'plans' && <Panel title="Subscription Plans" count={plans.data?.length || 0}>
+              {/* Plan form */}
+              <div className="border-b border-[#e3d6c9] p-5 space-y-3">
+                <h3 className="font-semibold text-sm">{editingPlanId ? 'Edit Plan' : 'New Plan'}</h3>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <PlanField label="Name" value={planForm.name || ''} onChange={v => setPlanForm(p => ({ ...p, name: v }))} />
+                  <PlanField label="Display Name" value={planForm.displayName || ''} onChange={v => setPlanForm(p => ({ ...p, displayName: v }))} />
+                  <PlanField label="Max Shops" value={String(planForm.maxShops ?? 1)} onChange={v => setPlanForm(p => ({ ...p, maxShops: Number(v) }))} />
+                  <PlanField label="Monthly (BDT)" value={String(planForm.priceMonthlyBdt ?? 0)} onChange={v => setPlanForm(p => ({ ...p, priceMonthlyBdt: Number(v) }))} />
+                  <PlanField label="Yearly (BDT)" value={String(planForm.priceYearlyBdt ?? 0)} onChange={v => setPlanForm(p => ({ ...p, priceYearlyBdt: Number(v) }))} />
+                  <PlanField label="Discount %" value={String(planForm.discountPercent ?? 0)} onChange={v => setPlanForm(p => ({ ...p, discountPercent: Number(v) }))} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7a6858] mb-1">Features (one per line)</label>
+                  <textarea value={planForm.features || ''} onChange={e => setPlanForm(p => ({ ...p, features: e.target.value }))} rows={3} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2 text-sm outline-none transition focus:border-[#221b16]" />
+                </div>
+                <div className="flex gap-2">
+                  <Btn onClick={() => {
+                    if (!planForm.name || !planForm.displayName) { alert('Name and display name are required'); return }
+                    const payload = { ...planForm, features: planForm.features || '' }
+                    act({
+                      label: editingPlanId ? 'Plan updated' : 'Plan created',
+                      title: editingPlanId ? 'Update plan' : 'Create plan',
+                      description: `${editingPlanId ? 'Update' : 'Create'} subscription plan "${planForm.displayName}"?`,
+                      request: () => editingPlanId
+                        ? apiClient.put(`/api/admin/subscription/plans/${editingPlanId}`, payload)
+                        : apiClient.post('/api/admin/subscription/plans', payload),
+                    })
+                    resetPlanForm()
+                  }}>{editingPlanId ? 'Update' : 'Create'}</Btn>
+                  {editingPlanId && <DangerBtn onClick={() => resetPlanForm()}>Cancel</DangerBtn>}
+                </div>
+              </div>
+              {/* Plan list */}
+              {(plans.data || []).map(p => (
+                <div key={p.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                  <div>
+                    <p className="font-semibold">{p.displayName}</p>
+                    <p className="text-xs text-[#7a6858]">{p.name} · {p.maxShops} shops · {money(p.priceMonthlyBdt)}/mo · {money(p.priceYearlyBdt)}/yr</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Btn onClick={() => resetPlanForm(p)}>Edit</Btn>
+                    <DangerBtn onClick={() => act({ label: 'Plan deleted', title: 'Delete plan', description: `Delete "${p.displayName}"? Existing subscribers will keep access until expiry.`, tone: 'danger', request: () => apiClient.delete(`/api/admin/subscription/plans/${p.id}`) })}>Delete</DangerBtn>
+                  </div>
+                </div>
+              ))}
+            </Panel>}
+
+            {tab === 'deals' && <Panel title="Subscription Deals" count={deals.data?.length || 0}>
+              {/* Deal form */}
+              <div className="border-b border-[#e3d6c9] p-5 space-y-3">
+                <h3 className="font-semibold text-sm">{editingDealId ? 'Edit Deal' : 'New Deal'}</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <PlanField label="Title" value={dealForm.title || ''} onChange={v => setDealForm(p => ({ ...p, title: v }))} />
+                  <PlanField label="Type" value={dealForm.dealType || 'DISCOUNT'} onChange={v => setDealForm(p => ({ ...p, dealType: v }))}
+                    render={() => <select value={dealForm.dealType || 'DISCOUNT'} onChange={e => setDealForm(p => ({ ...p, dealType: e.target.value }))}
+                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]"
+                    ><option value="FREE_TRIAL">Free Trial</option><option value="DISCOUNT">Discount</option><option value="FREE_MONTHS">Free Months</option></select>} />
+                  <PlanField label="Value" value={String(dealForm.value ?? 0)} onChange={v => setDealForm(p => ({ ...p, value: Number(v) }))} />
+                  <PlanField label="Linked Plan" value={String(dealForm.plan?.id ?? '')} onChange={v => setDealForm(p => ({ ...p, plan: v ? { id: Number(v), displayName: '' } : undefined }))}
+                    render={() => <select value={String(dealForm.plan?.id ?? '')} onChange={e => setDealForm(p => ({ ...p, plan: e.target.value ? { id: Number(e.target.value), displayName: '' } : undefined }))}
+                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]"
+                    ><option value="">All Plans</option>{(plans.data || []).map(pl => <option key={pl.id} value={pl.id}>{pl.displayName}</option>)}</select>} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7a6858] mb-1">Description</label>
+                  <textarea value={dealForm.description || ''} onChange={e => setDealForm(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2 text-sm outline-none transition focus:border-[#221b16]" />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <PlanField label="Starts At" value={dealForm.startsAt || ''} onChange={v => setDealForm(p => ({ ...p, startsAt: v }))}
+                    render={() => <input type="datetime-local" value={dealForm.startsAt?.slice(0, 16) || ''} onChange={e => setDealForm(p => ({ ...p, startsAt: e.target.value }))}
+                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />} />
+                  <PlanField label="Ends At" value={dealForm.endsAt || ''} onChange={v => setDealForm(p => ({ ...p, endsAt: v }))}
+                    render={() => <input type="datetime-local" value={dealForm.endsAt?.slice(0, 16) || ''} onChange={e => setDealForm(p => ({ ...p, endsAt: e.target.value }))}
+                      className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />} />
+                </div>
+                <div className="flex gap-2">
+                  <Btn onClick={() => {
+                    if (!dealForm.title) { alert('Title is required'); return }
+                    act({
+                      label: editingDealId ? 'Deal updated' : 'Deal created',
+                      title: editingDealId ? 'Update deal' : 'Create deal',
+                      description: `${editingDealId ? 'Update' : 'Create'} deal "${dealForm.title}"?`,
+                      request: () => {
+                        const payload: any = { ...dealForm }
+                        if (payload.plan && payload.plan.id) payload.planId = payload.plan.id
+                        delete payload.plan
+                        payload.startsAt = new Date(payload.startsAt).toISOString()
+                        payload.endsAt = new Date(payload.endsAt).toISOString()
+                        return editingDealId
+                          ? apiClient.put(`/api/admin/subscription/deals/${editingDealId}`, payload)
+                          : apiClient.post('/api/admin/subscription/deals', payload)
+                      },
+                    })
+                    resetDealForm()
+                  }}>{editingDealId ? 'Update' : 'Create'}</Btn>
+                  {editingDealId && <DangerBtn onClick={() => resetDealForm()}>Cancel</DangerBtn>}
+                </div>
+              </div>
+              {/* Deal list */}
+              {(deals.data || []).map(d => (
+                <div key={d.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                  <div>
+                    <p className="font-semibold">{d.title}</p>
+                    <p className="text-xs text-[#7a6858]">{d.dealType} · {money(d.value)} · {d.plan ? d.plan.displayName : 'All plans'} · {d.isActive ? 'Active' : 'Inactive'}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${d.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>{d.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                    <Btn onClick={() => resetDealForm(d)}>Edit</Btn>
+                    <DangerBtn onClick={() => act({ label: 'Deal deleted', title: 'Delete deal', description: `Delete deal "${d.title}"?`, tone: 'danger', request: () => apiClient.delete(`/api/admin/subscription/deals/${d.id}`) })}>Delete</DangerBtn>
+                  </div>
+                </div>
+              ))}
+            </Panel>}
+
+            {tab === 'verification' && <div className="grid gap-4 xl:grid-cols-2">
+              <Panel title="Vendor Verification" count={vendors.data?.length || 0}>
+                {(vendors.data || []).map(item => (
+                  <div key={item.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                    <div className="min-w-0"><p className="truncate font-semibold">{item.shopName}</p><p className="text-xs text-[#7a6858]">{item.user?.displayName || 'Vendor'}</p></div>
+                    <div className="flex items-center gap-2">
+                      <Pill value={item.verificationStatus} />
+                      {item.verificationStatus !== 'VERIFIED' && <Btn onClick={() => act({ label: 'Vendor verified', title: 'Verify vendor', description: `Mark "${item.shopName}" (${item.user?.displayName || 'Vendor'}) as verified?`, request: () => apiClient.put(`/api/admin/vendors/${item.id}/verify`) })}>Verify</Btn>}
+                    </div>
+                  </div>
+                ))}
+              </Panel>
+              <Panel title="Shop Verification Levels" count={adminShops.data?.length || 0}>
+                {(adminShops.data || []).map(shop => (
+                  <div key={shop.id} className="flex items-center justify-between border-t border-[#e3d6c9] px-5 py-4">
+                    <div className="min-w-0"><p className="truncate font-semibold">{shop.name}</p><p className="text-xs text-[#7a6858]">{shop.vendor?.displayName || 'Vendor'} · {shop.slug}</p></div>
+                    <div className="flex items-center gap-2">
+                      <select value={shop.verificationLevel} onChange={e => {
+                        const newLevel = e.target.value
+                        act({ label: 'Verification updated', title: 'Update verification', description: `Set "${shop.name}" verification to ${newLevel}?`, request: () => apiClient.put(`/api/admin/shops/${shop.id}/verification`, { verificationLevel: newLevel }) })
+                      }} className="rounded-lg border border-[#dccfc2] px-2.5 py-1.5 text-xs outline-none focus:border-[#221b16]">
+                        {verificationLevels.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      <Pill value={shop.verificationLevel} />
+                    </div>
+                  </div>
+                ))}
+              </Panel>
+            </div>}
           </main>
         </div>
       </div>
@@ -468,6 +625,13 @@ function CaseRow({ title, meta, status, resolve, dismiss, onDelete }: { title: s
       {status === 'OPEN' && dismiss && <DangerBtn onClick={dismiss}>Dismiss</DangerBtn>}
       {onDelete && <DangerBtn onClick={onDelete}>Delete</DangerBtn>}
     </div>
+  </div>
+}
+
+function PlanField({ label, value, onChange, render }: { label: string; value: string; onChange: (v: string) => void; render?: () => ReactNode }) {
+  return <div>
+    <label className="block text-xs font-semibold text-[#7a6858] mb-1">{label}</label>
+    {render ? render() : <input value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-lg border border-[#dccfc2] px-3.5 py-2.5 text-sm outline-none transition focus:border-[#221b16]" />}
   </div>
 }
 

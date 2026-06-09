@@ -902,6 +902,13 @@ public class AdminController {
         return saved;
     }
 
+    // ========== SHOPS ==========
+
+    @GetMapping("/shops")
+    public List<Shop> listShops() {
+        return shopRepository.findAll();
+    }
+
     // ========== SHOP VERIFICATION ==========
 
     @PutMapping("/shops/{id}/verification")

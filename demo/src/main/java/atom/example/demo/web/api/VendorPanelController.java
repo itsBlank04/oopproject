@@ -379,19 +379,14 @@ public class VendorPanelController {
             .distinct()
             .count();
 
-        // Most-viewed products — approximated by order frequency
-        Map<String, Long> productOrderCount = new LinkedHashMap<>();
-        for (VendorCommission c : filteredCommissions) {
-            String name = c.getOrderItem().getProduct() != null ? c.getOrderItem().getProduct().getName() : "N/A";
-            productOrderCount.merge(name, 1L, Long::sum);
-        }
-        List<Map<String, Object>> mostViewed = productOrderCount.entrySet().stream()
-            .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+        // Most-viewed products — real view tracking
+        List<Map<String, Object>> mostViewed = allProducts.stream()
+            .sorted((a, b) -> Integer.compare(b.getViewCount(), a.getViewCount()))
             .limit(5)
-            .map(e -> {
+            .map(p -> {
                 Map<String, Object> m = new LinkedHashMap<>();
-                m.put("name", e.getKey());
-                m.put("orderCount", e.getValue());
+                m.put("name", p.getName());
+                m.put("viewCount", p.getViewCount());
                 return m;
             })
             .toList();

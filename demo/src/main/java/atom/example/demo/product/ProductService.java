@@ -27,6 +27,13 @@ public class ProductService {
         return productRepository.findByStatus("ACTIVE", pageable);
     }
 
+    @Transactional
+    public Product recordView(Long id) {
+        Product product = getProduct(id);
+        product.setViewCount(product.getViewCount() + 1);
+        return productRepository.save(product);
+    }
+
     public Product getProduct(Long id) {
         return productRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Product not found"));

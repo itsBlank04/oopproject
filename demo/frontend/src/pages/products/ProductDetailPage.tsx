@@ -349,50 +349,60 @@ export default function ProductDetailPage() {
                 ♡
               </button>
             </div>
-            {/* Vendor card */}
+            {/* Vendor card — Meet the Maker */}
             {vendorProfile && (
-              <div className="mt-6 rounded-xl border border-[#e4d6c8] bg-white p-4">
-                <div className="flex items-center gap-3">
-                  <Link to={`/shop/${vendorProfile.shopSlug}`} className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8]">
+              <div className="mt-6 rounded-2xl border border-[#e4d6c8] bg-white/80 p-5 shadow-sm backdrop-blur-sm">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#a28672]">Meet the Maker</p>
+                <div className="flex items-center gap-4">
+                  <Link to={`/shop/${vendorProfile.shopSlug}`} className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-[#e4d6c8] ring-2 ring-[#f0e8df]">
                     {(vendorProfile.logoUrl || vendorProfile.avatarUrl) ? (
                       <img src={vendorProfile.logoUrl || vendorProfile.avatarUrl} alt="" loading="lazy"
                         className="h-full w-full object-cover" />
                     ) : (
-                      <div className="flex h-full items-center justify-center font-[Fraunces] text-lg text-[#6c5b4f]">
+                      <div className="flex h-full items-center justify-center font-[Fraunces] text-xl text-[#6c5b4f]">
                         {vendorProfile.shopName?.charAt(0) || vendorProfile.displayName?.charAt(0)}
                       </div>
                     )}
                   </Link>
-                  <div className="flex-1">
-                    <Link to={`/shop/${vendorProfile.shopSlug}`} className="font-semibold text-[#221b16] hover:underline">
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/shop/${vendorProfile.shopSlug}`} className="flex items-center gap-2 font-semibold text-[#221b16] hover:underline">
                       {vendorProfile.shopName || vendorProfile.displayName}
+                      {vendorProfile.verificationStatus === 'VERIFIED' && (
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0 text-[#E07B3F]">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                        </svg>
+                      )}
                     </Link>
-                    <div className="mt-0.5 flex items-center gap-3 text-xs text-[#8c7564]">
-                      <span>{vendorProfile.productCount} product{vendorProfile.productCount !== 1 ? 's' : ''}</span>
-                      <span>{vendorProfile.followerCount} follower{vendorProfile.followerCount !== 1 ? 's' : ''}</span>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-[#8c7564]">
                       {vendorProfile.reviewCount > 0 && (
                         <span className="flex items-center gap-1">
                           <StarRating value={Math.round(vendorProfile.avgRating)} />
                           <span>({vendorProfile.reviewCount})</span>
                         </span>
                       )}
+                      <span>{vendorProfile.productCount} product{vendorProfile.productCount !== 1 ? 's' : ''}</span>
+                      <span>{vendorProfile.followerCount} follower{vendorProfile.followerCount !== 1 ? 's' : ''}</span>
                     </div>
                     {vendorProfile.location && (
-                      <p className="mt-0.5 text-xs text-[#8c7564]">{vendorProfile.location}</p>
+                      <p className="mt-0.5 text-xs text-[#a28672]">{vendorProfile.location}</p>
                     )}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <button onClick={() => { setReportType('VENDOR'); setShowReportModal(true) }}
-                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition">
-                      Report
-                    </button>
                   </div>
                 </div>
                 {vendorProfile.bio && (
-                  <p className="mt-2 border-t border-[#f0e8df] pt-2 text-xs leading-relaxed text-[#6c5b4f]">
+                  <p className="mt-3 border-t border-[#f0e8df] pt-3 text-xs leading-relaxed text-[#6c5b4f]">
                     {vendorProfile.bio}
                   </p>
                 )}
+                <div className="mt-4 flex gap-2">
+                  <Link to={`/shop/${vendorProfile.shopSlug}`}
+                    className="flex-1 rounded-xl bg-[#221b16] py-2.5 text-center text-xs font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition">
+                    View Storefront
+                  </Link>
+                  <button onClick={() => { setReportType('VENDOR'); setShowReportModal(true) }}
+                    className="rounded-xl border border-[#d7c7b8] px-4 py-2.5 text-xs font-semibold text-[#6c5b4f] hover:bg-[#f9f5f0] transition">
+                    Report
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -12,7 +12,7 @@ type User = {
   roles: string[]
 }
 
-export type ActiveRole = 'customer' | 'vendor' | 'technician'
+export type ActiveRole = 'vendor' | 'technician'
 
 type AuthContextType = {
   user: User | null
@@ -22,8 +22,8 @@ type AuthContextType = {
   logout: () => Promise<void>
   hasRole: (role: string) => boolean
   refreshUser: () => Promise<void>
-  activeRole: ActiveRole
-  setActiveRole: (role: ActiveRole) => void
+  activeRole: ActiveRole | null
+  setActiveRole: (role: ActiveRole | null) => void
   subscribedRoles: ActiveRole[]
 }
 
@@ -36,7 +36,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
-  const [activeRole, setActiveRole] = useState<ActiveRole>('customer')
+  const [activeRole, setActiveRole] = useState<ActiveRole | null>(null)
 
   const { data: user = null, isLoading } = useQuery<User | null>({
     queryKey: ['auth-user'],
@@ -63,21 +63,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await apiClient.post('/api/auth/login', { email, password })
     queryClient.setQueryData(['auth-user'], res.data)
     clearOtherCaches()
-    setActiveRole('customer')
+    setActiveRole(null)
   }, [queryClient])
 
   const register = useCallback(async (email: string, password: string, displayName: string, roles?: string[]) => {
     const res = await apiClient.post('/api/auth/register', { email, password, displayName, roles })
     queryClient.setQueryData(['auth-user'], res.data)
     clearOtherCaches()
-    setActiveRole('customer')
+    setActiveRole(null)
   }, [queryClient])
 
   const logout = useCallback(async () => {
     try { await apiClient.post('/api/auth/logout') } catch {}
     queryClient.setQueryData(['auth-user'], null)
     queryClient.clear()
-    setActiveRole('customer')
+    setActiveRole(null)
   }, [queryClient])
 
   const hasRole = useCallback((role: string) => {
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['auth-user'] })
-    setActiveRole('customer')
+    setActiveRole(null)
   }, [queryClient])
 
   return (

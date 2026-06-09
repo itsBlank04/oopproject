@@ -41,7 +41,7 @@ type TopProduct = {
 
 type MostViewedProduct = {
   name: string
-  orderCount: number
+  viewCount: number
 }
 
 type Order = {
@@ -215,21 +215,21 @@ export default function VendorDashboardPage() {
           </div>
         </div>
 
-        {/* ── Metric Cards ── */}
+        {/* ── Metric Cards with Sparklines ── */}
         <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
             { label: 'Total Revenue', value: `৳${Math.round(totalRevenue).toLocaleString('en-BD')}`, sub: 'Selected view earnings', icon: (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            ), accent: 'text-emerald-600', bg: 'bg-emerald-50/60' },
+            ), accent: 'text-emerald-600', bg: 'bg-emerald-50/60', spark: 'M0,16 L4,12 L8,14 L12,8 L16,11 L20,5', sparkColor: '#059669' },
             { label: 'Total Orders', value: totalOrders.toString(), sub: `${pendingOrders} pending`, icon: (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
-            ), accent: 'text-blue-600', bg: 'bg-blue-50/60' },
+            ), accent: 'text-blue-600', bg: 'bg-blue-50/60', spark: 'M0,18 L4,10 L8,14 L12,6 L16,9 L20,3', sparkColor: '#2563eb' },
             { label: 'Products', value: products.length.toString(), sub: `${activeProducts} active · ${draftProducts} draft`, icon: (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
-            ), accent: 'text-violet-600', bg: 'bg-violet-50/60' },
+            ), accent: 'text-violet-600', bg: 'bg-violet-50/60', spark: 'M0,14 L4,16 L8,10 L12,12 L16,8 L20,4', sparkColor: '#7c3aed' },
             { label: 'Auctions', value: (stats?.totalAuctions ?? 0).toString(), sub: `${stats?.activeAuctions ?? 0} active`, icon: (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
-            ), accent: 'text-amber-600', bg: 'bg-amber-50/60' },
+            ), accent: 'text-amber-600', bg: 'bg-amber-50/60', spark: 'M0,12 L4,8 L8,16 L12,6 L16,10 L20,2', sparkColor: '#d97706' },
           ].map((m, i) => (
             <div key={m.label} className={`anim-fade anim-fade-${i + 1} group relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40 transition-all hover:shadow-md hover:-translate-y-0.5`}>
               <div className="flex items-start justify-between">
@@ -244,6 +244,9 @@ export default function VendorDashboardPage() {
                 {m.value}
               </p>
               <p className="mt-0.5 text-xs text-[#8c7564]">{m.sub}</p>
+              <svg className="absolute bottom-1 right-1 h-10 w-20 opacity-30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d={m.spark} stroke={m.sparkColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           ))}
         </div>
@@ -411,7 +414,7 @@ export default function VendorDashboardPage() {
                         }`}>{i + 1}</span>
                         <span className="text-xs font-medium text-[#1a1512] truncate">{p.name}</span>
                       </div>
-                      <span className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">{p.orderCount} order{p.orderCount !== 1 ? 's' : ''}</span>
+                      <span className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">{p.viewCount} view{p.viewCount !== 1 ? 's' : ''}</span>
                     </div>
                   ))}
                 </div>
@@ -442,6 +445,54 @@ export default function VendorDashboardPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Shop Performance */}
+            {stats?.shops && stats.shops.length > 0 && (
+              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Shop Performance</h2>
+                <p className="text-xs text-[#8c7564] mt-0.5 mb-4">Per-shop snapshot</p>
+                <div className="space-y-3">
+                  {stats.shops.map((s) => (
+                    <Link key={s.id} to={`/vendor/dashboard?shop=${s.id}`}
+                      className="flex items-center gap-3 rounded-xl border border-[#e4d6c8]/60 p-3 transition hover:bg-[#faf6f2] hover:border-[#c4956a]">
+                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[#e4d6c8]">
+                        {s.logoUrl ? (
+                          <img src={s.logoUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs font-bold text-[#6c5b4f]">{s.name[0]}</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1a1512] truncate">{s.name}</p>
+                        <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${
+                          s.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
+                          s.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
+                          'bg-gray-100 text-gray-500'
+                        }`}>{s.status}</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-[#8c7564] shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Support Widget */}
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-gradient-to-br from-[#1a1512] to-[#3a3028] p-5 sm:p-6 shadow-md">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+                  <svg className="h-4 w-4 text-amber-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-semibold text-[#f9f5f0]">Need Assistance?</h3>
+              </div>
+              <p className="text-xs leading-relaxed text-[#b8a494] mb-4">Get help with your shop, products, or account settings.</p>
+              <Link to="/messages"
+                className="block w-full rounded-xl bg-white/10 py-2.5 text-center text-xs font-semibold text-[#f9f5f0] hover:bg-white/20 transition">
+                Contact Support
+              </Link>
             </div>
 
             {/* Product Status Summary */}

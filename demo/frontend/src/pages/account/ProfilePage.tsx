@@ -333,27 +333,49 @@ export default function ProfilePage() {
                       )
                     })}
                   </div>
-                  {subscribedRoles.length > 0 && (
-                    <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Active Role</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {[
-                          { role: 'customer' as const, label: 'Customer', icon: '🛒' },
-                          { role: 'vendor' as const, label: 'Merchant', icon: '📦' },
-                          { role: 'technician' as const, label: 'Technician', icon: '🔧' },
-                        ].filter(r => r.role === 'customer' || subscribedRoles.includes(r.role)).map(r => (
+                  <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Active Mode</p>
+                    <p className="mt-0.5 text-[11px] text-[#a28672]">Toggle a mode to switch your experience</p>
+                    <div className="mt-3 flex flex-col gap-3">
+                      {subscribedRoles.includes('vendor') && (
+                        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[#e4d6c8] bg-white px-4 py-3 transition-all hover:border-[#a28672]">
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">📦</span>
+                            <div>
+                              <p className="text-sm font-medium text-[#221b16]">Merchant Mode</p>
+                              <p className="text-[11px] text-[#a28672]">Manage shops, products & orders</p>
+                            </div>
+                          </div>
                           <button
-                            key={r.role}
-                            onClick={() => setActiveRole(r.role)}
-                            className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all ${activeRole === r.role ? 'bg-[#221b16] text-white shadow-sm' : 'bg-white text-[#6c5b4f] border border-[#d7c7b8] hover:border-[#a28672] hover:text-[#221b16]'}`}
+                            onClick={() => setActiveRole(activeRole === 'vendor' ? null : 'vendor')}
+                            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 ${activeRole === 'vendor' ? 'bg-emerald-500 shadow-[0_0_12px_-2px_rgba(16,185,129,0.4)]' : 'bg-[#d7c7b8]'} focus:outline-none`}
                           >
-                            <span className="text-base">{r.icon}</span>
-                            <span>{r.label}</span>
+                            <span className={`inline-block h-[22px] w-[22px] transform rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-transform duration-300 ${activeRole === 'vendor' ? 'translate-x-[24px]' : 'translate-x-[2px]'}`} />
                           </button>
-                        ))}
-                      </div>
+                        </label>
+                      )}
+                      {subscribedRoles.includes('technician') && (
+                        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[#e4d6c8] bg-white px-4 py-3 transition-all hover:border-[#a28672]">
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">🔧</span>
+                            <div>
+                              <p className="text-sm font-medium text-[#221b16]">Repair Mode</p>
+                              <p className="text-[11px] text-[#a28672]">Manage repair requests & jobs</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setActiveRole(activeRole === 'technician' ? null : 'technician')}
+                            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 ${activeRole === 'technician' ? 'bg-emerald-500 shadow-[0_0_12px_-2px_rgba(16,185,129,0.4)]' : 'bg-[#d7c7b8]'} focus:outline-none`}
+                          >
+                            <span className={`inline-block h-[22px] w-[22px] transform rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-transform duration-300 ${activeRole === 'technician' ? 'translate-x-[24px]' : 'translate-x-[2px]'}`} />
+                          </button>
+                        </label>
+                      )}
                     </div>
-                  )}
+                    {activeRole !== null && (
+                      <p className="mt-2 text-[10px] text-[#a28672]">Toggle the active mode off to return to normal browsing.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

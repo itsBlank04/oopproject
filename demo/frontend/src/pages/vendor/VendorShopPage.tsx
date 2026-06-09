@@ -5,7 +5,8 @@ import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 import ImageLightbox from '../../components/ImageLightbox'
 import ProductCard from '../../components/ProductCard'
-import { Star, MapPin, ShieldCheck, Heart, Share2, Info, BookOpen } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import { Star, MapPin, ShieldCheck, Heart, Share2, Info, BookOpen, Clock } from 'lucide-react'
 
 export type ShopPublicProfile = {
   id: number
@@ -186,10 +187,14 @@ export default function VendorShopPage() {
                     <MapPin className="h-3.5 w-3.5 text-[#a89280]" />
                     {shop.location || 'Dhaka, Bangladesh'}
                   </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5 text-[#a89280]" />
+                    Est. {new Date(shop.createdAt).getFullYear()}
+                  </span>
                   <span>&bull;</span>
-                  <span>{products.length} Products</span>
+                  <span>{products.length} Product{products.length !== 1 ? 's' : ''}</span>
                   <span>&bull;</span>
-                  <span>{followersCount} Followers</span>
+                  <span>{followersCount} Follower{followersCount !== 1 ? 's' : ''}</span>
                   {shop.reviewCount > 0 && (
                     <>
                       <span>&bull;</span>
@@ -221,7 +226,7 @@ export default function VendorShopPage() {
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href)
-                  alert('Shop link copied to clipboard!')
+                  toast.success('Shop link copied!')
                 }}
                 className="flex items-center justify-center p-2.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-all"
                 title="Share shop"
@@ -245,9 +250,10 @@ export default function VendorShopPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main: Products list */}
           <div className="lg:col-span-2">
-            <h2 className="font-[Fraunces] text-2xl text-[#221b16] mb-6">
-              Shop Products
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-[Fraunces] text-2xl text-[#221b16]">Shop Products</h2>
+              <span className="text-xs text-[#8c7564]">{products.length} item{products.length !== 1 ? 's' : ''} found</span>
+            </div>
 
             {productsLoading ? (
               <div className="grid gap-6 sm:grid-cols-2">

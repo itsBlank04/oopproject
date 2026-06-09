@@ -126,7 +126,7 @@ export default function AuthModal() {
 
           {/* Mobile brand mark */}
           <div className="mb-4 flex items-center md:hidden">
-            <img src="/logo.png" alt="AtomDrops" className="h-16 w-16" />
+            <img src="/logo.png" alt="AtomDrops" className="h-auto w-auto max-h-16 max-w-32 object-contain" />
           </div>
 
           {/* Title */}

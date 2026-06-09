@@ -84,7 +84,7 @@ export default function Footer() {
         {/* Brand row */}
         <div className="mb-12 flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
           <Link to="/" className="flex items-center">
-            <img src="/logo-white.png" alt="AtomDrops" className="h-16 w-16" />
+            <img src="/logo.png" alt="AtomDrops" className="h-auto w-auto max-h-16 max-w-32 object-contain" />
           </Link>
 
           <p className="max-w-xs text-xs leading-relaxed text-[#a89a85]">

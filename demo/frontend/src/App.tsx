@@ -22,6 +22,9 @@ import VendorOrdersPage from './pages/vendor/VendorOrdersPage'
 import VendorShopPage from './pages/vendor/VendorShopPage'
 import VendorSubscriptionsPage from './pages/vendor/VendorSubscriptionsPage'
 import VendorShopManagerPage from './pages/vendor/VendorShopManagerPage'
+import VendorFinancialPage from './pages/vendor/VendorFinancialPage'
+import VendorReviewsPage from './pages/vendor/VendorReviewsPage'
+import VendorShopSetupPage from './pages/vendor/VendorShopSetupPage'
 import UsedListingsPage from './pages/used/UsedListingsPage'
 import UsedListingDetailPage from './pages/used/UsedListingDetailPage'
 import CreateUsedListingPage from './pages/used/CreateUsedListingPage'
@@ -99,6 +102,9 @@ export default function App() {
         <Route path="/vendor/auctions" element={<SiteLayout><VendorAuctionsPage /></SiteLayout>} />
         <Route path="/vendor/subscription" element={<SiteLayout><VendorSubscriptionsPage /></SiteLayout>} />
         <Route path="/vendor/shops" element={<SiteLayout><VendorShopManagerPage /></SiteLayout>} />
+        <Route path="/vendor/shops/setup" element={<SiteLayout><VendorShopSetupPage /></SiteLayout>} />
+        <Route path="/vendor/financials" element={<SiteLayout><VendorFinancialPage /></SiteLayout>} />
+        <Route path="/vendor/reviews" element={<SiteLayout><VendorReviewsPage /></SiteLayout>} />
 
         {/* Admin */}
         <Route path="/admin" element={<SiteLayout><AdminDashboardPage /></SiteLayout>} />

@@ -62,6 +62,9 @@ public class Product {
     @Column(nullable = false, length = 20)
     private String status = "DRAFT";
 
+    @Column(name = "view_count")
+    private int viewCount = 0;
+
     @Column(name = "shipping_type", length = 10)
     private String shippingType = "FREE";
 
@@ -105,6 +108,8 @@ public class Product {
     public void setPriceBdt(BigDecimal priceBdt) { this.priceBdt = priceBdt; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public int getViewCount() { return viewCount; }
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
     public String getShippingType() { return shippingType; }
     public void setShippingType(String shippingType) { this.shippingType = shippingType; }
     public Instant getDeletedAt() { return deletedAt; }

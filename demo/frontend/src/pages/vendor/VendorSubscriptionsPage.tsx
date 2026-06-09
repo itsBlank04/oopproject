@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
-import { Check, Calendar, CreditCard, ShieldCheck, Sparkles, Clock } from 'lucide-react'
+import { Check, Calendar, CreditCard, ShieldCheck, Sparkles, Clock, Tag, TrendingUp } from 'lucide-react'
 
 type SubscriptionPlan = {
   id: number
@@ -47,6 +47,7 @@ export default function VendorSubscriptionsPage() {
   const [cardNumber, setCardNumber] = useState('')
   const [pin, setPin] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [now, setNow] = useState(Date.now())
 
   // Queries
   const { data: summary, isLoading: summaryLoading } = useQuery<SubscriptionSummary>({
@@ -63,6 +64,23 @@ export default function VendorSubscriptionsPage() {
     queryKey: ['subscription-deals'],
     queryFn: () => apiClient.get('/api/vendor/subscription/deals').then((r) => r.data),
   })
+
+  // Countdown timer for deals
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const countdowns = deals.reduce((acc, d) => {
+    const diff = new Date(d.endsAt).getTime() - now
+    if (diff <= 0) { acc[d.id] = 'Expired'; return acc }
+    const days = Math.floor(diff / 86400000)
+    const hrs = Math.floor((diff % 86400000) / 3600000)
+    const min = Math.floor((diff % 3600000) / 60000)
+    const sec = Math.floor((diff % 60000) / 1000)
+    acc[d.id] = `${days}d ${hrs}h ${min}m ${sec}s`
+    return acc
+  }, {} as Record<number, string>)
 
   // Mutation
   const subscribeMutation = useMutation({
@@ -185,24 +203,34 @@ export default function VendorSubscriptionsPage() {
           </div>
         )}
 
-        {/* Promotional Deals Banner */}
+        {/* Promotional Deals */}
         {deals.length > 0 && (
-          <div className="mb-12 rounded-2xl bg-gradient-to-r from-[#8c7564] to-[#6c5b4f] p-6 text-white shadow-md relative overflow-hidden">
-            <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 h-40 w-40 rounded-full bg-white/5" />
-            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-                  Special Promotion Active
+          <div className="mb-12 space-y-4">
+            {(deals).filter(d => new Date(d.endsAt).getTime() > Date.now()).map(d => (
+              <div key={d.id} className="rounded-2xl bg-gradient-to-r from-[#8c7564] to-[#6c5b4f] p-6 text-white shadow-md relative overflow-hidden">
+                <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 h-40 w-40 rounded-full bg-white/5" />
+                <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+                      <Tag className="h-3.5 w-3.5 text-amber-300" />
+                      {d.dealType.replace(/_/g, ' ')}
+                    </div>
+                    <h3 className="font-[Fraunces] text-2xl font-semibold">{d.title}</h3>
+                    <p className="text-white/80 text-sm max-w-xl">{d.description}</p>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold">
+                      <Sparkles className="h-3 w-3 text-amber-300" />
+                      {d.dealType === 'DISCOUNT' && `${d.value}% off`}
+                      {d.dealType === 'FREE_MONTHS' && `${d.value} months free`}
+                      {d.dealType === 'FREE_TRIAL' && `${d.value} days free trial`}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-black/10 px-4 py-2.5 rounded-xl border border-white/10">
+                    <Clock className="h-4 w-4 text-amber-300" />
+                    <span className="text-xs font-semibold tabular-nums">{countdowns[d.id] || '—'}</span>
+                  </div>
                 </div>
-                <h3 className="font-[Fraunces] text-2xl font-semibold">{deals[0].title}</h3>
-                <p className="text-white/80 text-sm max-w-xl">{deals[0].description}</p>
               </div>
-              <div className="flex items-center gap-2 bg-black/10 px-4 py-2.5 rounded-xl border border-white/10">
-                <Clock className="h-4 w-4 text-amber-300" />
-                <span className="text-xs font-semibold">Ends: {new Date(deals[0].endsAt).toLocaleDateString('en-BD')}</span>
-              </div>
-            </div>
+            ))}
           </div>
         )}
 
@@ -236,6 +264,15 @@ export default function VendorSubscriptionsPage() {
             const price = billingCycle === 'MONTHLY' ? plan.priceMonthlyBdt : plan.priceYearlyBdt
             const displayPrice = price === 0 ? 'Free' : `৳${price.toLocaleString()}`
 
+            const monthlyPrice = plan.priceMonthlyBdt
+            const yearlyPrice = plan.priceYearlyBdt
+            const yearlySavings = yearlyPrice > 0 && monthlyPrice > 0
+              ? Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100)
+              : 0
+            const activeDealsForPlan = deals.filter(d =>
+              d.dealType !== 'FREE_TRIAL' && new Date(d.endsAt).getTime() > Date.now()
+            )
+
             return (
               <div
                 key={plan.id}
@@ -250,13 +287,20 @@ export default function VendorSubscriptionsPage() {
                 )}
                 <div>
                   <div className="mb-4">
-                    <h3 className="font-[Fraunces] text-xl font-bold text-[#221b16]">{plan.displayName}</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-[Fraunces] text-xl font-bold text-[#221b16]">{plan.displayName}</h3>
+                      {plan.discountPercent > 0 && (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                          -{plan.discountPercent}%
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[#8c7564] mt-1">
                       {plan.maxShops === -1 ? 'Unlimited shop slots' : `Up to ${plan.maxShops} shops`}
                     </p>
                   </div>
 
-                  <div className="mb-6 flex items-baseline gap-1">
+                  <div className="mb-3 flex items-baseline gap-1">
                     <span className="font-[Fraunces] text-3xl font-bold text-[#221b16]">{displayPrice}</span>
                     {price > 0 && (
                       <span className="text-xs text-[#8c7564]">
@@ -264,6 +308,26 @@ export default function VendorSubscriptionsPage() {
                       </span>
                     )}
                   </div>
+
+                  {billingCycle === 'YEARLY' && yearlySavings > 0 && (
+                    <div className="mb-4 flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700">
+                      <TrendingUp className="h-3.5 w-3.5" />
+                      Save {yearlySavings}% with yearly billing
+                    </div>
+                  )}
+
+                  {activeDealsForPlan.length > 0 && (
+                    <div className="mb-4 space-y-1">
+                      {activeDealsForPlan.map(d => (
+                        <div key={d.id} className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700">
+                          <Tag className="h-3 w-3" />
+                          {d.dealType === 'DISCOUNT' && `${d.value}% off`}
+                          {d.dealType === 'FREE_MONTHS' && `${d.value} months free`}
+                          {d.dealType === 'FREE_TRIAL' && `${d.value} days free`}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Features */}
                   <ul className="mb-8 space-y-3">
