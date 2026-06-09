@@ -1,144 +1,164 @@
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import apiClient from '../lib/apiClient'
 
-type Product = {
+type Slide = {
   id: number
-  name: string
-  priceBdt: number
-  images?: { imageUrl?: string }[]
-  vendor?: { id: number }
+  badge: string
+  label: string
+  title: string
+  description: string
+  cta: { text: string; to: string }
+  icon: string
+  gradient: string
+  ringColor: string
 }
 
-type Review = {
-  rating: number
-}
-
-function StarRating({ average, count }: { average: number; count: number }) {
-  if (count === 0) return null
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="inline-flex gap-[1px] text-sm tracking-wider">
-        {[1, 2, 3, 4, 5].map(i => (
-          <span key={i} className={i <= Math.round(average) ? 'text-[#c4956a]' : 'text-[#e4d6c8]'}>★</span>
-        ))}
-      </span>
-      <span className="text-[11px] text-[#8c7564]">({count})</span>
-    </span>
-  )
-}
+const SLIDES: Slide[] = [
+  {
+    id: 1,
+    badge: 'Marketplace',
+    label: 'Discover Brands',
+    title: 'New Collection',
+    description: 'Discover handpicked items from our verified vendors — quality pre-owned tech, exclusive finds, and more.',
+    cta: { text: 'Shop now', to: '/products' },
+    icon: 'shopping_bag',
+    gradient: 'from-[#f9f5f0] via-[#f0e8df] to-[#e4d6c8]',
+    ringColor: 'ring-[#c4956a]/20',
+  },
+  {
+    id: 2,
+    badge: 'Auction',
+    label: 'Live Bidding',
+    title: 'Auction House',
+    description: 'Bid on exclusive items in real-time. From vintage collectibles to high-end electronics — the best deals go to the highest bidder.',
+    cta: { text: 'View auctions', to: '/auctions' },
+    icon: 'gavel',
+    gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]',
+    ringColor: 'ring-[#c4956a]/20',
+  },
+  {
+    id: 3,
+    badge: 'Repair',
+    label: 'Expert Service',
+    title: 'Repair Hub',
+    description: 'Certified technicians ready to fix your devices. Phones, laptops, appliances — fast turnaround with genuine parts and warranty.',
+    cta: { text: 'Find a technician', to: '/repair' },
+    icon: 'handyman',
+    gradient: 'from-[#f9f5f0] via-[#f0e8df] to-[#e4d6c8]',
+    ringColor: 'ring-[#c4956a]/20',
+  },
+  {
+    id: 4,
+    badge: 'Pre-owned',
+    label: 'Great Deals',
+    title: 'Used & Refurbished',
+    description: 'Quality pre-owned items at unbeatable prices. Every listing is verified so you can buy with confidence.',
+    cta: { text: 'Browse used items', to: '/used-listings' },
+    icon: 'inventory_2',
+    gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]',
+    ringColor: 'ring-[#c4956a]/20',
+  },
+]
 
 export default function HeroSection() {
-  const { data: products } = useQuery<Product[]>({
-    queryKey: ['hero-products'],
-    queryFn: () =>
-      apiClient.get('/api/products', { params: { size: 4 } }).then(r => {
-        const list = r.data?.content ?? r.data ?? []
-        return Array.isArray(list) ? list : []
-      }),
-    staleTime: 120_000,
-  })
+  const [current, setCurrent] = useState(0)
+  const slide = SLIDES[current]
 
-  const latest = products?.find(p => p.images?.some(i => i.imageUrl))
+  const next = useCallback(() => setCurrent(c => (c + 1) % SLIDES.length), [])
+  const prev = useCallback(() => setCurrent(c => (c - 1 + SLIDES.length) % SLIDES.length), [])
 
-  const { data: vendorProfile } = useQuery<{ displayName: string } | null>({
-    queryKey: ['vendor-profile', latest?.vendor?.id],
-    queryFn: () =>
-      latest?.vendor?.id
-        ? apiClient.get(`/api/users/${latest.vendor.id}/profile`).then(r => r.data)
-        : Promise.resolve(null),
-    enabled: !!latest?.vendor?.id,
-    staleTime: 120_000,
-  })
-
-  const { data: reviews } = useQuery<Review[]>({
-    queryKey: ['hero-product-reviews', latest?.id],
-    queryFn: () =>
-      latest?.id
-        ? apiClient.get(`/api/products/${latest.id}/reviews`).then(r => (Array.isArray(r.data) ? r.data : []))
-        : Promise.resolve([]),
-    enabled: !!latest?.id,
-    staleTime: 60_000,
-  })
-
-  const avgRating = reviews && reviews.length > 0
-    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-    : 0
-
-  const productImage = latest?.images?.find(i => i.imageUrl)?.imageUrl
+  useEffect(() => {
+    const timer = setInterval(next, 6000)
+    return () => clearInterval(timer)
+  }, [next])
 
   return (
-    <section className="relative bg-white">
+    <section className="relative overflow-hidden bg-white">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-6 py-14 md:flex-row md:gap-16 md:py-20 lg:px-8 lg:py-24">
         {/* Left */}
         <div className="w-full max-w-lg md:w-1/2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8c7564]">
-            AtomDrops {new Date().getFullYear()}
+            AtomDrops 2026
           </p>
           <p className="mt-8 text-xs font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
-            New Arrival
+            {slide.badge}
           </p>
           <h1
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             className="mt-2 text-[2.8rem] font-light leading-[1.1] tracking-tight text-[#221b16] sm:text-[3.2rem] lg:text-[3.8rem]"
           >
-            New Collection
+            {slide.title}
           </h1>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#6c5b4f]">
-            Discover handpicked items from our verified vendors — quality pre-owned tech, exclusive finds, and more.
+            {slide.description}
           </p>
           <Link
-            to="/products"
+            to={slide.cta.to}
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#c4956a] px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]"
           >
-            Shop now
+            {slide.cta.text}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
-          <p className="mt-10 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#e4d6c8]">01</p>
+          <div className="mt-10 flex items-center gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#e4d6c8]">
+              {String(current + 1).padStart(2, '0')}
+            </p>
+            <div className="flex gap-1.5">
+              {SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  className={`rounded-full transition-all duration-500 ${
+                    i === current ? 'w-6 bg-[#c4956a]' : 'w-1.5 bg-[#e4d6c8] hover:bg-[#c4956a]'
+                  }`}
+                  style={{ height: '6px' }}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
+            <div className="flex gap-2 ml-4">
+              <button
+                onClick={prev}
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e4d6c8] text-[#8c7564] transition-all hover:border-[#c4956a] hover:text-[#c4956a] active:scale-90"
+                aria-label="Previous slide"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                  <path d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={next}
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e4d6c8] text-[#8c7564] transition-all hover:border-[#c4956a] hover:text-[#c4956a] active:scale-90"
+                aria-label="Next slide"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Right */}
         <div className="flex w-full items-center justify-center md:w-1/2">
           <div className="flex flex-col items-center">
-            <div className="flex h-[300px] w-[300px] items-center justify-center rounded-full bg-[#f9f5f0] sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
-              {productImage ? (
-                <img
-                  src={productImage}
-                  alt={latest!.name}
-                  className="h-3/5 w-3/5 rounded-2xl object-cover shadow-lg"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-[#8c7564]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-12 w-12">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="m21 15-5-5L5 21" />
-                  </svg>
-                  <span className="text-xs">New arrivals coming soon</span>
-                </div>
-              )}
-            </div>
-
-            {latest && (
-              <div className="mt-6 flex items-center gap-5">
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-[#221b16]">{latest.name}</p>
-                  <p className="text-sm text-[#8c7564]">৳{latest.priceBdt.toLocaleString('en-BD')}</p>
-                  {vendorProfile && (
-                    <p className="mt-0.5 text-xs text-[#8c7564]">by {vendorProfile.displayName}</p>
-                  )}
-                  <StarRating average={avgRating} count={reviews?.length ?? 0} />
-                </div>
-                <Link
-                  to={`/products/${latest.id}`}
-                  className="rounded-full border border-[#e4d6c8] px-4 py-1.5 text-xs font-semibold text-[#6c5b4f] transition-colors hover:bg-[#f9f5f0] hover:text-[#221b16]"
-                >
-                  View
-                </Link>
+            <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
+              {/* Glass circle */}
+              <div
+                className={`absolute inset-0 rounded-full bg-gradient-to-br ${slide.gradient} ring-1 ${slide.ringColor} backdrop-blur-3xl`}
+              />
+              <div className="absolute inset-4 rounded-full bg-white/40 backdrop-blur-xl" />
+              <div className="relative flex flex-col items-center gap-3">
+                <span className="material-symbols-outlined text-6xl text-[#6c5b4f]/80 sm:text-7xl lg:text-8xl">
+                  {slide.icon}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8c7564]">
+                  {slide.label}
+                </span>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
