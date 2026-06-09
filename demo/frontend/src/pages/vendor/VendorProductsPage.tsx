@@ -6,9 +6,21 @@ import { Link } from 'react-router-dom'
 import MediaUploader from '../../components/MediaUploader'
 import ImageLightbox from '../../components/ImageLightbox'
 import { useConfirmAction } from '../../hooks/useConfirmAction'
+import { Store, Plus } from 'lucide-react'
 
 type Category = { id: number; name: string }
-type Product = { id: number; name: string; description?: string; priceBdt: number; status: string; shippingType: string; category: { id: number; name: string }; images?: { imageUrl: string }[] }
+type Shop = { id: number; name: string; slug: string }
+type Product = { 
+  id: number
+  name: string
+  description?: string
+  priceBdt: number
+  status: string
+  shippingType: string
+  category: { id: number; name: string }
+  shop?: { id: number; name: string }
+  images?: { imageUrl: string }[] 
+}
 type Inventory = { id: number; stockQty: number; lowStockThreshold: number }
 
 export default function VendorProductsPage() {
@@ -17,15 +29,27 @@ export default function VendorProductsPage() {
   const { askConfirm, showResult, Dialogs } = useConfirmAction()
   const [showForm, setShowForm] = useState(false)
   const [editProductId, setEditProductId] = useState<number | null>(null)
-  const [form, setForm] = useState({ name: '', description: '', priceBdt: '', categoryId: '' })
+  
+  // Filter state
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null)
+
+  // Form states
+  const [form, setForm] = useState({ name: '', description: '', priceBdt: '', categoryId: '', shopId: '' })
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [stockCache, setStockCache] = useState<Record<number, { stockQty: number; lowStockThreshold: number }>>({})
   const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
 
+  // Queries
+  const { data: shops = [] } = useQuery<Shop[]>({
+    queryKey: ['vendor-shops-list'],
+    queryFn: () => apiClient.get('/api/shops/vendor').then((r) => r.data),
+    enabled: !!user,
+  })
+
   const { data: products = [], isFetching: productsFetching } = useQuery<Product[]>({
-    queryKey: ['vendor-products'],
+    queryKey: ['vendor-products', selectedShopId],
     queryFn: async () => {
-      const res = await apiClient.get('/api/vendor/products')
+      const res = await apiClient.get('/api/vendor/products', { params: { shopId: selectedShopId } })
       return Array.isArray(res.data) ? res.data : []
     },
     enabled: !!user,
@@ -62,8 +86,11 @@ export default function VendorProductsPage() {
   const createProduct = useMutation({
     mutationFn: async () => {
       const res = await apiClient.post('/api/products', {
-        name: form.name, description: form.description,
-        priceBdt: parseFloat(form.priceBdt), category: { id: parseInt(form.categoryId) },
+        name: form.name, 
+        description: form.description,
+        priceBdt: parseFloat(form.priceBdt), 
+        category: { id: parseInt(form.categoryId) },
+        shop: form.shopId ? { id: parseInt(form.shopId) } : null
       })
       const pid = res.data.id
       for (const url of imageUrls) {
@@ -74,6 +101,7 @@ export default function VendorProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard'] })
       resetForm()
       showResult('Product created', 'success')
     },
@@ -84,8 +112,10 @@ export default function VendorProductsPage() {
     mutationFn: async () => {
       if (!editProductId) return
       await apiClient.put(`/api/products/${editProductId}`, {
-        name: form.name, description: form.description,
-        priceBdt: parseFloat(form.priceBdt), category: { id: parseInt(form.categoryId) },
+        name: form.name, 
+        description: form.description,
+        priceBdt: parseFloat(form.priceBdt), 
+        category: { id: parseInt(form.categoryId) }
       })
       for (const url of imageUrls) {
         await apiClient.post(`/api/products/${editProductId}/images`, { imageUrl: url }).catch(() => {})
@@ -141,16 +171,16 @@ export default function VendorProductsPage() {
     },
     onMutate: async ({ productId, shippingType }) => {
       await queryClient.cancelQueries({ queryKey: ['vendor-products'] })
-      const prev = queryClient.getQueryData<any[]>(['vendor-products'])
+      const prev = queryClient.getQueryData<any[]>(['vendor-products', selectedShopId])
       if (prev) {
-        queryClient.setQueryData(['vendor-products'], prev.map(p =>
+        queryClient.setQueryData(['vendor-products', selectedShopId], prev.map(p =>
           p.id === productId ? { ...p, shippingType } : p
         ))
       }
       return { prev }
     },
     onError: (err: any, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['vendor-products'], ctx.prev)
+      if (ctx?.prev) queryClient.setQueryData(['vendor-products', selectedShopId], ctx.prev)
       showResult(err.response?.data?.error ?? err.message ?? 'Failed to update shipping', 'error')
     },
   })
@@ -158,7 +188,7 @@ export default function VendorProductsPage() {
   const resetForm = () => {
     setShowForm(false)
     setEditProductId(null)
-    setForm({ name: '', description: '', priceBdt: '', categoryId: '' })
+    setForm({ name: '', description: '', priceBdt: '', categoryId: '', shopId: '' })
     setImageUrls([])
   }
 
@@ -170,6 +200,7 @@ export default function VendorProductsPage() {
       description: p.description || '',
       priceBdt: p.priceBdt.toString(),
       categoryId: p.category?.id?.toString() || '',
+      shopId: p.shop?.id?.toString() || '',
     })
     setImageUrls([])
   }
@@ -227,20 +258,40 @@ export default function VendorProductsPage() {
       {/* Header */}
       <div className="border-b border-[#e4d6c8] bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="font-[Fraunces] text-3xl tracking-tight text-[#221b16]">Products</h1>
               <p className="mt-1 text-sm text-[#8c7564]">Manage your inventory, stock levels, and listings</p>
             </div>
-            <button onClick={() => { resetForm(); setShowForm(!showForm) }}
-              className="flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] active:scale-[0.97]">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-              {showForm ? 'Cancel' : 'Add Product'}
-            </button>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Shop filter */}
+              {shops.length > 0 && (
+                <div className="flex items-center gap-2 bg-[#fcfbfa] border border-[#e4d6c8] px-3 py-2 rounded-xl shadow-sm text-xs">
+                  <span className="font-semibold text-[#8c7564]">Shop:</span>
+                  <select
+                    value={selectedShopId || ''}
+                    onChange={(e) => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
+                    className="font-bold text-[#221b16] bg-transparent focus:outline-none cursor-pointer"
+                  >
+                    <option value="">All Shops</option>
+                    {shops.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <button onClick={() => { resetForm(); setShowForm(!showForm) }}
+                className="flex items-center gap-2 rounded-xl bg-[#221b16] px-5 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a2d24] active:scale-[0.97]">
+                <Plus className="h-4 w-4" />
+                {showForm ? 'Cancel' : 'Add Product'}
+              </button>
+            </div>
           </div>
 
           {/* Stats */}
-          {(
+          {stats && (
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: 'Total Products', value: stats.total, color: 'text-[#221b16]', bg: 'bg-[#f9f5f0]' },
@@ -270,6 +321,22 @@ export default function VendorProductsPage() {
               </button>
             </div>
             <div className="px-6 py-6 space-y-5">
+              
+              <div>
+                <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Target Shop / Outlet</label>
+                <select 
+                  value={form.shopId} 
+                  onChange={e => setForm({ ...form, shopId: e.target.value })}
+                  disabled={!!editProductId}
+                  className="mt-1.5 w-full rounded-xl border border-[#d7c7b8] bg-[#faf8f6] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10 disabled:opacity-50"
+                >
+                  <option value="">Select Target Shop</option>
+                  {shops.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Product Name</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
@@ -343,12 +410,17 @@ export default function VendorProductsPage() {
               return (
                 <div key={p.id} className="group relative rounded-2xl bg-white shadow-sm ring-1 ring-[#e4d6c8]/60 transition-all hover:shadow-md hover:ring-[#d7c7b8]">
                   {/* Status badge */}
-                  <div className="absolute left-3 top-3 z-10">
+                  <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
                     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                       p.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                       p.status === 'DRAFT' ? 'bg-gray-100 text-gray-600' :
                       'bg-blue-100 text-blue-700'
                     }`}>{p.status}</span>
+                    {p.shop && (
+                      <span className="rounded-full bg-slate-800 text-white px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <Store className="h-3 w-3" /> {p.shop.name}
+                      </span>
+                    )}
                   </div>
 
                   {/* Image */}

@@ -20,6 +20,8 @@ import VendorDashboardPage from './pages/vendor/VendorDashboardPage'
 import VendorAuctionsPage from './pages/vendor/VendorAuctionsPage'
 import VendorOrdersPage from './pages/vendor/VendorOrdersPage'
 import VendorShopPage from './pages/vendor/VendorShopPage'
+import VendorSubscriptionsPage from './pages/vendor/VendorSubscriptionsPage'
+import VendorShopManagerPage from './pages/vendor/VendorShopManagerPage'
 import UsedListingsPage from './pages/used/UsedListingsPage'
 import UsedListingDetailPage from './pages/used/UsedListingDetailPage'
 import CreateUsedListingPage from './pages/used/CreateUsedListingPage'
@@ -95,6 +97,8 @@ export default function App() {
         <Route path="/vendor/products" element={<SiteLayout><VendorProductsPage /></SiteLayout>} />
         <Route path="/vendor/orders" element={<SiteLayout><VendorOrdersPage /></SiteLayout>} />
         <Route path="/vendor/auctions" element={<SiteLayout><VendorAuctionsPage /></SiteLayout>} />
+        <Route path="/vendor/subscription" element={<SiteLayout><VendorSubscriptionsPage /></SiteLayout>} />
+        <Route path="/vendor/shops" element={<SiteLayout><VendorShopManagerPage /></SiteLayout>} />
 
         {/* Admin */}
         <Route path="/admin" element={<SiteLayout><AdminDashboardPage /></SiteLayout>} />

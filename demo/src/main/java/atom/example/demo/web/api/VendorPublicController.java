@@ -7,6 +7,9 @@ import atom.example.demo.repository.ReviewRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.VendorProfileRepository;
 import atom.example.demo.repository.ProductRepository;
+import atom.example.demo.repository.ShopFollowerRepository;
+import atom.example.demo.repository.ShopRepository;
+import atom.example.demo.model.Shop;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +26,20 @@ public class VendorPublicController {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+    private final ShopRepository shopRepository;
+    private final ShopFollowerRepository shopFollowerRepository;
 
     public VendorPublicController(VendorProfileRepository vendorProfileRepository,
             UserRepository userRepository, ReviewRepository reviewRepository,
-            ProductRepository productRepository) {
+            ProductRepository productRepository,
+            ShopRepository shopRepository,
+            ShopFollowerRepository shopFollowerRepository) {
         this.vendorProfileRepository = vendorProfileRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.productRepository = productRepository;
+        this.shopRepository = shopRepository;
+        this.shopFollowerRepository = shopFollowerRepository;
     }
 
     @GetMapping("/{vendorId}/profile")
@@ -41,8 +50,20 @@ public class VendorPublicController {
         long productCount = productRepository.countByVendorId(vendorId);
         var reviews = reviewRepository.findByRevieweeId(vendorId);
         double avgRating = reviews.stream().mapToInt(r -> r.getRating()).average().orElse(0.0);
+
+        // Get first shop for follower count
+        List<Shop> shops = shopRepository.findByVendorId(vendorId);
+        long followerCount = 0;
+        Long shopId = null;
+        if (!shops.isEmpty()) {
+            Shop firstShop = shops.get(0);
+            shopId = firstShop.getId();
+            followerCount = shopFollowerRepository.countByShopId(shopId);
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("id", user.getId());
+        result.put("shopId", shopId);
         result.put("displayName", user.getDisplayName());
         result.put("email", user.getEmail());
         result.put("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
@@ -55,6 +76,7 @@ public class VendorPublicController {
         result.put("productCount", productCount);
         result.put("reviewCount", reviews.size());
         result.put("avgRating", Math.round(avgRating * 10.0) / 10.0);
+        result.put("followerCount", followerCount);
         return result;
     }
 

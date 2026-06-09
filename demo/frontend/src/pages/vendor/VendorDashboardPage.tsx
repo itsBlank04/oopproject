@@ -1,7 +1,17 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
+import { ChevronDown, Store, CreditCard, ChevronRight } from 'lucide-react'
+
+type Shop = {
+  id: number
+  name: string
+  slug: string
+  status: string
+  logoUrl: string
+}
 
 type Stats = {
   vendorId: number
@@ -14,14 +24,12 @@ type Stats = {
   totalOrders: number
   pendingCommissions: number
   totalEarned: number
+  shops?: Shop[]
 }
 
-type MonthlySale = {
-  month: number
-  year: number
+type SalesDataPoint = {
   label: string
   totalSale: number
-  totalCommission: number
   netPayout: number
   orderCount: number
 }
@@ -29,6 +37,11 @@ type MonthlySale = {
 type TopProduct = {
   name: string
   totalRevenue: number
+}
+
+type MostViewedProduct = {
+  name: string
+  orderCount: number
 }
 
 type Order = {
@@ -51,43 +64,48 @@ type Product = {
 }
 
 type Analytics = {
-  monthlySales: MonthlySale[]
+  salesData: SalesDataPoint[]
+  timeRange: string
   topProducts: TopProduct[]
+  mostViewedProducts: MostViewedProduct[]
   totalRevenue: number
   totalOrders: number
   totalProducts: number
   pendingOrders: number
+  uniqueCustomers: number
 }
 
 function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)) }
 
 export default function VendorDashboardPage() {
   const { user } = useAuth()
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null)
+  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('monthly')
 
   const { data: stats } = useQuery<Stats | null>({
-    queryKey: ['vendor-dashboard'],
-    queryFn: () => apiClient.get('/api/vendor/dashboard').then(r => r.data),
+    queryKey: ['vendor-dashboard', selectedShopId],
+    queryFn: () => apiClient.get('/api/vendor/dashboard', { params: { shopId: selectedShopId } }).then(r => r.data),
     staleTime: 120_000,
     placeholderData: (prev) => prev,
   })
 
   const { data: analytics } = useQuery<Analytics | null>({
-    queryKey: ['vendor-analytics'],
-    queryFn: () => apiClient.get('/api/vendor/analytics').then(r => r.data),
+    queryKey: ['vendor-analytics', selectedShopId, timeRange],
+    queryFn: () => apiClient.get('/api/vendor/analytics', { params: { shopId: selectedShopId, timeRange } }).then(r => r.data),
     staleTime: 120_000,
     placeholderData: (prev) => prev,
   })
 
   const { data: orders = [] } = useQuery<Order[]>({
-    queryKey: ['vendor-orders'],
-    queryFn: () => apiClient.get('/api/vendor/orders').then(r => Array.isArray(r.data) ? r.data : []),
+    queryKey: ['vendor-orders', selectedShopId],
+    queryFn: () => apiClient.get('/api/vendor/orders', { params: { shopId: selectedShopId } }).then(r => Array.isArray(r.data) ? r.data : []),
     staleTime: 120_000,
     placeholderData: (prev) => prev,
   })
 
   const { data: products = [] } = useQuery<Product[]>({
-    queryKey: ['vendor-products'],
-    queryFn: () => apiClient.get('/api/vendor/products').then(r => Array.isArray(r.data) ? r.data : []),
+    queryKey: ['vendor-products', selectedShopId],
+    queryFn: () => apiClient.get('/api/vendor/products', { params: { shopId: selectedShopId } }).then(r => Array.isArray(r.data) ? r.data : []),
     staleTime: 120_000,
     placeholderData: (prev) => prev,
   })
@@ -103,6 +121,8 @@ export default function VendorDashboardPage() {
     PAID: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
     CANCELLED: 'bg-red-50 text-red-600 border-red-200/60',
   }
+
+  const currentShop = stats?.shops?.find(s => s.id === selectedShopId)
 
   return (
     <div className="min-h-screen bg-[#faf6f2]">
@@ -136,19 +156,17 @@ export default function VendorDashboardPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* ── Header ── */}
         <div className="anim-fade anim-fade-1">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#e4d6c8]/50">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1a1512] text-[#faf6f2] shadow-sm">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72" />
-                </svg>
+                <Store className="h-6 w-6 text-amber-200" />
               </div>
               <div>
                 <h1 className="font-[Fraunces] text-xl sm:text-2xl font-semibold text-[#1a1512] tracking-tight">
-                  {stats?.shopName || `${user?.displayName}'s Shop`}
+                  {currentShop ? currentShop.name : stats?.shopName || `${user?.displayName}'s Shop`}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm text-[#8c7564]">{user?.displayName}</span>
+                  <span className="text-sm text-[#8c7564]">{selectedShopId ? 'Single Shop View' : 'All Shops (Aggregated)'}</span>
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                     stats?.verificationStatus === 'VERIFIED'
                       ? 'bg-emerald-50 text-emerald-700'
@@ -165,15 +183,33 @@ export default function VendorDashboardPage() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Link to="/vendor/products"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#1a1512] px-4 py-2 text-xs font-semibold text-[#faf6f2] transition hover:bg-[#2d241e] active:scale-[0.97]">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                New Product
+
+            {/* Quick Switch & Navigation Actions */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Dropdown Selector */}
+              {stats?.shops && stats.shops.length > 0 && (
+                <div className="flex items-center gap-2 bg-white border border-[#d7c7b8] px-3.5 py-2 rounded-xl shadow-sm relative">
+                  <select
+                    value={selectedShopId || ''}
+                    onChange={(e) => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
+                    className="text-xs font-bold text-[#1a1512] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
+                  >
+                    <option value="">All Outlets (Aggregate)</option>
+                    {stats.shops.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 h-3 w-3 text-[#8c7564] pointer-events-none" />
+                </div>
+              )}
+
+              <Link to="/vendor/shops"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                <Store className="h-3.5 w-3.5 text-[#8c7564]" /> Shop Manager
               </Link>
-              <Link to="/vendor/orders"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-white active:scale-[0.97]">
-                View Orders
+              <Link to="/vendor/subscription"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#d7c7b8] bg-white px-4 py-2 text-xs font-semibold text-[#1a1512] transition hover:bg-gray-50 active:scale-[0.97]">
+                <CreditCard className="h-3.5 w-3.5 text-[#8c7564]" /> Billing & Plans
               </Link>
             </div>
           </div>
@@ -182,7 +218,7 @@ export default function VendorDashboardPage() {
         {/* ── Metric Cards ── */}
         <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { label: 'Total Revenue', value: `৳${Math.round(totalRevenue).toLocaleString('en-BD')}`, sub: 'Lifetime earnings', icon: (
+            { label: 'Total Revenue', value: `৳${Math.round(totalRevenue).toLocaleString('en-BD')}`, sub: 'Selected view earnings', icon: (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             ), accent: 'text-emerald-600', bg: 'bg-emerald-50/60' },
             { label: 'Total Orders', value: totalOrders.toString(), sub: `${pendingOrders} pending`, icon: (
@@ -221,26 +257,44 @@ export default function VendorDashboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Revenue</h2>
-                  <p className="text-xs text-[#8c7564] mt-0.5">Monthly sales overview</p>
+                  <p className="text-xs text-[#8c7564] mt-0.5">{timeRange === 'daily' ? 'Daily' : timeRange === 'weekly' ? 'Weekly' : 'Monthly'} sales overview</p>
                 </div>
-                {analytics?.monthlySales && analytics.monthlySales.length > 0 && (
-                  <div className="flex items-center gap-3 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-sm bg-[#1a1512]" />
-                      <span className="text-[#6c5b4f]">Revenue</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-sm bg-[#c4956a]" />
-                      <span className="text-[#6c5b4f]">Payout</span>
-                    </div>
+                <div className="flex items-center gap-2">
+                  {/* Time Range Tabs */}
+                  <div className="flex rounded-lg border border-[#e4d6c8] overflow-hidden text-xs">
+                    {(['daily', 'weekly', 'monthly'] as const).map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => setTimeRange(range)}
+                        className={`px-3 py-1.5 font-semibold transition-colors ${
+                          timeRange === range
+                            ? 'bg-[#1a1512] text-white'
+                            : 'bg-white text-[#8c7564] hover:bg-gray-50'
+                        }`}
+                      >
+                        {range === 'daily' ? 'Daily' : range === 'weekly' ? 'Weekly' : 'Monthly'}
+                      </button>
+                    ))}
                   </div>
-                )}
+                  {(analytics?.salesData?.length ?? 0) > 0 && (
+                    <div className="flex items-center gap-3 text-xs ml-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-[#1a1512]" />
+                        <span className="text-[#6c5b4f]">Revenue</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-[#c4956a]" />
+                        <span className="text-[#6c5b4f]">Payout</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              {(analytics?.monthlySales?.length ?? 0) > 0 ? (
+              {(analytics?.salesData?.length ?? 0) > 0 ? (
                 <div className="relative h-44 sm:h-52">
                   <div className="absolute inset-0 flex items-end gap-1.5 sm:gap-2">
-                    {analytics!.monthlySales.map((m, i) => {
-                      const maxVal = Math.max(...analytics!.monthlySales.map(x => x.totalSale), 1)
+                    {analytics!.salesData.map((m, i) => {
+                      const maxVal = Math.max(...analytics!.salesData.map(x => x.totalSale), 1)
                       const saleH = clamp((m.totalSale / maxVal) * 100, 2, 100)
                       const payH = clamp((m.netPayout / maxVal) * 100, 2, 100)
                       return (
@@ -343,6 +397,53 @@ export default function VendorDashboardPage() {
               )}
             </div>
 
+            {/* Most Viewed Products */}
+            {(analytics?.mostViewedProducts?.length ?? 0) > 0 && (
+              <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+                <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Most Ordered</h2>
+                <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Products ordered most frequently</p>
+                <div className="space-y-3">
+                  {analytics!.mostViewedProducts.map((p, i) => (
+                    <div key={p.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`shrink-0 flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold ${
+                          i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-[#f5f0eb] text-[#8c7564]'
+                        }`}>{i + 1}</span>
+                        <span className="text-xs font-medium text-[#1a1512] truncate">{p.name}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-[#6c5b4f] shrink-0 ml-2">{p.orderCount} order{p.orderCount !== 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Customer Split */}
+            <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
+              <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Customers</h2>
+              <p className="text-xs text-[#8c7564] mt-0.5 mb-5">Customer overview</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#1a1512]">Unique Customers</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.uniqueCustomers ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#1a1512]">Total Orders</span>
+                  <span className="text-lg font-[Fraunces] font-semibold text-[#1a1512]">{analytics?.totalOrders ?? 0}</span>
+                </div>
+                <div className="pt-2 border-t border-[#f5f0eb]">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#8c7564]">Avg. Orders / Customer</span>
+                    <span className="font-semibold text-[#1a1512]">
+                      {(analytics?.uniqueCustomers ?? 0) > 0
+                        ? ((analytics?.totalOrders ?? 0) / (analytics?.uniqueCustomers ?? 1)).toFixed(1)
+                        : '0'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Product Status Summary */}
             <div className="anim-scale anim-scale-4 rounded-2xl bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-[#e4d6c8]/40">
               <h2 className="font-[Fraunces] text-lg font-semibold text-[#1a1512]">Product Status</h2>
@@ -372,7 +473,7 @@ export default function VendorDashboardPage() {
                   <Link to="/vendor/products"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c5b4f] hover:text-[#1a1512] transition-colors">
                     Manage inventory
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </div>

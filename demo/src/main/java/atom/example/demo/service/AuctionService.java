@@ -5,11 +5,13 @@ import atom.example.demo.model.AuctionApproval;
 import atom.example.demo.model.AuctionLot;
 import atom.example.demo.model.AuctionStatusLog;
 import atom.example.demo.model.User;
+import atom.example.demo.model.Shop;
 import atom.example.demo.repository.AuctionApprovalRepository;
 import atom.example.demo.repository.AuctionLotRepository;
 import atom.example.demo.repository.AuctionRepository;
 import atom.example.demo.repository.AuctionStatusLogRepository;
 import atom.example.demo.repository.UserRepository;
+import atom.example.demo.repository.ShopRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,29 +31,48 @@ public class AuctionService {
     private final AuctionLotRepository auctionLotRepository;
     private final UserRepository userRepository;
     private final AuctionRealtimeService auctionRealtimeService;
+    private final ShopRepository shopRepository;
 
     public AuctionService(AuctionRepository auctionRepository,
                             AuctionApprovalRepository auctionApprovalRepository,
                             AuctionStatusLogRepository auctionStatusLogRepository,
                             AuctionLotRepository auctionLotRepository,
                             UserRepository userRepository,
-                            AuctionRealtimeService auctionRealtimeService) {
+                            AuctionRealtimeService auctionRealtimeService,
+                            ShopRepository shopRepository) {
         this.auctionRepository = auctionRepository;
         this.auctionApprovalRepository = auctionApprovalRepository;
         this.auctionStatusLogRepository = auctionStatusLogRepository;
         this.auctionLotRepository = auctionLotRepository;
         this.userRepository = userRepository;
         this.auctionRealtimeService = auctionRealtimeService;
+        this.shopRepository = shopRepository;
     }
 
     @Transactional
-    public Auction createAuction(Long vendorId, String title, String type,
+    public Auction createAuction(Long vendorId, Long shopId, String title, String type,
                                    Integer preparationDurationMinutes, Integer activeDurationMinutes,
                                    boolean termsAccepted) {
         User vendor = userRepository.findById(vendorId)
                 .orElseThrow(() -> new IllegalArgumentException("Vendor not found"));
+        
+        Shop shop = null;
+        if (shopId != null) {
+            shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(vendorId)) {
+                throw new SecurityException("You do not own this shop");
+            }
+        } else {
+            List<Shop> vendorShops = shopRepository.findByVendorId(vendorId);
+            if (!vendorShops.isEmpty()) {
+                shop = vendorShops.get(0);
+            }
+        }
+
         Auction auction = new Auction();
         auction.setVendor(vendor);
+        auction.setShop(shop);
         auction.setTitle(title);
         auction.setType(type);
         auction.setStatus("CREATED");

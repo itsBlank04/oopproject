@@ -60,14 +60,14 @@ public class Technician {
     private String status = "active";
 
     // ─── New fields from master prompt ───
-    @Column(name = "completed_jobs", nullable = false)
-    private int completedJobs = 0;
+    @Column(name = "completed_jobs")
+    private Integer completedJobs = 0;
 
     @Column(columnDefinition = "TEXT")
     private String certifications;
 
-    @Column(name = "experience_years", nullable = false)
-    private int experienceYears = 0;
+    @Column(name = "experience_years")
+    private Integer experienceYears = 0;
 
     @Column(name = "response_time", length = 100)
     private String responseTime; // "Usually replies in 30 min"
@@ -119,12 +119,12 @@ public class Technician {
     public void setCompletionRate(BigDecimal completionRate) { this.completionRate = completionRate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-    public int getCompletedJobs() { return completedJobs; }
-    public void setCompletedJobs(int completedJobs) { this.completedJobs = completedJobs; }
+    public Integer getCompletedJobs() { return completedJobs; }
+    public void setCompletedJobs(Integer completedJobs) { this.completedJobs = completedJobs; }
     public String getCertifications() { return certifications; }
     public void setCertifications(String certifications) { this.certifications = certifications; }
-    public int getExperienceYears() { return experienceYears; }
-    public void setExperienceYears(int experienceYears) { this.experienceYears = experienceYears; }
+    public Integer getExperienceYears() { return experienceYears; }
+    public void setExperienceYears(Integer experienceYears) { this.experienceYears = experienceYears; }
     public String getResponseTime() { return responseTime; }
     public void setResponseTime(String responseTime) { this.responseTime = responseTime; }
     public BigDecimal getSuccessRate() { return successRate; }

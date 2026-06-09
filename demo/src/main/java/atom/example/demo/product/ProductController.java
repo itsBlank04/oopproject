@@ -4,10 +4,14 @@ import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Inventory;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
+import atom.example.demo.model.Shop;
 import atom.example.demo.repository.UserRepository;
+import atom.example.demo.repository.ShopRepository;
+import atom.example.demo.service.ShopService;
 import atom.example.demo.product.ProductService;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,10 +32,15 @@ public class ProductController {
 
     private final ProductService productService;
     private final UserRepository userRepository;
+    private final ShopService shopService;
+    private final ShopRepository shopRepository;
 
-    public ProductController(ProductService productService, UserRepository userRepository) {
+    public ProductController(ProductService productService, UserRepository userRepository,
+                             ShopService shopService, ShopRepository shopRepository) {
         this.productService = productService;
         this.userRepository = userRepository;
+        this.shopService = shopService;
+        this.shopRepository = shopRepository;
     }
 
     @GetMapping
@@ -63,6 +72,19 @@ public class ProductController {
         User vendor = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         product.setVendor(vendor);
+
+        Shop shop = null;
+        if (product.getShop() != null && product.getShop().getId() != null) {
+            shop = shopRepository.findById(product.getShop().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("You do not own this shop");
+            }
+        } else {
+            shop = shopService.ensureDefaultShop(userId);
+        }
+        product.setShop(shop);
+
         product.setStatus("ACTIVE");
         return productService.createProduct(product);
     }

@@ -1,28 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
-import { Search, Wrench, Shield, CheckCircle, Star, ArrowRight, Activity } from 'lucide-react'
 
 export default function RepairMarketplacePage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch repair stats
   const { data: stats } = useQuery({
     queryKey: ['repair-stats'],
     queryFn: () => apiClient.get('/api/repair/stats').then(r => r.data),
     staleTime: 60_000,
   })
 
-  // Fetch technicians
   const { data: technicians = [] } = useQuery<any[]>({
     queryKey: ['popular-technicians'],
     queryFn: () => apiClient.get('/api/technicians').then(r => Array.isArray(r.data) ? r.data.slice(0, 3) : []),
     staleTime: 120_000,
   })
 
-  // Fetch categories
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ['categories'],
     queryFn: () => apiClient.get('/api/categories').then(r => r.data),
@@ -36,7 +33,6 @@ export default function RepairMarketplacePage() {
     }
   }
 
-  // Fallback stats if not loaded yet
   const displayStats = stats || {
     totalTechnicians: 12,
     totalRepairs: 45,
@@ -45,59 +41,47 @@ export default function RepairMarketplacePage() {
     totalReviews: 28,
   }
 
-  const steps = [
-    {
-      title: 'Post your request',
-      desc: 'Describe what needs repair, upload photos, and set your availability.',
-      num: '01'
-    },
-    {
-      title: 'Receive custom quotes',
-      desc: 'Local certified technicians bid with detailed estimates and parts lists.',
-      num: '02'
-    },
-    {
-      title: 'Accept & Schedule',
-      desc: 'Choose your technician, verify details, and book your service slot.',
-      num: '03'
-    },
-    {
-      title: 'Release funds & Review',
-      desc: 'Payment is held in escrow until the repair is done. Inspect and complete.',
-      num: '04'
-    }
-  ]
+  const categoryIcons: Record<string, string> = {
+    'Electronics': 'devices',
+    'Appliances': 'kitchen',
+    'Furniture': 'chair',
+    'Automotive': 'directions_car',
+    'Plumbing': 'plumbing',
+    'Electrical': 'electrical_services',
+    'HVAC': 'ac_unit',
+    'Bicycles': 'pedal_bike',
+    'Jewelry': 'diamond',
+    'Clothing': 'checkroom',
+  }
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] text-[#221b16]">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#f0e8df] to-[#f9f5f0] px-6 py-20 lg:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#d7c7b8] bg-white px-4 py-1.5 text-xs font-semibold text-[#8c7564] shadow-sm mb-6">
-            <Activity className="h-3 w-3 text-emerald-600 animate-pulse" />
-            <span>Over {displayStats.completedRepairs}+ successful repairs completed</span>
-          </div>
-          <h1 className="font-[Fraunces] text-4xl font-bold tracking-tight text-[#221b16] sm:text-6xl">
-            Professional & Trusted <br />
-            <span className="text-[#a28672]">On-Demand Repairs</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base text-[#6c5b4f] leading-relaxed">
-            Connect with skilled craftsmen in Bangladesh for appliance servicing, electronics repair, electrical installation, and more. Transparent pricing, escrow protection, and 100% satisfaction guaranteed.
-          </p>
+    <div className="min-h-screen bg-background text-on-surface font-body-md overflow-x-hidden">
+      {/* ═══ Hero Section ═══ */}
+      <section className="relative pt-20 pb-16 overflow-hidden">
+        {/* Decorative blurs */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-24 w-64 h-64 bg-tertiary-container/10 rounded-full blur-3xl" />
 
-          <form onSubmit={handleSearchSubmit} className="mx-auto mt-10 max-w-lg">
-            <div className="relative flex items-center rounded-2xl border border-[#d7c7b8] bg-white p-2 shadow-md">
-              <Search className="h-5 w-5 text-[#8c7564] ml-3" />
+        <div className="max-w-container-max mx-auto px-margin-desktop text-center relative z-10">
+          <h1 className="font-headline-lg text-headline-lg mb-8 max-w-3xl mx-auto">
+            Expert repairs for your essential gear.
+          </h1>
+
+          {/* Search bar */}
+          <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative group">
+            <div className="absolute inset-0 bg-primary-container/20 blur-2xl group-hover:bg-primary-container/30 transition-all duration-500 rounded-full" />
+            <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant p-2 rounded-full shadow-lg">
+              <span className="material-symbols-outlined ml-6 text-outline">search</span>
               <input
                 type="text"
-                placeholder="Search technicians by specialization, name or area..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent px-3 py-2 text-sm text-[#221b16] outline-none placeholder:text-[#8a7a6a]"
+                className="w-full bg-transparent border-none focus:ring-0 px-4 py-4 font-body-lg text-body-lg text-on-surface placeholder-outline outline-none"
+                placeholder="What needs fixing? (e.g. Broken iPhone screen)"
               />
               <button
                 type="submit"
-                className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028]"
+                className="bg-primary text-on-primary px-8 py-4 rounded-full font-label-md text-label-md hover:scale-105 active:scale-95 transition-transform"
               >
                 Search
               </button>
@@ -107,13 +91,13 @@ export default function RepairMarketplacePage() {
           <div className="mt-8 flex justify-center gap-4">
             <Link
               to="/repair/requests"
-              className="rounded-xl bg-[#221b16] px-6 py-3 text-sm font-semibold text-[#f9f5f0] transition hover:bg-[#3a3028] shadow-sm"
+              className="bg-primary text-on-primary px-8 py-4 rounded-full font-label-md text-label-md hover:bg-primary/90 transition-colors shadow-sm"
             >
               Post a Repair Request
             </Link>
             <Link
               to="/repair/technicians"
-              className="rounded-xl border border-[#d7c7b8] bg-white px-6 py-3 text-sm font-semibold text-[#221b16] transition hover:bg-[#f9f5f0]"
+              className="bg-surface-container-lowest border border-outline-variant px-8 py-4 rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors"
             >
               Browse Technicians
             </Link>
@@ -121,178 +105,180 @@ export default function RepairMarketplacePage() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="border-y border-[#e4d6c8] bg-white py-8 px-6">
-        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <p className="font-[Fraunces] text-3xl font-bold text-[#221b16]">{displayStats.completedRepairs}</p>
-            <p className="mt-1 text-xs font-semibold text-[#8c7564] uppercase tracking-wider">Repairs Done</p>
-          </div>
-          <div>
-            <p className="font-[Fraunces] text-3xl font-bold text-[#221b16]">{displayStats.totalTechnicians}</p>
-            <p className="mt-1 text-xs font-semibold text-[#8c7564] uppercase tracking-wider">Certified Techs</p>
-          </div>
-          <div>
-            <p className="font-[Fraunces] text-3xl font-bold text-[#221b16]">{displayStats.avgRating} ★</p>
-            <p className="mt-1 text-xs font-semibold text-[#8c7564] uppercase tracking-wider">Average Rating</p>
-          </div>
-          <div>
-            <p className="font-[Fraunces] text-3xl font-bold text-[#221b16]">{displayStats.totalReviews}</p>
-            <p className="mt-1 text-xs font-semibold text-[#8c7564] uppercase tracking-wider">Customer Reviews</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Grid */}
-      <section className="px-6 py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center md:text-left md:flex md:items-end md:justify-between mb-10">
-            <div>
-              <h2 className="font-[Fraunces] text-3xl font-bold text-[#221b16]">Explore Categories</h2>
-              <p className="mt-2 text-sm text-[#8c7564]">Find specialists for every repair type</p>
-            </div>
-            <Link to="/repair/technicians" className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[#221b16] hover:underline">
-              View all specialist types <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((c: any) => (
+      {/* ═══ Quick Category Selection ═══ */}
+      <section className="py-12 bg-surface-container-low">
+        <div className="max-w-container-max mx-auto px-margin-desktop">
+          <div className="flex flex-wrap justify-center gap-12 md:gap-20">
+            {(categories.length > 0 ? categories.slice(0, 6) : [
+              { id: 1, name: 'Electronics' },
+              { id: 2, name: 'Appliances' },
+              { id: 3, name: 'Furniture' },
+              { id: 4, name: 'Bicycles' },
+              { id: 5, name: 'Jewelry' },
+            ]).map((c: any) => (
               <Link
                 key={c.id}
                 to={`/repair/technicians?specialization=${encodeURIComponent(c.name)}`}
-                className="group flex flex-col justify-between rounded-2xl border border-[#e4d6c8] bg-white p-5 transition hover:border-[#221b16] hover:shadow-md"
+                className="flex flex-col items-center gap-4 group cursor-pointer"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f9f5f0] text-[#221b16] group-hover:bg-[#221b16] group-hover:text-[#f9f5f0] transition-colors">
-                  <Wrench className="h-5 w-5" />
+                <div className="w-20 h-20 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:translate-y-[-4px] transition-all duration-300">
+                  <span className="material-symbols-outlined text-primary scale-125">
+                    {categoryIcons[c.name] || 'build'}
+                  </span>
                 </div>
-                <div className="mt-6">
-                  <h3 className="font-semibold text-sm text-[#221b16] group-hover:text-[#a28672] transition-colors">{c.name}</h3>
-                  <p className="mt-1 text-xs text-[#8c7564]">{c.description || 'Certified specialists'}</p>
-                </div>
+                <span className="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">
+                  {c.name}
+                </span>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it Works */}
-      <section className="bg-white px-6 py-16 border-t border-[#e4d6c8]">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-[Fraunces] text-3xl font-bold text-[#221b16]">How AtomDrops Repairs Works</h2>
-            <p className="mt-3 text-sm text-[#8c7564]">A seamless, transparent and secure process from posting to completion</p>
+      {/* ═══ Stats Bar ═══ */}
+      <section className="py-10 bg-surface-container-lowest border-y border-outline-variant/30">
+        <div className="max-w-container-max mx-auto px-margin-desktop grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <p className="font-headline-md text-headline-md text-on-surface">{displayStats.completedRepairs}</p>
+            <p className="mt-1 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Repairs Done</p>
           </div>
-
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, idx) => (
-              <div key={idx} className="relative">
-                <div className="font-[Fraunces] text-5xl font-extrabold text-[#f0e8df]">{s.num}</div>
-                <h3 className="mt-4 font-semibold text-[#221b16]">{s.title}</h3>
-                <p className="mt-2 text-xs text-[#6c5b4f] leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
+          <div>
+            <p className="font-headline-md text-headline-md text-on-surface">{displayStats.totalTechnicians}</p>
+            <p className="mt-1 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Certified Techs</p>
           </div>
-        </div>
-      </section>
-
-      {/* Premium Features Banner */}
-      <section className="px-6 py-16">
-        <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#221b16] to-[#3a3028] text-[#f9f5f0] p-8 md:p-12 relative overflow-hidden shadow-xl">
-          <div className="max-w-xl relative z-10">
-            <h2 className="font-[Fraunces] text-3xl font-bold leading-tight">Peace of Mind, Guaranteed.</h2>
-            <p className="mt-4 text-sm text-[#d7c7b8] leading-relaxed">
-              Every job booked through AtomDrops is covered by our service guarantees. Customer funds are held securely in escrow and only released when you verify the work order is successfully resolved.
-            </p>
-
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-amber-400" />
-                <span className="text-xs font-medium">Safe Escrow Protection System</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-amber-400" />
-                <span className="text-xs font-medium">Verified, Rated & Background-Checked Craftsmen</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Star className="h-5 w-5 text-amber-400" />
-                <span className="text-xs font-medium">Service warranty included on completed work orders</span>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <Link to="/repair/requests" className="inline-block rounded-xl bg-white px-5 py-3 text-xs font-bold text-[#221b16] transition hover:bg-[#f9f5f0]">
-                Book a Repair Now
-              </Link>
-            </div>
+          <div>
+            <p className="font-headline-md text-headline-md text-on-surface">{displayStats.avgRating} ★</p>
+            <p className="mt-1 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Average Rating</p>
           </div>
-          <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-12 translate-y-12">
-            <Wrench className="h-80 w-80" />
+          <div>
+            <p className="font-headline-md text-headline-md text-on-surface">{displayStats.totalReviews}</p>
+            <p className="mt-1 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Customer Reviews</p>
           </div>
         </div>
       </section>
 
-      {/* Featured Technicians */}
-      <section className="bg-white px-6 py-16 border-t border-[#e4d6c8]">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-end justify-between mb-10">
+      {/* ═══ Featured Technicians ═══ */}
+      <section className="pb-section-gap pt-16">
+        <div className="max-w-container-max mx-auto px-margin-desktop">
+          <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="font-[Fraunces] text-3xl font-bold text-[#221b16]">Featured Technicians</h2>
-              <p className="mt-2 text-sm text-[#8c7564]">Highly rated service experts available now</p>
+              <h2 className="font-headline-md text-headline-md mb-2">Top-Rated Pros</h2>
+              <p className="text-on-surface-variant max-w-lg">
+                Certified technicians with guaranteed workmanship and premium parts.
+              </p>
             </div>
-            <Link to="/repair/technicians" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#221b16] hover:underline">
-              View All <ArrowRight className="h-4 w-4" />
+            <Link
+              to="/repair/technicians"
+              className="text-primary font-bold flex items-center gap-2 group hover:gap-4 transition-all duration-300"
+            >
+              View all experts <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {technicians.length === 0 ? (
-              <div className="col-span-full py-8 text-center text-xs text-[#8c7564]">
-                No technicians active at the moment.
+              <div className="col-span-full py-12 text-center text-on-surface-variant">
+                <span className="material-symbols-outlined text-5xl text-primary mb-4 block">engineering</span>
+                <p className="font-label-md text-label-md">No technicians active at the moment.</p>
               </div>
             ) : (
               technicians.map((t: any) => (
-                <div key={t.id} className="rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0]/50 p-5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      {t.photoUrl ? (
-                        <img src={t.photoUrl} alt="" className="h-12 w-12 rounded-full object-cover border border-[#e4d6c8]" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#221b16] text-sm font-bold text-[#f9f5f0]">
-                          {t.user?.displayName?.[0] || '?'}
-                        </div>
-                      )}
+                <Link
+                  key={t.id}
+                  to={`/repair/technicians/${t.id}`}
+                  className="bg-surface-container-lowest rounded-2xl overflow-hidden group hover:shadow-[0px_12px_30px_rgba(15,23,42,0.1)] transition-all duration-500 flex flex-col"
+                >
+                  {/* Image header */}
+                  <div className="h-48 relative overflow-hidden bg-surface-container">
+                    {t.photoUrl ? (
+                      <img
+                        src={t.photoUrl}
+                        alt={t.user?.displayName}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-primary-container/20">
+                        <span className="material-symbols-outlined text-6xl text-primary/40">person</span>
+                      </div>
+                    )}
+                    {/* Rating badge */}
+                    <div className="absolute top-4 right-4 bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                      <span className="material-symbols-outlined text-tertiary text-sm icon-fill">star</span>
+                      <span className="text-label-md font-bold">{t.ratingAvg ? t.ratingAvg.toFixed(1) : '5.0'}</span>
+                    </div>
+                  </div>
+
+                  {/* Card body */}
+                  <div className="p-6 flex-grow flex flex-col">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="font-semibold text-sm text-[#221b16]">{t.user?.displayName}</h3>
-                        <p className="text-xs text-[#8c7564]">{t.specialization}</p>
+                        <h3 className="font-headline-sm text-headline-sm">{t.user?.displayName}</h3>
+                        <p className="text-on-surface-variant text-label-md">
+                          {t.experienceYears ? `${t.experienceYears} years experience` : t.specialization}
+                        </p>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        t.level === 'EXPERT'
+                          ? 'bg-primary-container/20 text-primary-fixed-dim'
+                          : 'bg-tertiary-container/20 text-tertiary'
+                      }`}>
+                        {t.level === 'EXPERT' ? 'Master Tech' : t.level}
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${t.level === 'EXPERT' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                        {t.level}
-                      </span>
-                      <span className="rounded-full border border-[#d7c7b8] px-2.5 py-0.5 text-[10px] text-[#8c7564]">
-                        ★ {t.ratingAvg ? t.ratingAvg.toFixed(1) : '5.0'} ({t.completedJobs || 0} jobs)
-                      </span>
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {t.specialization && (
+                        <span className="bg-surface-container px-3 py-1 rounded-full text-label-sm text-on-surface-variant">
+                          {t.specialization}
+                        </span>
+                      )}
+                      {t.certifications && (
+                        <span className="bg-surface-container px-3 py-1 rounded-full text-label-sm text-on-surface-variant">
+                          {t.certifications.split(',')[0]}
+                        </span>
+                      )}
                     </div>
 
-                    {t.bio && (
-                      <p className="mt-3 text-xs text-[#6c5b4f] line-clamp-2 italic">
-                        "{t.bio}"
-                      </p>
-                    )}
+                    <button className="w-full mt-auto bg-primary text-on-primary py-4 rounded-xl font-label-md hover:bg-primary/90 transition-colors">
+                      Get Quote
+                    </button>
                   </div>
-
-                  <div className="mt-5 pt-4 border-t border-[#e4d6c8]/60 flex items-center justify-between">
-                    <span className="text-[11px] text-[#8c7564]">📍 {t.serviceArea || 'Dhaka'}</span>
-                    <Link to={`/repair/technicians/${t.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-[#221b16] hover:underline">
-                      Profile <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
+                </Link>
               ))
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Guarantee Section (Trust Strip) ═══ */}
+      <section className="py-16 border-y border-outline-variant">
+        <div className="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="flex gap-4">
+            <span className="material-symbols-outlined text-primary text-4xl">verified_user</span>
+            <div>
+              <h4 className="font-bold mb-1">AtomDrops Verified</h4>
+              <p className="text-on-surface-variant text-body-md">
+                Every technician undergoes a rigorous 50-point background and skills check.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <span className="material-symbols-outlined text-primary text-4xl">security</span>
+            <div>
+              <h4 className="font-bold mb-1">Repair Protection</h4>
+              <p className="text-on-surface-variant text-body-md">
+                All services include a 12-month AtomDrops ecosystem warranty on parts and labor.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <span className="material-symbols-outlined text-primary text-4xl">payments</span>
+            <div>
+              <h4 className="font-bold mb-1">Fixed-Price Quotes</h4>
+              <p className="text-on-surface-variant text-body-md">
+                No hidden fees. The price you agree on is the final price you pay, guaranteed.
+              </p>
+            </div>
           </div>
         </div>
       </section>

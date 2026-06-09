@@ -47,11 +47,17 @@ public class ReviewController {
         if (body.containsKey("revieweeId")) {
             User reviewee = userRepository.findById(Long.valueOf(body.get("revieweeId").toString()))
                 .orElseThrow(() -> new IllegalArgumentException("Reviewee not found"));
+            if (reviewee.getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot review yourself");
+            }
             review.setReviewee(reviewee);
         }
         if (body.containsKey("productId")) {
             Product product = productRepository.findById(Long.valueOf(body.get("productId").toString()))
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            if (product.getVendor() != null && product.getVendor().getId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot review your own product");
+            }
             review.setProduct(product);
             if (body.get("revieweeId") == null && product.getVendor() != null) {
                 review.setReviewee(product.getVendor());

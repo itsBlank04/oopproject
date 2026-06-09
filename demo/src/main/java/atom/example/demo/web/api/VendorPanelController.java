@@ -6,6 +6,7 @@ import atom.example.demo.model.Order;
 import atom.example.demo.model.OrderItem;
 import atom.example.demo.model.Product;
 import atom.example.demo.model.User;
+import atom.example.demo.model.Shop;
 import atom.example.demo.model.VendorCommission;
 import atom.example.demo.model.VendorProfile;
 import atom.example.demo.repository.AuctionRepository;
@@ -14,7 +15,10 @@ import atom.example.demo.repository.ProductRepository;
 import atom.example.demo.repository.UserRepository;
 import atom.example.demo.repository.VendorCommissionRepository;
 import atom.example.demo.repository.VendorProfileRepository;
+import atom.example.demo.repository.ShopRepository;
 import atom.example.demo.service.OrderService;
+import atom.example.demo.service.ShopService;
+import atom.example.demo.service.TrustService;
 import jakarta.servlet.http.HttpSession;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -22,12 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/vendor")
@@ -40,12 +39,16 @@ public class VendorPanelController {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final OrderService orderService;
+    private final ShopService shopService;
+    private final ShopRepository shopRepository;
+    private final TrustService trustService;
 
     public VendorPanelController(VendorProfileRepository vendorProfileRepository,
             AuctionRepository auctionRepository, ProductRepository productRepository,
             VendorCommissionRepository vendorCommissionRepository,
             OrderItemRepository orderItemRepository, UserRepository userRepository,
-            OrderService orderService) {
+            OrderService orderService, ShopService shopService, ShopRepository shopRepository,
+            TrustService trustService) {
         this.vendorProfileRepository = vendorProfileRepository;
         this.auctionRepository = auctionRepository;
         this.productRepository = productRepository;
@@ -53,37 +56,86 @@ public class VendorPanelController {
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.orderService = orderService;
+        this.shopService = shopService;
+        this.shopRepository = shopRepository;
+        this.trustService = trustService;
     }
 
     @GetMapping("/dashboard")
-    public Map<String, Object> dashboard(HttpSession session) {
+    public Map<String, Object> dashboard(@RequestParam(required = false) Long shopId, HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        
+        shopService.ensureDefaultShop(userId);
         VendorProfile profile = getOrCreateProfile(userId);
-        List<Auction> auctions = auctionRepository.findByVendorId(userId);
+        List<Shop> shops = shopRepository.findByVendorId(userId);
+
+        List<Auction> auctions;
+        List<Product> products;
+        List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
+
+        if (shopId != null) {
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("Not your shop");
+            }
+            auctions = auctionRepository.findByShopId(shopId);
+            products = productRepository.findByShopId(shopId);
+            commissions = commissions.stream()
+                .filter(c -> c.getOrderItem().getProduct() != null &&
+                             c.getOrderItem().getProduct().getShop() != null &&
+                             c.getOrderItem().getProduct().getShop().getId().equals(shopId))
+                .toList();
+        } else {
+            auctions = auctionRepository.findByVendorId(userId);
+            products = productRepository.findByVendorId(userId);
+        }
+
         long activeAuctions = auctions.stream().filter(a -> "ACTIVE".equals(a.getStatus())).count();
         long pendingAuctions = auctions.stream().filter(a -> "CREATED".equals(a.getStatus())).count();
-        List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
         long totalOrders = commissions.size();
         long pendingCommissions = commissions.stream().filter(c -> "PENDING".equals(c.getStatus())).count();
         double totalEarned = commissions.stream().filter(c -> "PAID".equals(c.getStatus())).mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum();
-        long totalProducts = productRepository.countByVendorId(userId);
-        return Map.of("vendorId", profile.getId(), "shopName", profile.getShopName(),
-                "verificationStatus", profile.getVerificationStatus(),
-                "totalAuctions", auctions.size(), "activeAuctions", activeAuctions,
-                "pendingAuctions", pendingAuctions, "totalProducts", totalProducts,
-                "totalOrders", totalOrders, "pendingCommissions", pendingCommissions,
-                "totalEarned", totalEarned);
+        long totalProducts = products.stream().filter(p -> p.getDeletedAt() == null).count();
+
+        Map<String, Object> dashboardData = new LinkedHashMap<>();
+        dashboardData.put("vendorId", profile.getId());
+        dashboardData.put("shopName", profile.getShopName());
+        dashboardData.put("verificationStatus", profile.getVerificationStatus());
+        dashboardData.put("totalAuctions", auctions.size());
+        dashboardData.put("activeAuctions", activeAuctions);
+        dashboardData.put("pendingAuctions", pendingAuctions);
+        dashboardData.put("totalProducts", totalProducts);
+        dashboardData.put("totalOrders", totalOrders);
+        dashboardData.put("pendingCommissions", pendingCommissions);
+        dashboardData.put("totalEarned", totalEarned);
+        dashboardData.put("shops", shops);
+        return dashboardData;
     }
 
     @GetMapping("/orders")
-    public List<Map<String, Object>> orders(HttpSession session) {
+    public List<Map<String, Object>> orders(@RequestParam(required = false) Long shopId, HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        getOrCreateProfile(userId);
+        
+        shopService.ensureDefaultShop(userId);
         List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
+        if (shopId != null) {
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("Not your shop");
+            }
+            commissions = commissions.stream()
+                .filter(c -> c.getOrderItem().getProduct() != null &&
+                             c.getOrderItem().getProduct().getShop() != null &&
+                             c.getOrderItem().getProduct().getShop().getId().equals(shopId))
+                .toList();
+        }
+
         List<Map<String, Object>> result = commissions.stream().map(c -> {
             Map<String, Object> m = new java.util.HashMap<>();
             m.put("id", c.getId());
@@ -102,10 +154,23 @@ public class VendorPanelController {
     }
 
     @GetMapping("/products")
-    public List<Product> products(HttpSession session) {
+    public List<Product> products(@RequestParam(required = false) Long shopId, HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        
+        shopService.ensureDefaultShop(userId);
+        if (shopId != null) {
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("Not your shop");
+            }
+            return productRepository.findByShopId(shopId).stream()
+                .filter(p -> p.getDeletedAt() == null)
+                .toList();
+        }
+
         return productRepository.findByVendorId(userId).stream()
             .filter(p -> p.getDeletedAt() == null)
             .toList();
@@ -130,11 +195,20 @@ public class VendorPanelController {
     }
 
     @GetMapping("/auctions")
-    public List<Auction> auctions(HttpSession session) {
+    public List<Auction> auctions(@RequestParam(required = false) Long shopId, HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
-        getOrCreateProfile(userId);
+        
+        shopService.ensureDefaultShop(userId);
+        if (shopId != null) {
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("Not your shop");
+            }
+            return auctionRepository.findByShopId(shopId);
+        }
         return auctionRepository.findByVendorId(userId);
     }
 
@@ -171,40 +245,110 @@ public class VendorPanelController {
     }
 
     @GetMapping("/analytics")
-    public Map<String, Object> analytics(HttpSession session) {
+    public Map<String, Object> analytics(@RequestParam(required = false) Long shopId,
+                                          @RequestParam(required = false, defaultValue = "monthly") String timeRange,
+                                          HttpSession session) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
         Long userId = SecurityConfig.getSessionUserId();
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        
+        shopService.ensureDefaultShop(userId);
         List<VendorCommission> commissions = vendorCommissionRepository.findByVendorId(userId);
+        if (shopId != null) {
+            Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            if (!shop.getVendor().getId().equals(userId)) {
+                throw new SecurityException("Not your shop");
+            }
+            commissions = commissions.stream()
+                .filter(c -> c.getOrderItem().getProduct() != null &&
+                             c.getOrderItem().getProduct().getShop() != null &&
+                             c.getOrderItem().getProduct().getShop().getId().equals(shopId))
+                .toList();
+        }
 
-        // Monthly sales grouped by year-month
-        Map<YearMonth, List<VendorCommission>> byMonth = commissions.stream()
-            .collect(Collectors.groupingBy(
-                c -> YearMonth.from(c.getCreatedAt().atZone(java.time.ZoneOffset.UTC)),
-                LinkedHashMap::new,
-                Collectors.toList()
-            ));
-        List<Map<String, Object>> monthlySales = new ArrayList<>();
-        for (var entry : byMonth.entrySet()) {
-            YearMonth ym = entry.getKey();
-            List<VendorCommission> monthComms = entry.getValue();
-            double totalSale = monthComms.stream().mapToDouble(c -> c.getSaleAmountBdt().doubleValue()).sum();
-            double totalNet = monthComms.stream().mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum();
-            double totalCommission = monthComms.stream().mapToDouble(c -> c.getCommissionBdt().doubleValue()).sum();
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("month", ym.getMonthValue());
-            m.put("year", ym.getYear());
-            m.put("label", ym.getMonth().toString().substring(0, 3) + " " + String.valueOf(ym.getYear()).substring(2));
-            m.put("totalSale", totalSale);
-            m.put("totalCommission", totalCommission);
-            m.put("netPayout", totalNet);
-            m.put("orderCount", monthComms.size());
-            monthlySales.add(m);
+        java.time.Instant now = java.time.Instant.now();
+        java.time.ZoneOffset utc = java.time.ZoneOffset.UTC;
+
+        // Filter commissions by time range
+        List<VendorCommission> filteredCommissions;
+        if ("daily".equals(timeRange)) {
+            filteredCommissions = commissions.stream()
+                .filter(c -> c.getCreatedAt().isAfter(now.minus(java.time.Duration.ofDays(30))))
+                .toList();
+        } else if ("weekly".equals(timeRange)) {
+            filteredCommissions = commissions.stream()
+                .filter(c -> c.getCreatedAt().isAfter(now.minus(java.time.Duration.ofDays(90))))
+                .toList();
+        } else {
+            filteredCommissions = commissions;
+        }
+
+        // Daily or weekly or monthly sales grouping
+        List<Map<String, Object>> salesData;
+        if ("daily".equals(timeRange)) {
+            // Group by day
+            Map<java.time.LocalDate, List<VendorCommission>> byDay = filteredCommissions.stream()
+                .collect(Collectors.groupingBy(
+                    c -> c.getCreatedAt().atZone(utc).toLocalDate(),
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            salesData = new ArrayList<>();
+            for (var entry : byDay.entrySet()) {
+                var dayComms = entry.getValue();
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("label", entry.getKey().toString());
+                m.put("totalSale", dayComms.stream().mapToDouble(c -> c.getSaleAmountBdt().doubleValue()).sum());
+                m.put("netPayout", dayComms.stream().mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum());
+                m.put("orderCount", dayComms.size());
+                salesData.add(m);
+            }
+        } else if ("weekly".equals(timeRange)) {
+            // Group by ISO week
+            Map<String, List<VendorCommission>> byWeek = filteredCommissions.stream()
+                .collect(Collectors.groupingBy(
+                    c -> {
+                        var zdt = c.getCreatedAt().atZone(utc);
+                        return zdt.getYear() + "-W" + String.format("%02d", zdt.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR));
+                    },
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            salesData = new ArrayList<>();
+            for (var entry : byWeek.entrySet()) {
+                var weekComms = entry.getValue();
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("label", entry.getKey());
+                m.put("totalSale", weekComms.stream().mapToDouble(c -> c.getSaleAmountBdt().doubleValue()).sum());
+                m.put("netPayout", weekComms.stream().mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum());
+                m.put("orderCount", weekComms.size());
+                salesData.add(m);
+            }
+        } else {
+            // Monthly (existing logic)
+            Map<YearMonth, List<VendorCommission>> byMonth = filteredCommissions.stream()
+                .collect(Collectors.groupingBy(
+                    c -> YearMonth.from(c.getCreatedAt().atZone(utc)),
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            salesData = new ArrayList<>();
+            for (var entry : byMonth.entrySet()) {
+                YearMonth ym = entry.getKey();
+                List<VendorCommission> monthComms = entry.getValue();
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("label", ym.getMonth().toString().substring(0, 3) + " " + String.valueOf(ym.getYear()).substring(2));
+                m.put("totalSale", monthComms.stream().mapToDouble(c -> c.getSaleAmountBdt().doubleValue()).sum());
+                m.put("netPayout", monthComms.stream().mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum());
+                m.put("orderCount", monthComms.size());
+                salesData.add(m);
+            }
         }
 
         // Top products by sales
         Map<String, Double> productSales = new LinkedHashMap<>();
-        for (VendorCommission c : commissions) {
+        for (VendorCommission c : filteredCommissions) {
             String name = c.getOrderItem().getProduct() != null ? c.getOrderItem().getProduct().getName() : "N/A";
             productSales.merge(name, c.getSaleAmountBdt().doubleValue(), Double::sum);
         }
@@ -219,18 +363,64 @@ public class VendorPanelController {
             })
             .toList();
 
-        // Low stock products — skip inventory query, just count products
-        List<Product> allProducts = productRepository.findByVendorId(userId).stream()
-            .filter(p -> p.getDeletedAt() == null).toList();
+        // Stock products count
+        List<Product> allProducts;
+        if (shopId != null) {
+            allProducts = productRepository.findByShopId(shopId).stream()
+                .filter(p -> p.getDeletedAt() == null).toList();
+        } else {
+            allProducts = productRepository.findByVendorId(userId).stream()
+                .filter(p -> p.getDeletedAt() == null).toList();
+        }
+
+        // Unique customer count
+        long uniqueCustomers = filteredCommissions.stream()
+            .map(c -> c.getOrderItem().getOrder().getCustomer().getId())
+            .distinct()
+            .count();
+
+        // Most-viewed products — approximated by order frequency
+        Map<String, Long> productOrderCount = new LinkedHashMap<>();
+        for (VendorCommission c : filteredCommissions) {
+            String name = c.getOrderItem().getProduct() != null ? c.getOrderItem().getProduct().getName() : "N/A";
+            productOrderCount.merge(name, 1L, Long::sum);
+        }
+        List<Map<String, Object>> mostViewed = productOrderCount.entrySet().stream()
+            .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+            .limit(5)
+            .map(e -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("name", e.getKey());
+                m.put("orderCount", e.getValue());
+                return m;
+            })
+            .toList();
 
         return Map.of(
-            "monthlySales", monthlySales,
+            "salesData", salesData,
+            "timeRange", timeRange,
             "topProducts", topProducts,
-            "totalRevenue", commissions.stream().filter(c -> "PAID".equals(c.getStatus()))
+            "mostViewedProducts", mostViewed,
+            "totalRevenue", filteredCommissions.stream().filter(c -> "PAID".equals(c.getStatus()))
                 .mapToDouble(c -> c.getNetPayoutBdt().doubleValue()).sum(),
-            "totalOrders", commissions.size(),
+            "totalOrders", filteredCommissions.size(),
             "totalProducts", allProducts.size(),
-            "pendingOrders", commissions.stream().filter(c -> "PENDING".equals(c.getStatus())).count()
+            "pendingOrders", filteredCommissions.stream().filter(c -> "PENDING".equals(c.getStatus())).count(),
+            "uniqueCustomers", uniqueCustomers
+        );
+    }
+
+    @GetMapping("/trust-score")
+    public Map<String, Object> getTrustScore(HttpSession session) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+
+        var ts = trustService.getScore(userId);
+        var events = trustService.getEvents(userId);
+        return Map.of(
+            "score", ts != null ? ts.getScore() : java.math.BigDecimal.valueOf(50),
+            "events", events
         );
     }
 

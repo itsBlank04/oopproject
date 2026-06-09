@@ -72,7 +72,7 @@ public class RepairController {
         if (userId == null) throw new IllegalArgumentException("Not authenticated");
         technicianRepository.findByUserId(userId)
             .orElseThrow(() -> new IllegalArgumentException("Technician profile not found"));
-        return repairRequestRepository.findByStatusOrderByIsEmergencyDescCreatedAtDesc("OPEN");
+        return repairRequestRepository.findByStatusOrderByEmergencyDescCreatedAtDesc("OPEN");
     }
 
     /** Customer's own requests */

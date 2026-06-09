@@ -7,13 +7,16 @@ import atom.example.demo.model.ConditionLevel;
 import atom.example.demo.model.PlatformSetting;
 import atom.example.demo.model.Role;
 import atom.example.demo.model.User;
+import atom.example.demo.model.VendorSubscriptionPlan;
 import atom.example.demo.repository.ConditionLevelRepository;
 import atom.example.demo.repository.PlatformSettingRepository;
 import atom.example.demo.repository.RoleRepository;
 import atom.example.demo.repository.UserRepository;
+import atom.example.demo.repository.VendorSubscriptionPlanRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -28,18 +31,21 @@ public class DataInitializer implements CommandLineRunner {
     private final PlatformSettingRepository platformSettingRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final VendorSubscriptionPlanRepository vendorSubscriptionPlanRepository;
 
     public DataInitializer(RoleRepository roleRepository, CategoryRepository categoryRepository,
                            ConditionLevelRepository conditionLevelRepository,
                            PlatformSettingRepository platformSettingRepository,
                            UserRepository userRepository,
-                           AuthService authService) {
+                           AuthService authService,
+                           VendorSubscriptionPlanRepository vendorSubscriptionPlanRepository) {
         this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
         this.conditionLevelRepository = conditionLevelRepository;
         this.platformSettingRepository = platformSettingRepository;
         this.userRepository = userRepository;
         this.authService = authService;
+        this.vendorSubscriptionPlanRepository = vendorSubscriptionPlanRepository;
     }
 
     @Override
@@ -108,6 +114,20 @@ public class DataInitializer implements CommandLineRunner {
                 ps.setDataType(s[2]);
                 platformSettingRepository.save(ps);
             }
+        }
+
+        // Seed vendor subscription plans
+        if (vendorSubscriptionPlanRepository.count() == 0) {
+            vendorSubscriptionPlanRepository.save(new VendorSubscriptionPlan(
+                "BASIC", "Vendor Basic", 1, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "[\"1 shop forever free\"]"));
+            vendorSubscriptionPlanRepository.save(new VendorSubscriptionPlan(
+                "BUILDER", "Vendor Builder", 2, new BigDecimal("499.00"), new BigDecimal("4999.00"), new BigDecimal("15.00"), "[\"2 shops\"]"));
+            vendorSubscriptionPlanRepository.save(new VendorSubscriptionPlan(
+                "PRO", "Vendor Pro", 4, new BigDecimal("999.00"), new BigDecimal("9599.00"), new BigDecimal("20.00"), "[\"4 shops\", \"Promotions\"]"));
+            vendorSubscriptionPlanRepository.save(new VendorSubscriptionPlan(
+                "BUSINESS", "Vendor Business", 7, new BigDecimal("1999.00"), new BigDecimal("17999.00"), new BigDecimal("25.00"), "[\"7 shops\", \"Promotions\", \"Priority Support\", \"Staff Management\"]"));
+            vendorSubscriptionPlanRepository.save(new VendorSubscriptionPlan(
+                "ENTERPRISE", "Vendor Enterprise", -1, new BigDecimal("4999.00"), new BigDecimal("47999.00"), new BigDecimal("20.00"), "[\"Unlimited shops\", \"Staff Management\", \"Priority Support\"]"));
         }
     }
 }

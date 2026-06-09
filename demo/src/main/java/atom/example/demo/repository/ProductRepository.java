@@ -13,6 +13,8 @@ import org.springframework.data.repository.query.Param;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByVendorId(Long vendorId);
     long countByVendorId(Long vendorId);
+    List<Product> findByShopId(Long shopId);
+    long countByShopId(Long shopId);
     Page<Product> findByStatus(String status, Pageable pageable);
 
     @Query(value = "SELECT * FROM products p WHERE p.deleted_at IS NULL AND p.status = 'ACTIVE' "

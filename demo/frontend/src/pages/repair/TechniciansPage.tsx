@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
-import { Search, Briefcase, ArrowRight, ShieldCheck, ChevronRight } from 'lucide-react'
 
 export default function TechniciansPage() {
   const [searchParams] = useSearchParams()
@@ -38,35 +38,35 @@ export default function TechniciansPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#f9f5f0] px-6 py-10 text-[#221b16]">
-      <div className="mx-auto max-w-6xl">
+    <div className="min-h-screen bg-background px-margin-mobile md:px-margin-desktop py-12 text-on-surface">
+      <div className="mx-auto max-w-container-max">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-[#8c7564] font-medium mb-6">
-          <Link to="/repair" className="hover:text-[#221b16] transition">Repair Hub</Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="text-[#221b16]">Technicians</span>
+        <div className="flex items-center gap-1 text-label-sm text-on-surface-variant font-medium mb-8">
+          <Link to="/repair" className="hover:text-primary transition">Repair Hub</Link>
+          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+          <span className="text-primary font-bold">Technicians</span>
         </div>
 
         {/* Heading */}
-        <div className="text-center max-w-xl mx-auto mb-10">
-          <h1 className="font-[Fraunces] text-3xl font-bold text-[#221b16] sm:text-4xl">Expert Craftsmen</h1>
-          <p className="mt-2 text-xs text-[#8c7564]">Find verified, background-checked repair specialists in Bangladesh</p>
+        <div className="text-center max-w-xl mx-auto mb-12">
+          <h1 className="font-headline-lg text-headline-lg-mobile md:text-headline-sm text-on-surface mb-2 font-bold">Expert Craftsmen</h1>
+          <p className="text-body-md text-on-surface-variant">Find verified, background-checked repair specialists in Bangladesh</p>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="rounded-3xl border border-[#e4d6c8] bg-white p-5 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-sm mb-10">
+          <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
             {/* Category Quick Tags */}
-            <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
               {specs.map(s => (
                 <button
                   key={s.name}
                   onClick={() => setSpec(s.value)}
-                  className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider transition ${
+                  className={`rounded-full px-4 py-2 text-label-sm font-semibold transition ${
                     spec === s.value
-                      ? 'bg-[#221b16] text-[#f9f5f0]'
-                      : 'border border-[#d7c7b8] text-[#221b16] bg-transparent hover:bg-[#f9f5f0]'
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'border border-outline-variant text-on-surface-variant bg-transparent hover:bg-surface-container-low'
                   }`}
                 >
                   {s.name}
@@ -75,14 +75,14 @@ export default function TechniciansPage() {
             </div>
 
             {/* Search Input */}
-            <div className="relative w-full sm:w-80 flex items-center border border-[#d7c7b8] bg-[#f9f5f0] rounded-xl px-3 py-2 text-xs">
-              <Search className="h-4 w-4 text-[#8c7564]" />
+            <div className="relative w-full md:w-96 flex items-center border border-outline-variant bg-surface-bright rounded-xl px-4 py-3 text-body-md">
+              <span className="material-symbols-outlined text-outline mr-2 text-[20px]">search</span>
               <input
                 type="text"
-                placeholder="Search by name, specialization, keywords..."
+                placeholder="Search by name, specialization..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent ml-2 text-[#221b16] placeholder:text-[#8a7a6a] outline-none"
+                className="w-full bg-transparent text-on-surface placeholder:text-outline outline-none"
               />
             </div>
           </div>
@@ -90,80 +90,84 @@ export default function TechniciansPage() {
 
         {/* Tech list container */}
         {isLoading && filteredTechnicians.length === 0 ? (
-          <div className="mt-16 text-center text-xs text-[#8c7564]">
-            <div className="animate-spin h-5 w-5 border-2 border-[#221b16] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <div className="mt-16 text-center text-body-md text-on-surface-variant">
+            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
             Searching active craftsmen ledger...
           </div>
         ) : filteredTechnicians.length === 0 ? (
-          <div className="mt-16 text-center text-xs text-[#8c7564]">
+          <div className="mt-16 text-center text-body-md text-on-surface-variant py-12 bg-surface-container-lowest rounded-2xl border border-outline-variant/30">
             No technicians matching criteria found. Try resetting filters.
           </div>
         ) : (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filteredTechnicians.map((t: any) => (
-              <div key={t.id} className="rounded-3xl border border-[#e4d6c8] bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-[#221b16]/40 transition duration-200">
+              <div key={t.id} className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-sm flex flex-col justify-between hover:shadow-[0px_12px_30px_rgba(15,23,42,0.1)] hover:border-primary-container transition-all duration-300">
                 <div>
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       {t.photoUrl ? (
-                        <img src={t.photoUrl} alt="" className="h-12 w-12 rounded-full object-cover border border-[#e4d6c8]" />
+                        <img src={t.photoUrl} alt="" className="h-14 w-14 rounded-full object-cover border border-outline-variant shadow-sm" />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#221b16] text-sm font-bold text-[#f9f5f0]">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary text-base font-bold">
                           {t.user?.displayName?.[0] || '?'}
                         </div>
                       )}
                       <div>
-                        <h3 className="font-semibold text-sm text-[#221b16]">{t.user?.displayName}</h3>
-                        <p className="text-xs text-[#8c7564]">{t.specialization}</p>
+                        <h3 className="font-semibold text-body-md text-on-surface">{t.user?.displayName}</h3>
+                        <p className="text-label-md text-on-surface-variant">{t.specialization}</p>
                       </div>
                     </div>
                     
-                    <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold ${
-                      t.level === 'EXPERT' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                    <span className={`rounded-full px-3 py-1 text-label-sm font-bold ${
+                      t.level === 'EXPERT' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                     }`}>
-                      {t.level || 'VERIFIED'}
+                      {t.level === 'EXPERT' ? 'Master Tech' : (t.level || 'VERIFIED')}
                     </span>
                   </div>
 
                   {/* Rating / Completed jobs stats row */}
-                  <div className="mt-4 flex flex-wrap gap-2 text-[10px] text-[#6c5b4f]">
-                    <span className="flex items-center gap-1 rounded bg-[#f9f5f0] border border-[#e4d6c8] px-2 py-0.5 font-medium">
-                      ★ {t.ratingAvg ? t.ratingAvg.toFixed(1) : '5.0'}
+                  <div className="mt-6 flex flex-wrap gap-2 text-label-sm">
+                    <span className="flex items-center gap-1 rounded bg-surface-container-low px-2.5 py-1 font-medium border border-outline-variant/10 text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[16px] text-tertiary icon-fill">star</span>
+                      {t.ratingAvg ? t.ratingAvg.toFixed(1) : '5.0'}
                     </span>
-                    <span className="flex items-center gap-1 rounded bg-[#f9f5f0] border border-[#e4d6c8] px-2 py-0.5 font-medium">
-                      <Briefcase className="h-3 w-3" /> {t.completedJobs || 0} repairs
+                    <span className="flex items-center gap-1 rounded bg-surface-container-low px-2.5 py-1 font-medium border border-outline-variant/10 text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[16px]">handyman</span>
+                      {t.completedJobs || 0} repairs
                     </span>
-                    <span className="flex items-center gap-1 rounded bg-[#f9f5f0] border border-[#e4d6c8] px-2 py-0.5 font-medium">
-                      <ShieldCheck className="h-3 w-3 text-emerald-600" /> {t.experienceYears || 3}+ yrs exp.
+                    <span className="flex items-center gap-1 rounded bg-surface-container-low px-2.5 py-1 font-medium border border-outline-variant/10 text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+                      {t.experienceYears || 3}+ yrs exp
                     </span>
                   </div>
 
                   {t.bio && (
-                    <p className="mt-4 text-xs text-[#6c5b4f] line-clamp-3 leading-relaxed italic">
+                    <p className="mt-5 text-body-md text-on-surface-variant line-clamp-3 leading-relaxed italic">
                       "{t.bio}"
                     </p>
                   )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-[#e4d6c8]/60 flex items-center justify-between gap-4">
+                <div className="mt-6 pt-5 border-t border-outline-variant/20 flex items-center justify-between gap-4">
                   {t.serviceArea && (
-                    <span className="text-[10px] text-[#8c7564] flex items-center gap-1 max-w-[120px] truncate" title={t.serviceArea}>
-                      📍 {t.serviceArea}
+                    <span className="text-label-sm text-on-surface-variant flex items-center gap-1 max-w-[130px] truncate" title={t.serviceArea}>
+                      <span className="material-symbols-outlined text-[16px]">pin_drop</span>
+                      {t.serviceArea}
                     </span>
                   )}
                   
                   <div className="flex gap-2">
                     <Link
                       to={`/repair/technicians/${t.id}`}
-                      className="rounded-xl border border-[#d7c7b8] px-3.5 py-2 text-[11px] font-semibold text-[#221b16] hover:bg-[#f9f5f0] transition text-center"
+                      className="rounded-xl border border-outline-variant px-4 py-2.5 text-label-md font-semibold text-on-surface hover:bg-surface-container transition text-center"
                     >
-                      View Profile
+                      Profile
                     </Link>
                     <Link
                       to={`/repair/requests?open=true&techId=${t.id}&techName=${encodeURIComponent(t.user?.displayName || '')}`}
-                      className="rounded-xl bg-[#221b16] px-3.5 py-2 text-[11px] font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition text-center inline-flex items-center gap-1"
+                      className="rounded-xl bg-primary px-4 py-2.5 text-label-md font-semibold text-on-primary hover:bg-primary/95 transition text-center inline-flex items-center gap-1 shadow-sm hover:scale-[1.02] active:scale-95"
                     >
-                      Book <ArrowRight className="h-3 w-3" />
+                      Book <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                     </Link>
                   </div>
                 </div>
@@ -175,3 +179,4 @@ export default function TechniciansPage() {
     </div>
   )
 }
+

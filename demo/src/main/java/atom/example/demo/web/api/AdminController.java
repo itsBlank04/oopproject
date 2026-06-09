@@ -16,11 +16,14 @@ import atom.example.demo.model.Review;
 import atom.example.demo.model.Role;
 import atom.example.demo.model.RoleUpgrade;
 import atom.example.demo.model.ServiceListing;
+import atom.example.demo.model.Shop;
 import atom.example.demo.model.SystemNotification;
 import atom.example.demo.model.TrustScore;
 import atom.example.demo.model.UsedListing;
 import atom.example.demo.model.User;
 import atom.example.demo.model.VendorProfile;
+import atom.example.demo.model.VendorSubscriptionDeal;
+import atom.example.demo.model.VendorSubscriptionPlan;
 import atom.example.demo.repository.AnalyticsSnapshotRepository;
 import atom.example.demo.repository.AuditLogRepository;
 import atom.example.demo.repository.BidRepository;
@@ -33,7 +36,10 @@ import atom.example.demo.repository.OrderRepository;
 import atom.example.demo.repository.PaymentRepository;
 import atom.example.demo.repository.ReviewRepository;
 import atom.example.demo.repository.RoleUpgradeRepository;
+import atom.example.demo.repository.ShopRepository;
 import atom.example.demo.repository.TrustScoreRepository;
+import atom.example.demo.repository.VendorSubscriptionDealRepository;
+import atom.example.demo.repository.VendorSubscriptionPlanRepository;
 import atom.example.demo.service.AuctionService;
 import atom.example.demo.service.AdminAuditService;
 import atom.example.demo.service.WinnerService;
@@ -100,6 +106,9 @@ public class AdminController {
     private final PaymentRepository paymentRepository;
     private final TrustScoreRepository trustScoreRepository;
     private final RoleUpgradeRepository roleUpgradeRepository;
+    private final ShopRepository shopRepository;
+    private final VendorSubscriptionPlanRepository vendorSubscriptionPlanRepository;
+    private final VendorSubscriptionDealRepository vendorSubscriptionDealRepository;
     private final AuctionService auctionService;
     private final AdminAuditService adminAuditService;
     private final WinnerService winnerService;
@@ -121,6 +130,9 @@ public class AdminController {
             PaymentRepository paymentRepository,
             TrustScoreRepository trustScoreRepository,
             RoleUpgradeRepository roleUpgradeRepository,
+            ShopRepository shopRepository,
+            VendorSubscriptionPlanRepository vendorSubscriptionPlanRepository,
+            VendorSubscriptionDealRepository vendorSubscriptionDealRepository,
             AuctionService auctionService,
             AdminAuditService adminAuditService,
             WinnerService winnerService) {
@@ -147,6 +159,9 @@ public class AdminController {
         this.paymentRepository = paymentRepository;
         this.trustScoreRepository = trustScoreRepository;
         this.roleUpgradeRepository = roleUpgradeRepository;
+        this.shopRepository = shopRepository;
+        this.vendorSubscriptionPlanRepository = vendorSubscriptionPlanRepository;
+        this.vendorSubscriptionDealRepository = vendorSubscriptionDealRepository;
         this.auctionService = auctionService;
         this.adminAuditService = adminAuditService;
         this.winnerService = winnerService;
@@ -885,6 +900,149 @@ public class AdminController {
         VendorProfile saved = vendorProfileRepository.save(profile);
         audit(session, "VENDOR_VERIFIED", "vendor_profiles", id, Map.of("verificationStatus", oldStatus), Map.of("verificationStatus", saved.getVerificationStatus()));
         return saved;
+    }
+
+    // ========== SHOP VERIFICATION ==========
+
+    @PutMapping("/shops/{id}/verification")
+    public Shop updateShopVerification(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpSession session) {
+        requireAuth(session);
+        Shop shop = shopRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+        String newLevel = (String) body.get("verificationLevel");
+        if (!List.of("STANDARD", "VERIFIED", "PREMIUM", "TRUSTED").contains(newLevel)) {
+            throw new IllegalArgumentException("Invalid verification level. Use STANDARD, VERIFIED, PREMIUM, or TRUSTED");
+        }
+        String oldLevel = shop.getVerificationLevel();
+        shop.setVerificationLevel(newLevel);
+        Shop saved = shopRepository.save(shop);
+        audit(session, "SHOP_VERIFICATION_UPDATED", "shops", id,
+            Map.of("verificationLevel", oldLevel),
+            Map.of("verificationLevel", saved.getVerificationLevel()));
+        return saved;
+    }
+
+    // ========== SUBSCRIPTION PLAN MANAGEMENT ==========
+
+    @GetMapping("/subscription/plans")
+    public List<VendorSubscriptionPlan> listSubscriptionPlans() {
+        return vendorSubscriptionPlanRepository.findAll();
+    }
+
+    @PostMapping("/subscription/plans")
+    public VendorSubscriptionPlan createSubscriptionPlan(@RequestBody Map<String, Object> body, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionPlan plan = new VendorSubscriptionPlan(
+            (String) body.get("name"),
+            (String) body.get("displayName"),
+            Integer.valueOf(body.get("maxShops").toString()),
+            new java.math.BigDecimal(body.get("priceMonthlyBdt").toString()),
+            new java.math.BigDecimal(body.get("priceYearlyBdt").toString()),
+            body.containsKey("discountPercent") ? new java.math.BigDecimal(body.get("discountPercent").toString()) : java.math.BigDecimal.ZERO,
+            (String) body.get("features")
+        );
+        VendorSubscriptionPlan saved = vendorSubscriptionPlanRepository.save(plan);
+        audit(session, "SUBSCRIPTION_PLAN_CREATED", "vendor_subscription_plans", saved.getId(),
+            null, Map.of("name", saved.getName()));
+        return saved;
+    }
+
+    @PutMapping("/subscription/plans/{id}")
+    public VendorSubscriptionPlan updateSubscriptionPlan(@PathVariable Long id,
+            @RequestBody Map<String, Object> body, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionPlan plan = vendorSubscriptionPlanRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
+        Map<String, Object> oldData = new HashMap<>();
+        if (body.containsKey("name")) { oldData.put("name", plan.getName()); plan.setName((String) body.get("name")); }
+        if (body.containsKey("displayName")) { oldData.put("displayName", plan.getDisplayName()); plan.setDisplayName((String) body.get("displayName")); }
+        if (body.containsKey("maxShops")) { oldData.put("maxShops", plan.getMaxShops()); plan.setMaxShops(Integer.valueOf(body.get("maxShops").toString())); }
+        if (body.containsKey("priceMonthlyBdt")) { oldData.put("priceMonthlyBdt", plan.getPriceMonthlyBdt()); plan.setPriceMonthlyBdt(new java.math.BigDecimal(body.get("priceMonthlyBdt").toString())); }
+        if (body.containsKey("priceYearlyBdt")) { oldData.put("priceYearlyBdt", plan.getPriceYearlyBdt()); plan.setPriceYearlyBdt(new java.math.BigDecimal(body.get("priceYearlyBdt").toString())); }
+        if (body.containsKey("discountPercent")) { oldData.put("discountPercent", plan.getDiscountPercent()); plan.setDiscountPercent(new java.math.BigDecimal(body.get("discountPercent").toString())); }
+        if (body.containsKey("features")) { oldData.put("features", plan.getFeatures()); plan.setFeatures((String) body.get("features")); }
+        VendorSubscriptionPlan saved = vendorSubscriptionPlanRepository.save(plan);
+        audit(session, "SUBSCRIPTION_PLAN_UPDATED", "vendor_subscription_plans", id,
+            oldData.isEmpty() ? null : oldData, Map.of("updated", true));
+        return saved;
+    }
+
+    @DeleteMapping("/subscription/plans/{id}")
+    public Map<String, String> deleteSubscriptionPlan(@PathVariable Long id, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionPlan plan = vendorSubscriptionPlanRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
+        vendorSubscriptionPlanRepository.delete(plan);
+        audit(session, "SUBSCRIPTION_PLAN_DELETED", "vendor_subscription_plans", id,
+            Map.of("name", plan.getName()), Map.of("deleted", true));
+        return Map.of("message", "Plan deleted");
+    }
+
+    // ========== SUBSCRIPTION DEAL MANAGEMENT ==========
+
+    @GetMapping("/subscription/deals")
+    public List<VendorSubscriptionDeal> listSubscriptionDeals() {
+        return vendorSubscriptionDealRepository.findAll();
+    }
+
+    @PostMapping("/subscription/deals")
+    public VendorSubscriptionDeal createSubscriptionDeal(@RequestBody Map<String, Object> body, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionDeal deal = new VendorSubscriptionDeal();
+        deal.setTitle((String) body.get("title"));
+        deal.setDescription((String) body.get("description"));
+        deal.setDealType((String) body.get("dealType"));
+        deal.setValue(new java.math.BigDecimal(body.get("value").toString()));
+        if (body.containsKey("planId") && body.get("planId") != null) {
+            VendorSubscriptionPlan plan = vendorSubscriptionPlanRepository.findById(
+                Long.valueOf(body.get("planId").toString()))
+                .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
+            deal.setPlan(plan);
+        }
+        deal.setStartsAt(java.time.Instant.parse((String) body.get("startsAt")));
+        deal.setEndsAt(java.time.Instant.parse((String) body.get("endsAt")));
+        deal.setActive(true);
+        VendorSubscriptionDeal saved = vendorSubscriptionDealRepository.save(deal);
+        audit(session, "SUBSCRIPTION_DEAL_CREATED", "vendor_subscription_deals", saved.getId(),
+            null, Map.of("title", saved.getTitle()));
+        return saved;
+    }
+
+    @PutMapping("/subscription/deals/{id}")
+    public VendorSubscriptionDeal updateSubscriptionDeal(@PathVariable Long id,
+            @RequestBody Map<String, Object> body, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionDeal deal = vendorSubscriptionDealRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Deal not found"));
+        Map<String, Object> oldData = new HashMap<>();
+        if (body.containsKey("title")) { oldData.put("title", deal.getTitle()); deal.setTitle((String) body.get("title")); }
+        if (body.containsKey("description")) { oldData.put("description", deal.getDescription()); deal.setDescription((String) body.get("description")); }
+        if (body.containsKey("dealType")) { oldData.put("dealType", deal.getDealType()); deal.setDealType((String) body.get("dealType")); }
+        if (body.containsKey("value")) { oldData.put("value", deal.getValue()); deal.setValue(new java.math.BigDecimal(body.get("value").toString())); }
+        if (body.containsKey("planId") && body.get("planId") != null) {
+            VendorSubscriptionPlan plan = vendorSubscriptionPlanRepository.findById(
+                Long.valueOf(body.get("planId").toString()))
+                .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
+            deal.setPlan(plan);
+        }
+        if (body.containsKey("startsAt")) deal.setStartsAt(java.time.Instant.parse((String) body.get("startsAt")));
+        if (body.containsKey("endsAt")) deal.setEndsAt(java.time.Instant.parse((String) body.get("endsAt")));
+        if (body.containsKey("isActive")) deal.setActive(Boolean.parseBoolean(body.get("isActive").toString()));
+        VendorSubscriptionDeal saved = vendorSubscriptionDealRepository.save(deal);
+        audit(session, "SUBSCRIPTION_DEAL_UPDATED", "vendor_subscription_deals", id,
+            oldData.isEmpty() ? null : oldData, Map.of("updated", true));
+        return saved;
+    }
+
+    @DeleteMapping("/subscription/deals/{id}")
+    public Map<String, String> deleteSubscriptionDeal(@PathVariable Long id, HttpSession session) {
+        requireAuth(session);
+        VendorSubscriptionDeal deal = vendorSubscriptionDealRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Deal not found"));
+        vendorSubscriptionDealRepository.delete(deal);
+        audit(session, "SUBSCRIPTION_DEAL_DELETED", "vendor_subscription_deals", id,
+            Map.of("title", deal.getTitle()), Map.of("deleted", true));
+        return Map.of("message", "Deal deleted");
     }
 
     @GetMapping("/upgrades")

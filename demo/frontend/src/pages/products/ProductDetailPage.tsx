@@ -19,6 +19,7 @@ type Product = {
 
 type VendorProfile = {
   id: number
+  shopId: number
   displayName: string
   email: string
   avatarUrl: string
@@ -31,6 +32,7 @@ type VendorProfile = {
   productCount: number
   reviewCount: number
   avgRating: number
+  followerCount: number
 }
 
 type Review = {
@@ -367,6 +369,7 @@ export default function ProductDetailPage() {
                     </Link>
                     <div className="mt-0.5 flex items-center gap-3 text-xs text-[#8c7564]">
                       <span>{vendorProfile.productCount} product{vendorProfile.productCount !== 1 ? 's' : ''}</span>
+                      <span>{vendorProfile.followerCount} follower{vendorProfile.followerCount !== 1 ? 's' : ''}</span>
                       {vendorProfile.reviewCount > 0 && (
                         <span className="flex items-center gap-1">
                           <StarRating value={Math.round(vendorProfile.avgRating)} />
@@ -401,22 +404,28 @@ export default function ProductDetailPage() {
           </h2>
           {/* Review form */}
           {user ? (
-            <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
-              <p className="text-sm font-semibold text-[#221b16]">Write a review</p>
-              <div className="mt-2">
-                <StarRating value={reviewRating} onChange={setReviewRating} interactive />
+            isOwner ? (
+              <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-4 text-center text-sm text-[#8c7564]">
+                You cannot review your own product
               </div>
-              <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
-                placeholder="Share your thoughts about this product..."
-                rows={3}
-                className="mt-3 w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
-              <div className="mt-3 flex justify-end">
-                <button onClick={handleSubmitReview} disabled={submitting}
-                  className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
-                  {submitting ? 'Submitting...' : 'Submit Review'}
-                </button>
+            ) : (
+              <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4">
+                <p className="text-sm font-semibold text-[#221b16]">Write a review</p>
+                <div className="mt-2">
+                  <StarRating value={reviewRating} onChange={setReviewRating} interactive />
+                </div>
+                <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Share your thoughts about this product..."
+                  rows={3}
+                  className="mt-3 w-full resize-none rounded-xl border border-[#d7c7b8] bg-[#f9f5f0] px-4 py-3 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
+                <div className="mt-3 flex justify-end">
+                  <button onClick={handleSubmitReview} disabled={submitting}
+                    className="rounded-xl bg-[#221b16] px-6 py-2.5 text-sm font-semibold text-[#f9f5f0] hover:bg-[#3a3028] transition disabled:opacity-50">
+                    {submitting ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </div>
               </div>
-            </div>
+            )
           ) : (
             <div className="mt-4 rounded-xl border border-[#e4d6c8] bg-white p-4 text-center text-sm text-[#8c7564]">
               <Link to="/auth/login" className="font-semibold text-[#221b16] underline">Sign in</Link> to leave a review

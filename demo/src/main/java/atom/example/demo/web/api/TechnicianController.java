@@ -4,9 +4,7 @@ import atom.example.demo.config.SecurityConfig;
 import atom.example.demo.model.Technician;
 import atom.example.demo.model.TechnicianAvailability;
 import atom.example.demo.model.TechnicianEarning;
-import atom.example.demo.repository.TechnicianAvailabilityRepository;
-import atom.example.demo.repository.TechnicianEarningRepository;
-import atom.example.demo.repository.TechnicianRepository;
+import atom.example.demo.repository.*;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +139,7 @@ public class TechnicianController {
                 .count();
 
         // Get count of open/quoted requests they can bid on
-        long incomingRequests = repairRequestRepository.findByStatusOrderByIsEmergencyDescCreatedAtDesc("OPEN").size();
+        long incomingRequests = repairRequestRepository.findByStatusOrderByEmergencyDescCreatedAtDesc("OPEN").size();
 
         return Map.of("technicianId", tech.getId(), "level", tech.getLevel(), "ratingAvg", tech.getRatingAvg(),
                 "completionRate", tech.getCompletionRate(), "status", tech.getStatus(), "totalJobs", totalJobs,

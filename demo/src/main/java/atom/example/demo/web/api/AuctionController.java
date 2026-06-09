@@ -65,7 +65,8 @@ public class AuctionController {
             throw new IllegalArgumentException("title, type, preparationDurationMinutes, and activeDurationMinutes are required");
         if (!VALID_TYPES.contains(type))
             throw new IllegalArgumentException("Invalid auction type. Use STANDARD, FLASH, REVERSE, or RESERVE");
-        return auctionService.createAuction(userId, title, type, preparationDurationMinutes, activeDurationMinutes, termsAccepted);
+        Long shopId = body.get("shopId") != null ? Long.valueOf(body.get("shopId").toString()) : null;
+        return auctionService.createAuction(userId, shopId, title, type, preparationDurationMinutes, activeDurationMinutes, termsAccepted);
     }
 
     @PutMapping("/{id}")

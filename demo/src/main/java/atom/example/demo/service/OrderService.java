@@ -59,8 +59,9 @@ public class OrderService {
     private final TrustEventRepository trustEventRepository;
     private final BanHistoryRepository banHistoryRepository;
     private final PlatformSettingRepository platformSettingRepository;
+    private final TrustService trustService;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository, VendorCommissionRepository vendorCommissionRepository, NotificationRepository notificationRepository, ConversationRepository conversationRepository, ConversationMemberRepository conversationMemberRepository, TrustScoreRepository trustScoreRepository, TrustEventRepository trustEventRepository, BanHistoryRepository banHistoryRepository, PlatformSettingRepository platformSettingRepository) {
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CartService cartService, CouponRepository couponRepository, InventoryRepository inventoryRepository, UserRepository userRepository, AddressRepository addressRepository, VendorCommissionRepository vendorCommissionRepository, NotificationRepository notificationRepository, ConversationRepository conversationRepository, ConversationMemberRepository conversationMemberRepository, TrustScoreRepository trustScoreRepository, TrustEventRepository trustEventRepository, BanHistoryRepository banHistoryRepository, PlatformSettingRepository platformSettingRepository, TrustService trustService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
@@ -77,6 +78,7 @@ public class OrderService {
         this.trustEventRepository = trustEventRepository;
         this.banHistoryRepository = banHistoryRepository;
         this.platformSettingRepository = platformSettingRepository;
+        this.trustService = trustService;
     }
 
     @Transactional
@@ -318,6 +320,10 @@ public class OrderService {
             n.setEntityType("ORDER");
             n.setEntityId(orderId);
             notificationRepository.save(n);
+
+            trustService.adjustScore(vendorId, new BigDecimal("1"),
+                "ORDER_APPROVED",
+                "Approved order #" + orderId);
             return saved;
         }
 
@@ -372,6 +378,15 @@ public class OrderService {
                     vendorCommissionRepository.save(c);
                 }
             }
+
+            // Positive trust score for both vendor and buyer
+            trustService.adjustScore(order.getCustomer().getId(), new BigDecimal("2"),
+                "ORDER_DELIVERED_SUCCESSFULLY",
+                "Order #" + orderId + " delivered successfully");
+            // The vendor who marked it delivered also gets a boost
+            trustService.adjustScore(vendorId, new BigDecimal("1"),
+                "ORDER_FULFILLED",
+                "Fulfilled order #" + orderId + " successfully");
             return saved;
         }
 
@@ -387,6 +402,10 @@ public class OrderService {
             n.setEntityType("ORDER");
             n.setEntityId(orderId);
             notificationRepository.save(n);
+
+            trustService.adjustScore(vendorId, new BigDecimal("-3"),
+                "ORDER_REJECTED",
+                "Rejected order #" + orderId);
             return saved;
         }
 
@@ -417,46 +436,9 @@ public class OrderService {
         // If cancelling before vendor approval → negative trust score impact
         boolean beforeApproval = "PLACED".equals(status);
         if (beforeApproval) {
-            TrustScore trustScore = trustScoreRepository.findByUserId(customerId)
-                .orElseGet(() -> {
-                    User user = userRepository.findById(customerId)
-                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
-                    TrustScore ts = new TrustScore();
-                    ts.setUser(user);
-                    ts.setScore(new BigDecimal("50"));
-                    return trustScoreRepository.save(ts);
-                });
-
-            BigDecimal penalty = new BigDecimal("-5");
-            BigDecimal newScore = trustScore.getScore().add(penalty).max(BigDecimal.ZERO);
-            trustScore.setScore(newScore);
-            trustScoreRepository.save(trustScore);
-
-            TrustEvent event = new TrustEvent();
-            event.setUser(trustScore.getUser());
-            event.setEventType("ORDER_CANCELLED_BEFORE_APPROVAL");
-            event.setDelta(penalty);
-            event.setNote("Cancelled order #" + orderId + " before vendor approval");
-            trustEventRepository.save(event);
-
-            // Check ban threshold
-            String thresholdStr = platformSettingRepository.findById("trust.ban_threshold")
-                .map(s -> s.getValue()).orElse("10");
-            BigDecimal threshold = new BigDecimal(thresholdStr);
-            if (newScore.compareTo(threshold) <= 0) {
-                // Auto-suspend
-                BanHistory ban = new BanHistory();
-                ban.setUser(trustScore.getUser());
-                ban.setAction("SUSPENDED");
-                ban.setReason("Trust score dropped to " + newScore + " due to repeated order cancellations before vendor approval");
-                ban.setExpiresAt(now.plus(java.time.Duration.ofDays(7)));
-                banHistoryRepository.save(ban);
-
-                // Set user status to SUSPENDED
-                User user = trustScore.getUser();
-                user.setStatus("SUSPENDED");
-                userRepository.save(user);
-            }
+            trustService.adjustScore(customerId, new BigDecimal("-5"),
+                "ORDER_CANCELLED_BEFORE_APPROVAL",
+                "Cancelled order #" + orderId + " before vendor approval");
         }
 
         order.setStatus("CANCELLED");

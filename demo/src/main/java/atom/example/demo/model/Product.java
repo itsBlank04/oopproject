@@ -41,6 +41,11 @@ public class Product {
     private User vendor;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "shop_id")
+    @JsonIgnoreProperties({"vendor", "hibernateLazyInitializer", "handler"})
+    private Shop shop;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
@@ -88,6 +93,8 @@ public class Product {
     public void setId(Long id) { this.id = id; }
     public User getVendor() { return vendor; }
     public void setVendor(User vendor) { this.vendor = vendor; }
+    public Shop getShop() { return shop; }
+    public void setShop(Shop shop) { this.shop = shop; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
     public String getName() { return name; }

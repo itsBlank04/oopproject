@@ -37,7 +37,7 @@ const genders = [
 ]
 
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuth()
+  const { user, refreshUser, activeRole, setActiveRole, subscribedRoles } = useAuth()
   const queryClient = useQueryClient()
   const location = useLocation()
   const upgradeRef = useRef<HTMLDivElement | null>(null)
@@ -333,6 +333,27 @@ export default function ProfilePage() {
                       )
                     })}
                   </div>
+                  {subscribedRoles.length > 0 && (
+                    <div className="mt-4 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a28672]">Active Role</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {[
+                          { role: 'customer' as const, label: 'Customer', icon: '🛒' },
+                          { role: 'vendor' as const, label: 'Merchant', icon: '📦' },
+                          { role: 'technician' as const, label: 'Technician', icon: '🔧' },
+                        ].filter(r => r.role === 'customer' || subscribedRoles.includes(r.role)).map(r => (
+                          <button
+                            key={r.role}
+                            onClick={() => setActiveRole(r.role)}
+                            className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all ${activeRole === r.role ? 'bg-[#221b16] text-white shadow-sm' : 'bg-white text-[#6c5b4f] border border-[#d7c7b8] hover:border-[#a28672] hover:text-[#221b16]'}`}
+                          >
+                            <span className="text-base">{r.icon}</span>
+                            <span>{r.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

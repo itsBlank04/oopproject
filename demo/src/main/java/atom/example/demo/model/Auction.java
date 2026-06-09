@@ -33,6 +33,11 @@ public class Auction {
     @NotFound(action = NotFoundAction.IGNORE)
     private User vendor;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "shop_id")
+    @JsonIgnoreProperties({"vendor", "hibernateLazyInitializer", "handler"})
+    private Shop shop;
+
     @Column(nullable = false)
     private String title;
 
@@ -82,6 +87,8 @@ public class Auction {
     public void setId(Long id) { this.id = id; }
     public User getVendor() { return vendor; }
     public void setVendor(User vendor) { this.vendor = vendor; }
+    public Shop getShop() { return shop; }
+    public void setShop(Shop shop) { this.shop = shop; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getType() { return type; }

@@ -38,7 +38,8 @@ public class SecurityConfig {
                     "/api/used-listings/**", "/api/technicians/**",
                     "/api/service-listings/**", "/api/system-notifications",
                     "/api/vendor/profile/shop/**", "/api/vendors/**",
-                    "/api/users/*/profile", "/api/users/*/reviews", "/api/users/*/trust-score"
+                    "/api/users/*/profile", "/api/users/*/reviews", "/api/users/*/trust-score",
+                    "/api/shops/**", "/api/vendor/subscription/plans", "/api/vendor/subscription/deals"
                 ).permitAll()
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

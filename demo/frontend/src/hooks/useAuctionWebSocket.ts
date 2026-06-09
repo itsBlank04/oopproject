@@ -27,7 +27,7 @@ export function useAuctionWebSocket(auctionId: string | undefined, onError?: (ms
 
     client.onConnect = () => {
       // Subscribe to the auction topic
-      client.subscribe(`/topic/auction.${auctionId}`, (msg) => {
+      client.subscribe(`/topic/auction.${auctionId}`, (msg: any) => {
         try {
           const payload = JSON.parse(msg.body);
           // Invalidate relevant queries so UI refreshes
@@ -45,7 +45,7 @@ export function useAuctionWebSocket(auctionId: string | undefined, onError?: (ms
       });
     };
 
-    client.onStompError = (frame) => {
+    client.onStompError = (frame: any) => {
       console.error('Broker reported error: ', frame.headers['message']);
       if (onError) onError(frame.headers['message'] ?? 'WebSocket error');
     };
@@ -70,7 +70,7 @@ export function useAuctionWebSocket(auctionId: string | undefined, onError?: (ms
       lotId,
       bidderId,
       amount: amount,
-      sessionId: client.connected ? client.ws?.protocol : undefined,
+      sessionId: client.connected ? (client as any).ws?.protocol : undefined,
     };
     client.publish({ destination: '/app/bid.place', body: JSON.stringify(msg) });
   };
