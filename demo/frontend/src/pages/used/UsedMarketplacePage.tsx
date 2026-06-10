@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
@@ -78,6 +78,10 @@ export default function UsedMarketplacePage() {
 
   const displayStats = stats || { totalListings: 0, activeListings: 0 }
   const topCategories = categories.length > 0 ? categories.slice(0, 6) : FALLBACK_CATEGORIES
+  const otherListings = useMemo(() =>
+    listings.filter((item: any) => !user || item.seller?.id !== user.id),
+    [listings, user],
+  )
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body-md overflow-x-hidden">
@@ -193,10 +197,10 @@ export default function UsedMarketplacePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {listings.length === 0 ? (
+            {otherListings.length === 0 ? (
               <div className="col-span-full py-12 text-center text-on-surface-variant">
                 <span className="material-symbols-outlined text-5xl text-primary mb-4 block">inventory_2</span>
-                <p className="font-label-md text-label-md">No items listed yet.</p>
+                <p className="font-label-md text-label-md">No items from other sellers yet.</p>
                 <button
                   onClick={handleSellClick}
                   className="mt-4 bg-primary text-on-primary px-6 py-3 rounded-full font-label-md text-label-md hover:bg-primary/90 transition-colors"
@@ -205,7 +209,7 @@ export default function UsedMarketplacePage() {
                 </button>
               </div>
             ) : (
-              listings.map((item: any) => {
+              otherListings.map((item: any) => {
                 const images = item.images || []
                 const conditionLabel = item.condition?.label || item.conditionLevel?.label || 'Used'
                 const price = item.priceBdt ?? item.askingPriceBdt

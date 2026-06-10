@@ -108,6 +108,20 @@ public class ChatController {
             }).collect(Collectors.toList());
     }
 
+    /** Aggregate unread message count across all conversations */
+    @GetMapping("/unread-count")
+    public Map<String, Object> getUnreadCount(HttpSession session) {
+        Long userId = getUserId(session);
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        List<ConversationMember> members = conversationMemberRepository.findByUserId(userId);
+        long total = 0;
+        for (ConversationMember member : members) {
+            Conversation conv = member.getConversation();
+            total += messageRepository.countByConversationIdAndIsReadFalseAndSenderIdNot(conv.getId(), userId);
+        }
+        return Map.of("total", total);
+    }
+
     /** Create a used-listing conversation (open marketplace chat) */
     @PostMapping("/conversations/used")
     public Map<String, Object> createUsedConversation(@RequestBody Map<String, Object> body, HttpSession session) {

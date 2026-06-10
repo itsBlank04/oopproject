@@ -253,6 +253,24 @@ export default function AuctionDetailPage() {
     onError: (error: any) => toast.error(error.response?.data?.error || 'Watchlist update failed'),
   })
 
+  const { data: bookmarkStatus } = useQuery<{ bookmarked: boolean }>({
+    queryKey: ['auction-bookmark', id],
+    queryFn: () => apiClient.get(`/api/bookmarks/auctions/${id}`).then(r => r.data),
+    enabled: !!user && !!id,
+    staleTime: 5_000,
+  })
+
+  const bookmarkMutation = useMutation({
+    mutationFn: (bookmarked: boolean) => bookmarked
+      ? apiClient.delete(`/api/bookmarks/auctions/${id}`)
+      : apiClient.post(`/api/bookmarks/auctions/${id}`),
+    onSuccess: (_, bookmarked) => {
+      toast.success(bookmarked ? 'Bookmark removed' : 'Auction bookmarked')
+      queryClient.invalidateQueries({ queryKey: ['auction-bookmark', id] })
+    },
+    onError: (error: any) => toast.error(error.response?.data?.error || 'Bookmark update failed'),
+  })
+
   const uploadImagesMutation = useMutation({
     mutationFn: async ({ lotId, urls }: { lotId: number; urls: string[] }) => {
       for (const url of urls) {
@@ -292,33 +310,51 @@ export default function AuctionDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] text-[#221b16]">
-      <header className="relative overflow-hidden border-b border-[#e4d6c8] px-6 py-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(238,90,36,0.10),transparent_32%),radial-gradient(circle_at_84%_12%,rgba(13,148,136,0.06),transparent_28%)]" />
+      <header className="relative overflow-hidden border-b border-[#e4d6c8] bg-[#faf8f5] px-6 py-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(196,149,106,0.10),transparent_32%),radial-gradient(circle_at_84%_12%,rgba(13,148,136,0.06),transparent_28%)]" />
         <div className="relative mx-auto max-w-7xl">
-          <Link to="/auctions" className="inline-flex items-center rounded-full border border-[#e4d6c8] bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#6c5b4f] transition hover:border-[#c4956a] hover:text-[#c4956a]">Back to auctions</Link>
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
+          <Link to="/auctions" className="inline-flex items-center rounded-full border border-[#e4d6c8] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#6c5b4f] shadow-sm transition-all hover:border-[#c4956a] hover:text-[#c4956a] hover:shadow-md">Back</Link>
+          <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${statusTone(auction.status)}`}>{auction.status}</span>
-                <span className="rounded-full border border-[#e4d6c8] bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#6c5b4f]">{auction.type}</span>
-                <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">Seller trust {trust}/100</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] ${statusTone(auction.status)}`}>{auction.status}</span>
+                <span className="rounded-full border border-[#e4d6c8] bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6c5b4f]">{auction.type}</span>
+                <span className="rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Trust {trust}/100</span>
               </div>
-              <h1 className="mt-5 font-[Fraunces] text-5xl leading-tight text-[#221b16] md:text-7xl">{auction.title}</h1>
+              <h1 className="mt-4 font-[Fraunces] text-3xl leading-tight text-[#221b16] md:text-5xl">{auction.title}</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6c5b4f]">
                 {auction.vendor?.displayName || 'Verified seller'} is running {lots.length} lot{lots.length === 1 ? '' : 's'} with locked bid increments, live synchronization, and automatic winner capture.
               </p>
             </div>
-            <div className="rounded-[2rem] border border-[#e4d6c8] bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c4956a]">Clock</p>
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${realtimeState === 'connected' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{realtimeState}</span>
+            <div className="rounded-xl border border-[#e4d6c8] bg-white p-4 shadow-[0_8px_30px_rgba(34,27,22,0.06)]">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#c4956a]">Clock</p>
+                <div className="flex items-center gap-2">
+                  {user && (
+                    <button onClick={() => bookmarkMutation.mutate(!!bookmarkStatus?.bookmarked)}
+                      className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] transition-all active:scale-95 ${bookmarkStatus?.bookmarked ? 'bg-[#c4956a] text-white shadow-sm' : 'border border-[#e4d6c8] text-[#6c5b4f] hover:border-[#c4956a]/50 hover:text-[#c4956a]'}`}>
+                      {bookmarkStatus?.bookmarked ? 'Bookmarked' : 'Bookmark'}
+                    </button>
+                  )}
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${realtimeState === 'connected' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{realtimeState}</span>
+                </div>
               </div>
-              <div className="mt-4 text-2xl font-black tabular-nums">
-                {isPreparing && auction.startTime && <AuctionCountdown endTime={auction.startTime} />}
-                {isLive && auction.endTime && <AuctionCountdown endTime={auction.endTime} />}
+              <div className="mt-2 text-2xl font-black tabular-nums tracking-tight">
+                {isPreparing && auction.startTime && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#c4956a]">Starts in</p>
+                    <AuctionCountdown endTime={auction.startTime} />
+                  </div>
+                )}
+                {isLive && auction.endTime && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Ends in</p>
+                    <AuctionCountdown endTime={auction.endTime} />
+                  </div>
+                )}
                 {auction.status === 'CLOSED' && <span className="text-rose-700">Auction closed</span>}
               </div>
-              <div className="mt-5 grid grid-cols-3 gap-2">
+              <div className="mt-3 grid grid-cols-3 gap-1.5">
                 <MiniStat label="Lots" value={lots.length} />
                 <MiniStat label="Open" value={activeLotCount} />
                 <MiniStat label="Bids" value={totalBidCount} />
@@ -328,7 +364,7 @@ export default function AuctionDetailPage() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[1fr_340px]">
+      <main className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[1fr_380px]">
         <section className="space-y-5">
           {lots.length === 0 ? (
             <div className="rounded-[2rem] border border-[#e4d6c8] bg-white p-10 text-center text-[#6c5b4f]">No lots have been added yet.</div>
@@ -346,23 +382,23 @@ export default function AuctionDetailPage() {
             const pulse = pulseLotId === lot.id
 
             return (
-              <article key={lot.id} className={`overflow-hidden rounded-[2rem] border bg-white transition-all ${pulse ? 'border-[#c4956a] shadow-[0_0_0_1px_rgba(238,90,36,0.7),0_24px_80px_rgba(238,90,36,0.18)]' : 'border-[#e4d6c8] shadow-[0_20px_70px_rgba(34,27,22,0.08)]'}`}>
-                <div className="grid gap-0 xl:grid-cols-[420px_1fr]">
-                  <div className="border-b border-[#e4d6c8] bg-[#f9f5f0] p-4 xl:border-b-0 xl:border-r">
-                    <div className="aspect-[4/3] overflow-hidden rounded-3xl bg-white">
+              <article key={lot.id} className={`overflow-hidden rounded-2xl border bg-white transition-all ${pulse ? 'border-[#c4956a] shadow-[0_0_0_1px_rgba(238,90,36,0.7),0_8px_32px_rgba(238,90,36,0.18)]' : 'border-[#e4d6c8] shadow-[0_4px_24px_rgba(34,27,22,0.06)]'}`}>
+                <div className="grid gap-0 xl:grid-cols-[320px_1fr]">
+                  <div className="border-b border-[#e4d6c8] bg-[#f9f5f0] p-3 xl:border-b-0 xl:border-r">
+                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white shadow-inner">
                       {images.length > 0 ? (
                         <button type="button" onClick={() => setLightboxLot({ lotId: lot.id, index: imageIndex })} className="h-full w-full">
                           <img src={images[imageIndex]?.imageUrl} alt={lot.title} loading="lazy" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
                         </button>
                       ) : (
-                        <div className="flex h-full items-center justify-center border border-dashed border-[#e4d6c8] text-sm text-[#8c7564]">No photo yet</div>
+                        <div className="flex h-full items-center justify-center border border-dashed border-[#e4d6c8] text-xs text-[#8c7564]">No photo</div>
                       )}
                     </div>
                     {images.length > 1 && (
-                      <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
+                      <div className="no-scrollbar mt-2 flex gap-1.5 overflow-x-auto">
                         {images.map((image, index) => (
                           <button key={`${image.imageUrl}-${index}`} onClick={() => setSelectedImg(previous => ({ ...previous, [lot.id]: index }))}
-                            className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border-2 transition ${imageIndex === index ? 'border-[#c4956a]' : 'border-[#e4d6c8] opacity-70 hover:opacity-100'}`}>
+                            className={`h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${imageIndex === index ? 'border-[#c4956a]' : 'border-[#e4d6c8] opacity-70 hover:opacity-100'}`}>
                             <img src={image.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                           </button>
                         ))}
@@ -370,115 +406,115 @@ export default function AuctionDetailPage() {
                     )}
                     {isOwner && (
                       <button onClick={() => setShowUpload(showUpload === lot.id ? null : lot.id)}
-                        className="mt-3 w-full rounded-2xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm font-bold text-[#221b16] transition hover:border-[#c4956a]/50">
-                        {showUpload === lot.id ? 'Close uploader' : 'Add lot photos'}
+                        className="mt-2 w-full rounded-xl border border-[#e4d6c8] bg-white px-3 py-1.5 text-xs font-bold text-[#221b16] transition hover:border-[#c4956a]/50">
+                        {showUpload === lot.id ? 'Close' : 'Add photos'}
                       </button>
                     )}
                     {showUpload === lot.id && (
-                      <div className="mt-3 rounded-2xl border border-[#e4d6c8] bg-white p-3">
+                      <div className="mt-2 rounded-xl border border-[#e4d6c8] bg-white p-2">
                         <MediaUploader folder={`auctions/${auction.id}/lots/${lot.id}`} maxFiles={8} maxSizeMB={10} allowVideo={false} compact onUpload={urls => uploadImagesMutation.mutate({ lotId: lot.id, urls })} />
                       </div>
                     )}
                   </div>
 
-                  <div className="p-5 md:p-6">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] ${statusTone(lot.status)}`}>{lot.status}</span>
-                          {isHighest && <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-white">You are highest</span>}
-                          {watched && <span className="rounded-full bg-[#c4956a] px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-white">Watching</span>}
+                  <div className="p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] ${statusTone(lot.status)}`}>{lot.status}</span>
+                          {isHighest && <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white">Highest</span>}
+                          {watched && <span className="rounded-full bg-[#c4956a] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white">Watching</span>}
                         </div>
-                        <h2 className="mt-3 font-[Fraunces] text-3xl text-[#221b16]">{lot.title}</h2>
-                        <p className="mt-2 text-sm text-[#8c7564]">{lot.conditionNote || 'Condition not specified'}{lot.category?.name ? ` · ${lot.category.name}` : ''}</p>
+                        <h2 className="mt-2 font-[Fraunces] text-lg text-[#221b16] leading-tight">{lot.title}</h2>
+                        <p className="mt-0.5 text-xs text-[#8c7564]">{lot.conditionNote || 'Condition not specified'}{lot.category?.name ? ` · ${lot.category.name}` : ''}</p>
                       </div>
                       {user && hasRole('CUSTOMER') && (
                         <button onClick={() => watchMutation.mutate({ lotId: lot.id, watched })}
-                          className={`rounded-2xl px-4 py-2 text-xs font-black uppercase tracking-[0.14em] transition ${watched ? 'bg-[#c4956a] text-white' : 'border border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#c4956a]/50'}`}>
-                          {watched ? 'Unwatch' : 'Watch lot'}
+                          className={`rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition ${watched ? 'bg-[#c4956a] text-white' : 'border border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#c4956a]/50'}`}>
+                          {watched ? 'Unwatch' : 'Watch'}
                         </button>
                       )}
                     </div>
 
-                    <div className="mt-5 grid gap-3 sm:grid-cols-4">
+                    <div className="mt-3 grid grid-cols-4 gap-2">
                       <PriceTile label="Current" value={money(visibleCurrent(lot))} highlight />
-                      <PriceTile label="Next bid" value={money(nextBid)} />
+                      <PriceTile label="Next" value={money(nextBid)} />
                       <PriceTile label="Bids" value={bids.length} />
                       <PriceTile label="Bidders" value={uniqueBidderCount(bids)} />
                     </div>
 
-                    <div className="mt-5 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8c7564]">Auction heat</p>
+                    <div className="mt-3 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8c7564]">Heat</p>
                         <p className="text-xs font-bold text-[#c4956a]">{heat}%</p>
                       </div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e4d6c8]">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#e4d6c8]">
                         <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[#c4956a] to-rose-500 transition-all" style={{ width: `${heat}%` }} />
                       </div>
                     </div>
 
-                    {lot.description && <p className="mt-5 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-4 text-sm leading-7 text-[#6c5b4f]">{lot.description}</p>}
+                    {lot.description && <p className="mt-3 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-3 text-xs leading-6 text-[#6c5b4f]">{lot.description}</p>}
 
                     {user && isLive && lot.status === 'ACTIVE' && !isOwner && (
-                      <div className="mt-5 rounded-3xl border border-[#c4956a]/30 bg-[#c4956a]/5 p-4">
-                        <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                          <input type="number" min={nextBid} value={bidDrafts[lot.id] ?? ''} placeholder={`Minimum ${money(nextBid)}`}
+                      <div className="mt-3 rounded-xl border border-[#c4956a]/30 bg-[#c4956a]/5 p-3">
+                        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                          <input type="number" min={nextBid} value={bidDrafts[lot.id] ?? ''} placeholder={`Min ${money(nextBid)}`}
                             onFocus={() => setSelectedLot(lot.id)}
                             onChange={event => { setSelectedLot(lot.id); setBidDrafts(previous => ({ ...previous, [lot.id]: event.target.value })) }}
-                            className="rounded-2xl border border-[#e4d6c8] bg-white px-4 py-3 text-sm font-bold text-[#221b16] outline-none transition placeholder:text-[#8c7564] focus:border-[#c4956a]" />
+                            className="rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm font-bold text-[#221b16] outline-none transition placeholder:text-[#8c7564] focus:border-[#c4956a] focus:shadow-[0_0_0_3px_rgba(196,149,106,0.15)]" />
                           <button onClick={() => submitBid(lot)} disabled={bidMutation.isPending && selectedLot === lot.id}
-                            className="rounded-2xl bg-[#c4956a] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60">
-                            {bidMutation.isPending && selectedLot === lot.id ? 'Locking...' : 'Place bid'}
+                            className="rounded-xl bg-[#c4956a] px-6 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white shadow-[0_4px_14px_rgba(196,149,106,0.3)] transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60">
+                            {bidMutation.isPending && selectedLot === lot.id ? 'Locking...' : 'Bid'}
                           </button>
                         </div>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
                           {[nextBid, nextBid + increment, nextBid + increment * 2].map(value => (
                             <button key={value} onClick={() => submitBid(lot, value)}
-                              className="rounded-2xl border border-[#c4956a]/40 bg-[#c4956a]/10 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#c4956a] transition-all hover:bg-[#a87a4e] hover:text-white active:scale-[0.97]">
+                              className="rounded-xl border border-[#c4956a]/40 bg-[#c4956a]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#c4956a] transition-all hover:bg-[#a87a4e] hover:text-white active:scale-[0.97]">
                               Quick {money(value)}
                             </button>
                           ))}
                         </div>
-                        <p className="mt-3 text-xs text-[#8c7564]">Increment rule: every bid must be at least {money(increment)} above the current price. Race bids are recalculated on the server.</p>
+                        <p className="mt-2 text-[10px] leading-4 text-[#8c7564]">Increment: {money(increment)}. Race bids recalculated server-side.</p>
                       </div>
                     )}
 
                     {!user && isLive && lot.status === 'ACTIVE' && (
-                      <Link to="/auth/login" className="mt-5 block rounded-3xl bg-[#c4956a] px-5 py-4 text-center text-sm font-black uppercase tracking-[0.16em] text-white transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]">Sign in to place bids</Link>
+                      <Link to="/auth/login" className="mt-3 block rounded-xl bg-[#c4956a] px-4 py-3 text-center text-xs font-black uppercase tracking-[0.16em] text-white shadow-[0_4px_14px_rgba(196,149,106,0.3)] transition-all hover:bg-[#a87a4e] hover:shadow-lg active:scale-[0.97]">Sign in to bid</Link>
                     )}
 
                     {isOwner && (
-                      <div className="mt-5 rounded-3xl border border-[#e4d6c8] bg-[#f9f5f0] p-4 text-sm text-[#6c5b4f]">
-                        Seller cockpit: buyers see this lot live, but owners cannot bid on their own auction.
+                      <div className="mt-3 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-3 text-xs leading-5 text-[#6c5b4f]">
+                        Seller cockpit — buyers see this lot live, owners cannot bid.
                       </div>
                     )}
 
                     {myWin && (
-                      <div className="mt-5 rounded-3xl border border-emerald-300 bg-emerald-50 p-4">
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">You won this lot</p>
-                        <p className="mt-2 text-2xl font-black text-[#221b16]">{money(myWin.finalPriceBdt)}</p>
-                        <p className="mt-1 text-sm text-emerald-700">Payment status: {myWin.paymentStatus || 'PENDING'} · Deadline: {dateLabel(myWin.paymentDeadline)}</p>
+                      <div className="mt-3 rounded-xl border border-emerald-300 bg-emerald-50 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">You won</p>
+                        <p className="mt-1 text-xl font-black text-[#221b16]">{money(myWin.finalPriceBdt)}</p>
+                        <p className="mt-1 text-xs text-emerald-700">Payment: {myWin.paymentStatus || 'PENDING'} · Deadline: {dateLabel(myWin.paymentDeadline)}</p>
                         {myWin.paymentStatus !== 'PAID' && (
-                          <button onClick={() => payWinner.mutate(myWin.id)} className="mt-3 rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white">Pay now</button>
+                          <button onClick={() => payWinner.mutate(myWin.id)} className="mt-2 rounded-xl bg-emerald-600 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-emerald-700 active:scale-[0.97]">Pay now</button>
                         )}
                       </div>
                     )}
 
-                    <div className="mt-5 rounded-3xl border border-[#e4d6c8] bg-[#f9f5f0] p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#c4956a]">Bid tape</h3>
-                        {topBid && <span className="text-xs text-[#8c7564]">Leader: {topBid.bidder?.displayName || 'Bidder'}</span>}
+                    <div className="mt-3 rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#c4956a]">Bids</h3>
+                        {topBid && <span className="text-[10px] text-[#8c7564]">Leader: {topBid.bidder?.displayName || 'Bidder'}</span>}
                       </div>
-                      <div className="mt-3 space-y-2">
+                      <div className="mt-2 space-y-1.5">
                         {bids.length === 0 ? (
-                          <p className="rounded-2xl border border-dashed border-[#e4d6c8] px-4 py-3 text-sm text-[#8c7564]">No bids yet. The first valid bid starts the competition.</p>
+                          <p className="rounded-xl border border-dashed border-[#e4d6c8] px-3 py-2.5 text-xs text-[#8c7564]">No bids yet.</p>
                         ) : bids.slice(0, 5).map((bid, index) => (
-                          <div key={bid.id} className="flex items-center justify-between rounded-2xl border border-[#e4d6c8] bg-white px-4 py-3">
+                          <div key={bid.id} className={`flex items-center justify-between rounded-xl border px-3 py-2 transition hover:shadow-sm ${index === 0 ? 'border-[#c4956a]/30 bg-white' : 'border-[#e4d6c8] bg-white'}`}>
                             <div>
-                              <p className="text-sm font-bold text-[#221b16]">{bid.bidder?.displayName || 'Bidder'} {index === 0 ? '· leading' : ''}</p>
-                              <p className="text-xs text-[#8c7564]">{dateLabel(bid.createdAt)}</p>
+                              <p className="text-xs font-bold text-[#221b16]">{bid.bidder?.displayName || 'Bidder'} {index === 0 ? <span className="text-[#c4956a]">· leading</span> : ''}</p>
+                              <p className="text-[10px] text-[#8c7564]">{dateLabel(bid.createdAt)}</p>
                             </div>
-                            <p className="font-black text-[#c4956a]">{money(bid.amountBdt)}</p>
+                            <p className="text-sm font-black text-[#c4956a]">{money(bid.amountBdt)}</p>
                           </div>
                         ))}
                       </div>
@@ -490,10 +526,10 @@ export default function AuctionDetailPage() {
           })}
         </section>
 
-        <aside className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
-          <div className="rounded-[2rem] border border-[#e4d6c8] bg-white p-5 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c4956a]">Control Panel</p>
-            <div className="mt-4 space-y-3">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-xl border border-[#e4d6c8] bg-white p-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#c4956a]">Details</p>
+            <div className="mt-3 space-y-2">
               <InfoRow label="Seller" value={auction.vendor?.displayName || 'Verified seller'} />
               <InfoRow label="Trust" value={`${trust}/100`} />
               <InfoRow label="Opening" value={dateLabel(auction.startTime)} />
@@ -502,27 +538,27 @@ export default function AuctionDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[#e4d6c8] bg-white p-5">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c4956a]">Leaderboard</p>
-            <div className="mt-4 space-y-3">
-              {topLots.length === 0 ? <p className="text-sm text-[#8c7564]">No lots yet.</p> : topLots.map((lot, index) => (
-                <div key={lot.id} className="flex items-center justify-between gap-3 rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-3">
+          <div className="rounded-xl border border-[#e4d6c8] bg-white p-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#c4956a]">Leaderboard</p>
+            <div className="mt-3 space-y-1.5">
+              {topLots.length === 0 ? <p className="text-xs text-[#8c7564]">No lots yet.</p> : topLots.map((lot, index) => (
+                <div key={lot.id} className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 transition hover:shadow-sm ${index === 0 ? 'border-[#c4956a]/30 bg-[#c4956a]/5' : 'border-[#e4d6c8] bg-[#f9f5f0]'}`}>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-[#221b16]">{index + 1}. {lot.title}</p>
-                    <p className="text-xs text-[#8c7564]">{lot.status}</p>
+                    <p className="truncate text-xs font-bold text-[#221b16]">{index + 1}. {lot.title}</p>
+                    <p className="text-[10px] text-[#8c7564]">{lot.status === 'ACTIVE' ? 'Live' : lot.status}</p>
                   </div>
-                  <p className="text-sm font-black text-[#c4956a]">{money(visibleCurrent(lot))}</p>
+                  <p className="text-xs font-black text-[#c4956a]">{money(visibleCurrent(lot))}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[#e4d6c8] bg-white p-5">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c4956a]">Integrity Rules</p>
-            <div className="mt-4 space-y-3 text-sm leading-6 text-[#6c5b4f]">
-              <p>Server locks each lot while a bid is validated, so stale race bids are rejected.</p>
-              <p>Last-minute bids can extend the auction window to reduce sniping.</p>
-              <p>Rapid price spikes and suspicious bidding bursts are recorded for admin review.</p>
+          <div className="rounded-xl border border-[#e4d6c8] bg-white p-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#c4956a]">Integrity Rules</p>
+            <div className="mt-3 space-y-2 text-xs leading-5 text-[#6c5b4f]">
+              <p className="flex items-start gap-2"><span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-[#c4956a]" />Server locks each lot while a bid is validated, so stale race bids are rejected.</p>
+              <p className="flex items-start gap-2"><span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-[#c4956a]" />Last-minute bids can extend the auction window to reduce sniping.</p>
+              <p className="flex items-start gap-2"><span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-[#c4956a]" />Rapid price spikes and suspicious bidding bursts are recorded for admin review.</p>
             </div>
           </div>
         </aside>
@@ -552,13 +588,13 @@ export default function AuctionDetailPage() {
 }
 
 function MiniStat({ label, value }: { label: string; value: number | string }) {
-  return <div className="rounded-2xl border border-[#e4d6c8] bg-[#f9f5f0] p-3"><p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8c7564]">{label}</p><p className="mt-1 font-[Fraunces] text-2xl text-[#221b16]">{value}</p></div>
+  return <div className="rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] p-2.5"><p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8c7564]">{label}</p><p className="mt-0.5 font-[Fraunces] text-lg text-[#221b16]">{value}</p></div>
 }
 
 function PriceTile({ label, value, highlight = false }: { label: string; value: number | string; highlight?: boolean }) {
-  return <div className={`rounded-2xl border p-3 ${highlight ? 'border-[#c4956a]/40 bg-[#c4956a]/5' : 'border-[#e4d6c8] bg-[#f9f5f0]'}`}><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#8c7564]">{label}</p><p className={`mt-1 truncate text-lg font-black ${highlight ? 'text-[#c4956a]' : 'text-[#221b16]'}`}>{value}</p></div>
+  return <div className={`rounded-xl border p-2.5 ${highlight ? 'border-[#c4956a]/40 bg-[#c4956a]/5' : 'border-[#e4d6c8] bg-[#f9f5f0]'}`}><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#8c7564]">{label}</p><p className={`mt-0.5 text-lg font-black ${highlight ? 'text-[#c4956a]' : 'text-[#221b16]'}`}>{value}</p></div>
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
-  return <div className="flex items-start justify-between gap-4 border-b border-[#e4d6c8] pb-3 last:border-b-0 last:pb-0"><span className="text-xs font-black uppercase tracking-[0.18em] text-[#8c7564]">{label}</span><span className="text-right text-sm font-bold text-[#221b16]">{value}</span></div>
+  return <div className="flex items-start justify-between gap-3 border-b border-[#e4d6c8] pb-2 last:border-b-0 last:pb-0"><span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8c7564]">{label}</span><span className="text-right text-xs font-bold text-[#221b16]">{value || '—'}</span></div>
 }

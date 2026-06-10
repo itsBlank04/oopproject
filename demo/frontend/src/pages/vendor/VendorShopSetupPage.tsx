@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
+import MediaUploader from '../../components/MediaUploader'
 import { toast } from 'react-hot-toast'
-import { Check, ArrowLeft, ArrowRight, Store, MapPin, Image } from 'lucide-react'
+import { Check, ArrowLeft, ArrowRight, Store, MapPin, X } from 'lucide-react'
 
 type Category = {
   id: number
@@ -117,26 +118,24 @@ export default function VendorShopSetupPage() {
                       className="w-full resize-none rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#8c7564]">Logo URL</label>
-                    <div className="flex gap-3">
-                      <input type="url" placeholder="https://example.com/logo.jpg"
-                        value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
-                        className="flex-1 rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-dashed border-[#e4d6c8] bg-[#f9f5f0]">
-                        <Image className="h-4 w-4 text-[#8c7564]" />
+                    <label className="text-xs font-semibold text-[#8c7564]">Logo</label>
+                    <MediaUploader folder="shops" onUpload={(urls) => setLogoUrl(urls[0] || '')} maxFiles={1} allowVideo={false} />
+                    {logoUrl && (
+                      <div className="relative mt-2 inline-block">
+                        <img src={logoUrl} alt="Logo" className="h-16 w-16 rounded-xl object-cover border border-[#e4d6c8]" />
+                        <button onClick={() => setLogoUrl('')} className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-[10px]"><X className="h-3 w-3" /></button>
                       </div>
-                    </div>
+                    )}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#8c7564]">Banner URL</label>
-                    <div className="flex gap-3">
-                      <input type="url" placeholder="https://example.com/banner.jpg"
-                        value={bannerUrl} onChange={e => setBannerUrl(e.target.value)}
-                        className="flex-1 rounded-xl border border-[#e4d6c8] bg-white px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16]" />
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-dashed border-[#e4d6c8] bg-[#f9f5f0]">
-                        <Image className="h-4 w-4 text-[#8c7564]" />
+                    <label className="text-xs font-semibold text-[#8c7564]">Banner</label>
+                    <MediaUploader folder="shops" onUpload={(urls) => setBannerUrl(urls[0] || '')} maxFiles={1} allowVideo={false} />
+                    {bannerUrl && (
+                      <div className="relative mt-2 inline-block w-full">
+                        <img src={bannerUrl} alt="Banner" className="h-24 w-full rounded-xl object-cover border border-[#e4d6c8]" />
+                        <button onClick={() => setBannerUrl('')} className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-[10px]"><X className="h-3 w-3" /></button>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}

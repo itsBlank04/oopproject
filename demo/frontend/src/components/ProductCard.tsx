@@ -192,8 +192,7 @@ export default function ProductCard({
 
         {/* Top-right: Shipping badge */}
         {shippingLabel && (
-          <span className="absolute top-3 right-3 z-10 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide"
-            style={{ backdropFilter: 'blur(8px)', background: 'rgba(26,21,18,0.75)' }}>
+          <span className="absolute top-3 right-3 z-10 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide bg-black/75 backdrop-blur-md">
             <span className="text-white">{shippingLabel}</span>
           </span>
         )}
@@ -210,11 +209,11 @@ export default function ProductCard({
                 src={img.imageUrl}
                 alt={product.name}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-contain mix-blend-multiply"
+                className={`absolute inset-0 h-full w-full object-contain mix-blend-multiply transition-all duration-500 ease-out ${
+                  i === index ? 'opacity-100' : 'opacity-0'
+                }`}
                 style={{
-                  opacity: i === index ? 1 : 0,
                   transform: i === index ? (cardHovered ? 'scale(1.06)' : 'scale(1)') : 'scale(0.95)',
-                  transition: 'opacity .45s ease, transform .5s cubic-bezier(.4,0,.2,1)',
                 }}
               />
             ))
@@ -229,8 +228,7 @@ export default function ProductCard({
 
         {/* Image counter */}
         {hasMultiple && imgHovered && (
-          <span className="absolute top-12 right-3 px-2 py-0.5 text-[10px] font-bold text-white rounded-full"
-            style={{ background: 'rgba(26,21,18,0.5)', backdropFilter: 'blur(8px)' }}>
+          <span className="absolute top-12 right-3 px-2 py-0.5 text-[10px] font-bold text-white rounded-full bg-black/50 backdrop-blur-md">
             {index + 1}/{images.length}
           </span>
         )}
@@ -239,15 +237,15 @@ export default function ProductCard({
         {hasMultiple && (
           <>
             <button onClick={prev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm border border-[#E8DDD4] text-[#1A1512] hover:bg-white hover:scale-110 transition-all"
-              style={{ opacity: imgHovered ? 1 : 0, transform: `translateY(-50%) translateX(${imgHovered ? '0' : '-6px'})`, transition: 'opacity .2s, transform .2s' }}>
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm border border-[#E8DDD4] text-[#1A1512] hover:bg-white hover:scale-110 transition-all duration-200"
+              style={{ opacity: imgHovered ? 1 : 0, transform: `translateY(-50%) translateX(${imgHovered ? '0' : '-6px'})` }}>
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" d="M15 19l-7-7 7-7"/>
               </svg>
             </button>
             <button onClick={next}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm border border-[#E8DDD4] text-[#1A1512] hover:bg-white hover:scale-110 transition-all"
-              style={{ opacity: imgHovered ? 1 : 0, transform: `translateY(-50%) translateX(${imgHovered ? '0' : '6px'})`, transition: 'opacity .2s, transform .2s' }}>
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm border border-[#E8DDD4] text-[#1A1512] hover:bg-white hover:scale-110 transition-all duration-200"
+              style={{ opacity: imgHovered ? 1 : 0, transform: `translateY(-50%) translateX(${imgHovered ? '0' : '6px'})` }}>
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" d="M9 5l7 7-7 7"/>
               </svg>

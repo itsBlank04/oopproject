@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
+import { useAuth } from '../../contexts/AuthContext'
 import ImageLightbox from '../../components/ImageLightbox'
 import ProductCard from '../../components/ProductCard'
 
@@ -13,6 +14,7 @@ type Product = {
   status: string
   category: { id: number; name: string }
   images: { id: number; imageUrl: string; sortOrder: number }[]
+  vendor?: { id: number }
 }
 
 type Category = {
@@ -23,6 +25,7 @@ type Category = {
 }
 
 export default function ProductListPage() {
+  const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const categoryFromUrl = searchParams.get('category')
   const initialCategory = categoryFromUrl ? Number(categoryFromUrl) : null
@@ -80,7 +83,13 @@ export default function ProductListPage() {
   })
 
   const products = productsData ?? []
-  const filtered = products.filter((p: Product) => p.priceBdt >= minPrice && p.priceBdt <= maxPrice)
+  const filtered = useMemo(() =>
+    products.filter((p: Product) =>
+      p.priceBdt >= minPrice && p.priceBdt <= maxPrice &&
+      (!user || p.vendor?.id !== user.id)
+    ),
+    [products, minPrice, maxPrice, user],
+  )
 
   return (
     <div className="min-h-screen bg-[#f9f5f0] px-2 py-3 sm:px-4 sm:py-2">

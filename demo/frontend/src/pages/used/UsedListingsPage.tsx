@@ -351,6 +351,10 @@ export default function UsedListingsPage() {
     [conditions, selectedCondition],
   )
 
+  const userListings = useMemo(() =>
+    listings.filter(item => !user || item.seller?.id !== user.id),
+    [listings, user],
+  )
   const hasActiveFilters = !!(selectedCategory || isOtherCategory || minPrice || maxPrice || selectedCondition || maxDistance || submittedSearch)
 
   return (
@@ -570,9 +574,19 @@ export default function UsedListingsPage() {
                   Sell an Item
                 </button>
               </div>
+            ) : userListings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-outline-variant/60 bg-surface-base/50 py-20 text-center">
+                <span className="material-symbols-outlined text-[64px] text-outline">inventory_2</span>
+                <p className="font-headline-sm text-headline-sm text-primary">No other items found</p>
+                <p className="mt-1 text-sm text-on-surface-variant">
+                  {hasActiveFilters
+                    ? 'Try adjusting your filters or search terms.'
+                    : 'There are no items from other sellers right now.'}
+                </p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {listings.map(item => (
+                {userListings.map(item => (
                   <UsedListingCard
                     key={item.id}
                     listing={item}

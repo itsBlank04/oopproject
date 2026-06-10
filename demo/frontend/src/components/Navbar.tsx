@@ -10,7 +10,7 @@ import { cartEvents } from "../lib/cartEvents"
 import toast from "react-hot-toast"
 
 
-export default function Navbar() {
+export default function Navbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const { user, logout, hasRole, activeRole, setActiveRole, subscribedRoles } = useAuth()
   const { openModal } = useAuthModal()
   const navigate = useNavigate()
@@ -30,6 +30,14 @@ export default function Navbar() {
     staleTime: 60_000,
   })
   const unreadCount = (Array.isArray(notifications) ? notifications : []).filter((n: any) => !n.read).length
+
+  const { data: msgUnread } = useQuery({
+    queryKey: ['msg-unread'],
+    queryFn: () => apiClient.get('/api/chat/unread-count').then(r => r.data?.total ?? 0),
+    enabled: !!user,
+    staleTime: 30_000,
+  })
+  const msgUnreadCount = Number(msgUnread ?? 0)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -98,6 +106,16 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-[#e4d6c8]/60 bg-white/95 shadow-[0_1px_0_0_rgba(255,255,255,0.5)_inset] backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5 lg:px-8">
         <div className="flex items-center gap-6">
+          {activeRole && (
+            <button
+              onClick={onToggleSidebar}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e4d6c8]/60 text-[#6c5b4f] transition-all hover:bg-[#f9f5f0] hover:text-[#221b16]"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-5 w-5">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+          )}
           <Link to="/" className="flex items-center">
             <img src="/logo.png" alt="AtomDrops" className="h-auto w-auto max-h-10 max-w-24 object-contain" />
           </Link>
@@ -171,6 +189,16 @@ export default function Navbar() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
+                </Link>
+                <Link to="/messages" className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/60 bg-white/40 text-[#6c5b4f] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] backdrop-blur-md transition-all duration-300 hover:border-[#e4d6c8] hover:bg-white/70 hover:text-[#221b16]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {msgUnreadCount > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-[0_2px_6px_-1px_rgba(239,68,68,0.4)]">
+                      {msgUnreadCount > 9 ? '9+' : msgUnreadCount}
+                    </span>
+                  )}
                 </Link>
                 <Link to="/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/60 bg-white/40 text-[#6c5b4f] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] backdrop-blur-md transition-all duration-300 hover:border-[#e4d6c8] hover:bg-white/70 hover:text-[#221b16]">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">

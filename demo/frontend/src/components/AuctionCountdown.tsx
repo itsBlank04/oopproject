@@ -13,7 +13,8 @@ function formatTimeLeft(ms: number) {
   const seconds = totalSeconds % 60
 
   if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`
-  return `${hours}h ${minutes}m ${seconds}s`
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
+  return `${minutes}m ${seconds}s`
 }
 
 export default function AuctionCountdown({ endTime }: AuctionCountdownProps) {
@@ -29,12 +30,12 @@ export default function AuctionCountdown({ endTime }: AuctionCountdownProps) {
   const expired = Number.isNaN(endMs) || timeLeft <= 0
 
   if (expired) {
-    return <span className="text-sm font-medium text-[#8c7564]">Closed</span>
+    return <span className="text-lg font-black text-rose-600 tabular-nums">Ended</span>
   }
 
   return (
-    <span className="text-sm font-medium text-[#221b16] tabular-nums">
-      {formatTimeLeft(timeLeft)} left
+    <span className="text-3xl font-black text-[#221b16] tabular-nums tracking-tight">
+      {formatTimeLeft(timeLeft)}
     </span>
   )
 }

@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import { toast } from 'react-hot-toast'
 import { 
   Store, Plus, Settings, Users, ArrowRight, MapPin, 
-  Trash2, UserPlus, LayoutDashboard, ShieldCheck
+  Trash2, UserPlus, LayoutDashboard, ShieldCheck, Package
 } from 'lucide-react'
 
 type Category = {
@@ -44,6 +44,7 @@ type SubscriptionSummary = {
 }
 
 export default function VendorShopManagerPage() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'list' | 'create'>('list')
   
@@ -297,8 +298,8 @@ export default function VendorShopManagerPage() {
             ) : (
               <div className="grid gap-6">
                 {shops.map((shop) => (
-                  <div key={shop.id} className="bg-white border border-[#e4d6c8]/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex gap-4 items-center">
+                  <div key={shop.id} onClick={() => navigate(`/shop/${shop.slug}`)} className="bg-white border border-[#e4d6c8]/50 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-[#c4956a]/30 transition-all duration-300 cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex gap-4 items-center pointer-events-none">
                       <div className="h-16 w-16 overflow-hidden rounded-xl bg-[#e4d6c8] border border-gray-100 flex-shrink-0">
                         {shop.logoUrl ? (
                           <img src={shop.logoUrl} alt={shop.name} className="h-full w-full object-cover" />
@@ -312,13 +313,31 @@ export default function VendorShopManagerPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-[Fraunces] text-xl font-bold text-[#221b16]">{shop.name}</h3>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            shop.status === 'ACTIVE' 
-                              ? 'bg-emerald-100 text-emerald-800' 
-                              : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {shop.status}
-                          </span>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              updateShopMutation.mutate({
+                                id: shop.id,
+                                updates: { status: shop.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' },
+                              })
+                            }}
+                            disabled={updateShopMutation.isPending}
+                            className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-all duration-300 pointer-events-auto ${
+                              shop.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-amber-400'
+                            }`}
+                          >
+                            <span
+                              className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-300 ${
+                                shop.status === 'ACTIVE' ? 'translate-x-[22px]' : 'translate-x-[2px]'
+                              }`}
+                            >
+                              <span className={`text-[7px] font-black uppercase leading-none ${
+                                shop.status === 'ACTIVE' ? 'text-emerald-600' : 'text-amber-600'
+                              }`}>
+                                {shop.status === 'ACTIVE' ? 'ON' : 'OF'}
+                              </span>
+                            </span>
+                          </button>
                           {shop.verificationLevel !== 'STANDARD' && (
                             <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
                               <ShieldCheck className="h-3 w-3" />
@@ -334,26 +353,34 @@ export default function VendorShopManagerPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                      <Link 
-                        to={`/vendor/dashboard?shop=${shop.id}`} 
+                      <Link
+                        to={`/vendor/dashboard?shop=${shop.id}`}
+                        onClick={e => e.stopPropagation()}
                         className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
                       </Link>
-                      <Link 
-                        to={`/shop/${shop.slug}`} 
+                      <button
+                        onClick={e => { e.stopPropagation(); navigate(`/vendor/shops/${shop.id}/products`) }}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
+                      >
+                        <Package className="h-3.5 w-3.5" /> Products
+                      </button>
+                      <Link
+                        to={`/shop/${shop.slug}`}
+                        onClick={e => e.stopPropagation()}
                         className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         Visit Shop <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                       <button
-                        onClick={() => handleOpenEdit(shop)}
+                        onClick={e => { e.stopPropagation(); handleOpenEdit(shop) }}
                         className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <Settings className="h-3.5 w-3.5" /> Customize
                       </button>
                       <button
-                        onClick={() => setManagingStaffShop(shop)}
+                        onClick={e => { e.stopPropagation(); setManagingStaffShop(shop) }}
                         className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-[#e4d6c8] text-[#8c7564] rounded-xl text-xs font-semibold hover:bg-gray-50 transition-all"
                       >
                         <Users className="h-3.5 w-3.5" /> Staff

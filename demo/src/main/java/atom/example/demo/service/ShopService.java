@@ -226,7 +226,16 @@ public class ShopService {
 
     public Map<String, Object> getShopPublicProfileBySlug(String slug) {
         Shop shop = shopRepository.findBySlug(slug)
-            .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
+            .orElseGet(() -> shopRepository.findBySlugIgnoreCase(slug).orElse(null));
+        if (shop == null) {
+            try {
+                Long id = Long.valueOf(slug);
+                shop = shopRepository.findById(id).orElse(null);
+            } catch (NumberFormatException ignored) {}
+        }
+        if (shop == null) {
+            throw new IllegalArgumentException("Shop not found");
+        }
         return buildShopPublicData(shop);
     }
 

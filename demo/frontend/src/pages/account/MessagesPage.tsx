@@ -60,15 +60,42 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+type TabId = 'ORDER' | 'USED' | 'REPAIR'
+
+const TAB_META: Record<TabId, { label: string; icon: string; desc: string; emptyTitle: string; emptyDesc: string }> = {
+  ORDER: {
+    label: 'Merchant',
+    icon: '🛍️',
+    desc: 'Marketplace orders',
+    emptyTitle: 'No merchant conversations',
+    emptyDesc: 'Conversations appear after you place an order',
+  },
+  USED: {
+    label: 'Used Marketplace',
+    icon: '♻️',
+    desc: 'Used item chats',
+    emptyTitle: 'No used item conversations',
+    emptyDesc: 'Start a chat from a used item listing',
+  },
+  REPAIR: {
+    label: 'Technician',
+    icon: '🔧',
+    desc: 'Repair job chats',
+    emptyTitle: 'No technician conversations',
+    emptyDesc: 'Conversations appear after a repair job is booked',
+  },
+}
+
 export default function MessagesPage() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
-  const [tab, setTab] = useState<'ORDER' | 'USED'>(searchParams.get('orderId') ? 'ORDER' : 'USED')
+  const [tab, setTab] = useState<TabId>(searchParams.get('orderId') ? 'ORDER' : 'USED')
   const [selected, setSelected] = useState<Conv | null>(null)
   const [newMsg, setNewMsg] = useState('')
   const [search, setSearch] = useState('')
   const [lightboxAvatar, setLightboxAvatar] = useState<string | null>(null)
   const msgEndRef = useRef<HTMLDivElement>(null)
+  const msgContainerRef = useRef<HTMLDivElement>(null)
   const [localMessages, setLocalMessages] = useState<Msg[]>([])
   const initialSelectDone = useRef(false)
 
@@ -141,7 +168,9 @@ export default function MessagesPage() {
   }, [selected, queryClient])
 
   useEffect(() => {
-    msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (localMessages.length > 0 && msgContainerRef.current) {
+      msgContainerRef.current.scrollTop = msgContainerRef.current.scrollHeight
+    }
   }, [localMessages])
 
   const sendMutation = useMutation({
@@ -177,24 +206,21 @@ export default function MessagesPage() {
           <div className="flex w-[360px] flex-shrink-0 flex-col border-r border-[#e4d6c8]">
             {/* Header */}
             <div className="border-b border-[#e4d6c8] px-5 py-4">
-              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Messages</h2>
-              <p className="mt-0.5 text-xs text-[#8c7564]">{convs.length} conversation{convs.length !== 1 ? 's' : ''}</p>
+              <h2 className="font-[Fraunces] text-xl text-[#221b16]">Inbox</h2>
+              <p className="mt-0.5 text-xs text-[#8c7564]">{convs.length} {TAB_META[tab].label.toLowerCase()} conversation{convs.length !== 1 ? 's' : ''}</p>
             </div>
 
             {/* Tabs */}
             <div className="flex border-b border-[#e4d6c8]">
-              <button onClick={() => { setTab('ORDER'); setSelected(null) }}
-                className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-                  tab === 'ORDER' ? 'border-[#221b16] text-[#221b16]' : 'border-transparent text-[#8c7564] hover:text-[#221b16]'
-                }`}>
-                Order Chats
-              </button>
-              <button onClick={() => { setTab('USED'); setSelected(null) }}
-                className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-                  tab === 'USED' ? 'border-[#221b16] text-[#221b16]' : 'border-transparent text-[#8c7564] hover:text-[#221b16]'
-                }`}>
-                Used Item Chats
-              </button>
+              {(['ORDER', 'USED', 'REPAIR'] as TabId[]).map(t => (
+                <button key={t} onClick={() => { setTab(t); setSelected(null) }}
+                  className={`flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-semibold transition border-b-2 ${
+                    tab === t ? 'border-[#221b16] text-[#221b16]' : 'border-transparent text-[#8c7564] hover:text-[#221b16]'
+                  }`}>
+                  <span className="text-xs">{TAB_META[t].icon}</span>
+                  <span className="text-[11px] leading-tight">{TAB_META[t].desc}</span>
+                </button>
+              ))}
             </div>
 
             {/* Search */}
@@ -210,7 +236,7 @@ export default function MessagesPage() {
             </div>
 
             {/* Conversation list */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               {isLoading ? (
                 <div className="space-y-1 p-3">
                   {[1,2,3].map(i => (
@@ -231,10 +257,8 @@ export default function MessagesPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                       </svg>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-[#221b16]">No {tab === 'ORDER' ? 'order' : 'used item'} conversations</p>
-                    <p className="mt-1 text-xs text-[#8c7564]">
-                      {tab === 'ORDER' ? 'Conversations appear after you place an order' : 'Start a chat from a used item listing'}
-                    </p>
+                    <p className="mt-3 text-sm font-semibold text-[#221b16]">{TAB_META[tab].emptyTitle}</p>
+                    <p className="mt-1 text-xs text-[#8c7564]">{TAB_META[tab].emptyDesc}</p>
                   </div>
                 </div>
               ) : (
@@ -267,12 +291,17 @@ export default function MessagesPage() {
                             </p>
                             {c.type === 'ORDER' && (
                               <span className="shrink-0 rounded-full bg-[#f9f5f0] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
-                                Order
+                                Merchant
                               </span>
                             )}
                             {c.type === 'USED' && (
                               <span className="shrink-0 rounded-full bg-[#e4d6c8] px-2 py-0.5 text-[10px] font-medium text-[#6c5b4f]">
                                 Used
+                              </span>
+                            )}
+                            {c.type === 'REPAIR' && (
+                              <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                                Repair
                               </span>
                             )}
                           </div>
@@ -327,7 +356,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+                <div ref={msgContainerRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 py-4">
                   {localMessages.length === 0 ? (
                     <div className="flex h-full items-center justify-center text-sm text-[#8c7564]">
                       No messages yet. Start the conversation!

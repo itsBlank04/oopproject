@@ -33,6 +33,8 @@ public class RepairController {
     private final TechnicianRepository technicianRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final ConversationRepository conversationRepository;
+    private final ConversationMemberRepository conversationMemberRepository;
 
     public RepairController(
             RepairRequestRepository repairRequestRepository,
@@ -46,7 +48,9 @@ public class RepairController {
             RepairPaymentRepository repairPaymentRepository,
             TechnicianRepository technicianRepository,
             UserRepository userRepository,
-            CategoryRepository categoryRepository) {
+            CategoryRepository categoryRepository,
+            ConversationRepository conversationRepository,
+            ConversationMemberRepository conversationMemberRepository) {
         this.repairRequestRepository = repairRequestRepository;
         this.repairMediaRepository = repairMediaRepository;
         this.repairQuoteRepository = repairQuoteRepository;
@@ -59,6 +63,8 @@ public class RepairController {
         this.technicianRepository = technicianRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.conversationRepository = conversationRepository;
+        this.conversationMemberRepository = conversationMemberRepository;
     }
 
     // ═══════════════════════════════════════════════
@@ -252,7 +258,30 @@ public class RepairController {
         if (body.containsKey("scheduledTimeSlot"))
             booking.setScheduledTimeSlot((String) body.get("scheduledTimeSlot"));
 
-        return repairBookingRepository.save(booking);
+        RepairBooking saved = repairBookingRepository.save(booking);
+
+        // Auto-create repair conversation
+        Conversation conv = new Conversation();
+        conv.setType("REPAIR");
+        conv.setEntityType("REPAIR_BOOKING");
+        conv.setEntityId(saved.getId());
+        conv.setTitle("Repair Booking #" + saved.getId());
+        conv.setStatus("OPEN");
+        conv = conversationRepository.save(conv);
+
+        ConversationMember customerMember = new ConversationMember();
+        customerMember.setConversation(conv);
+        customerMember.setUser(request.getCustomer());
+        customerMember.setRole("CUSTOMER");
+        conversationMemberRepository.save(customerMember);
+
+        ConversationMember techMember = new ConversationMember();
+        techMember.setConversation(conv);
+        techMember.setUser(quote.getTechnician().getUser());
+        techMember.setRole("TECHNICIAN");
+        conversationMemberRepository.save(techMember);
+
+        return saved;
     }
 
     /** Reject a quote */

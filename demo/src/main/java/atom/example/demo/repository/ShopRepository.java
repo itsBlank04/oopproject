@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface ShopRepository extends JpaRepository<Shop, Long> {
     List<Shop> findByVendorId(Long vendorId);
     Optional<Shop> findBySlug(String slug);
+    Optional<Shop> findBySlugIgnoreCase(String slug);
     Optional<Shop> findByName(String name);
     long countByVendorId(Long vendorId);
 }

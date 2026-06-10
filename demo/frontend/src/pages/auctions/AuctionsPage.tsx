@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../../lib/apiClient'
 import AuctionCountdown from '../../components/AuctionCountdown'
+import { useAuth } from '../../contexts/AuthContext'
 
-type AuctionStatusFilter = 'ACTIVE' | 'PREPARING' | 'CLOSED' | 'ALL'
+type AuctionStatusFilter = 'ACTIVE' | 'PREPARING' | 'CLOSED' | 'ALL' | 'BOOKMARKED'
 
 type AuctionImage = { imageUrl: string }
 
@@ -30,11 +31,25 @@ type Auction = {
   lots?: AuctionLot[]
 }
 
+type WatchlistEntry = {
+  id: number
+  lot?: {
+    id: number
+    title: string
+    auction?: Auction
+  }
+}
+
+type BookmarkEntry = {
+  id: number
+  auction: Auction
+}
+
 const tabs: { id: AuctionStatusFilter; label: string; hint: string }[] = [
+  { id: 'ALL', label: 'All Auction', hint: 'Live & Upcoming' },
   { id: 'ACTIVE', label: 'Live Floor', hint: 'Bidding now' },
   { id: 'PREPARING', label: 'Upcoming', hint: 'Watch before open' },
   { id: 'CLOSED', label: 'Results', hint: 'Recently ended' },
-  { id: 'ALL', label: 'All Lots', hint: 'Full board' },
 ]
 
 function money(value: unknown) {
@@ -77,21 +92,50 @@ function firstImages(auction: Auction) {
 }
 
 export default function AuctionsPage() {
+  const { user } = useAuth()
   const [tab, setTab] = useState<AuctionStatusFilter>('ACTIVE')
 
-  const { data: auctions = [], isLoading, isFetching } = useQuery<Auction[]>({
+  const { data: watchlist = [] } = useQuery<WatchlistEntry[]>({
+    queryKey: ['auction-watchlist'],
+    queryFn: () => apiClient.get('/api/watchlist').then(r => Array.isArray(r.data) ? r.data : []),
+    enabled: tab === 'BOOKMARKED' && !!user,
+    staleTime: 5_000,
+  })
+
+  const { data: bookmarks = [] } = useQuery<BookmarkEntry[]>({
+    queryKey: ['auction-bookmarks'],
+    queryFn: () => apiClient.get('/api/bookmarks/auctions').then(r => Array.isArray(r.data) ? r.data : []),
+    enabled: tab === 'BOOKMARKED' && !!user,
+    staleTime: 5_000,
+  })
+
+  const watchedAuctionIds = useMemo(() => {
+    if (!watchlist.length && !bookmarks.length) return new Set<number>()
+    const ids = new Set<number>()
+    for (const entry of watchlist) {
+      const auctionId = entry.lot?.auction?.id
+      if (auctionId) ids.add(auctionId)
+    }
+    for (const entry of bookmarks) {
+      if (entry.auction?.id) ids.add(entry.auction.id)
+    }
+    return ids
+  }, [watchlist, bookmarks])
+
+  const { data: allAuctions = [], isLoading, isFetching } = useQuery<Auction[]>({
     queryKey: ['auctions', tab],
-    queryFn: () => apiClient.get('/api/auctions', { params: tab === 'ALL' ? undefined : { status: tab } })
+    queryFn: () => apiClient.get('/api/auctions', { params: tab === 'BOOKMARKED' ? undefined : (tab === 'ALL' ? undefined : { status: tab }) })
       .then(r => Array.isArray(r.data) ? r.data : r.data.content || []),
     staleTime: 2_000,
-    refetchInterval: tab === 'ACTIVE' || tab === 'PREPARING' || tab === 'ALL' ? 1500 : 10_000,
+    refetchInterval: tab === 'ACTIVE' || tab === 'PREPARING' || tab === 'ALL' || tab === 'BOOKMARKED' ? 1500 : 10_000,
     placeholderData: previous => previous ?? [],
   })
 
   const visibleAuctions = useMemo(() => {
-    if (tab === 'ALL') return auctions
-    return auctions.filter(auction => auction.status === tab)
-  }, [auctions, tab])
+    if (tab === 'ALL') return allAuctions.filter(a => a.status === 'ACTIVE' || a.status === 'PREPARING')
+    if (tab === 'BOOKMARKED') return allAuctions.filter(a => watchedAuctionIds.has(a.id))
+    return allAuctions.filter(auction => auction.status === tab)
+  }, [allAuctions, tab, watchedAuctionIds])
 
   const stats = useMemo(() => {
     const lots = visibleAuctions.flatMap(auction => auction.lots ?? [])
@@ -128,7 +172,7 @@ export default function AuctionsPage() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-3 md:grid-cols-4">
+          <div className="mt-10 grid gap-3 md:grid-cols-5">
             {tabs.map(item => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`group rounded-2xl border p-4 text-left transition-all ${tab === item.id ? 'border-[#c4956a] bg-[#c4956a] text-white shadow-[0_20px_60px_rgba(238,90,36,0.25)]' : 'border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#e4d6c8] hover:bg-[#f9f5f0]'}`}>
@@ -139,6 +183,16 @@ export default function AuctionsPage() {
                 <p className={`mt-1 text-xs ${tab === item.id ? 'text-white/80' : 'text-[#8c7564]'}`}>{item.hint}</p>
               </button>
             ))}
+            {user && (
+              <button onClick={() => setTab('BOOKMARKED')}
+                className={`group rounded-2xl border p-4 text-left transition-all ${tab === 'BOOKMARKED' ? 'border-[#c4956a] bg-[#c4956a] text-white shadow-[0_20px_60px_rgba(238,90,36,0.25)]' : 'border-[#e4d6c8] bg-white text-[#221b16] hover:border-[#e4d6c8] hover:bg-[#f9f5f0]'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-black uppercase tracking-[0.18em]">Bookmarked</span>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                </div>
+                <p className={`mt-1 text-xs ${tab === 'BOOKMARKED' ? 'text-white/80' : 'text-[#8c7564]'}`}>Followed auctions</p>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -146,7 +200,7 @@ export default function AuctionsPage() {
       <main className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#c4956a]">{tab === 'ALL' ? 'Full board' : tab.toLowerCase()}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#c4956a]">{tab === 'ALL' ? 'Live & Upcoming' : tab === 'BOOKMARKED' ? 'Bookmarked' : tab.toLowerCase()}</p>
             <h2 className="mt-1 font-[Fraunces] text-3xl text-[#221b16]">{visibleAuctions.length} auction{visibleAuctions.length === 1 ? '' : 's'} available</h2>
           </div>
           <div className="rounded-full border border-[#e4d6c8] bg-white px-4 py-2 text-xs font-semibold text-[#6c5b4f]">

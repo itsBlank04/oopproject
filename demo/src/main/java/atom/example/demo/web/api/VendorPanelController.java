@@ -176,6 +176,23 @@ public class VendorPanelController {
             .toList();
     }
 
+    @PutMapping("/products/{productId}")
+    public Product updateProduct(@PathVariable Long productId, @RequestBody Map<String, Object> body) {
+        if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");
+        Long userId = SecurityConfig.getSessionUserId();
+        if (userId == null) throw new IllegalArgumentException("Not authenticated");
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        if (!product.getVendor().getId().equals(userId)) {
+            throw new SecurityException("Not your product");
+        }
+        if (body.containsKey("name")) product.setName((String) body.get("name"));
+        if (body.containsKey("description")) product.setDescription((String) body.get("description"));
+        if (body.containsKey("priceBdt")) product.setPriceBdt(new java.math.BigDecimal(body.get("priceBdt").toString()));
+        if (body.containsKey("status")) product.setStatus((String) body.get("status"));
+        return productRepository.save(product);
+    }
+
     @PutMapping("/products/{productId}/shipping")
     public Product updateShippingType(@PathVariable Long productId, @RequestBody Map<String, String> body) {
         if (!SecurityConfig.hasRole("VENDOR")) throw new SecurityException("Vendor access required");

@@ -50,7 +50,7 @@ export default function Sidebar({ open, onToggle }: { open: boolean; onToggle: (
       </button>
 
       {/* Overlay */}
-      {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden" onClick={onToggle} />}
+      {open && <div className="fixed inset-0 z-30 bg-black/20 lg:hidden" onClick={onToggle} />}
 
       <aside className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-[#e4d6c8]/60 bg-white/95 backdrop-blur-xl transition-all duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'} lg:top-[60px] lg:h-[calc(100vh-60px)]`}>
         <div className="flex h-20 items-center gap-3 border-b border-[#e4d6c8]/40 px-5">
@@ -97,7 +97,6 @@ export default function Sidebar({ open, onToggle }: { open: boolean; onToggle: (
                 <Link
                   key={link.to}
                   to={link.to}
-                  onClick={() => { if (open) onToggle() }}
                   className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? `${modeColor} text-white shadow-sm`

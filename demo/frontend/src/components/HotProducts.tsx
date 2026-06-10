@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import apiClient from '../lib/apiClient'
+import { useAuth } from '../contexts/AuthContext'
 import ProductCard from './ProductCard'
 import ImageLightbox from './ImageLightbox'
 
@@ -11,6 +12,7 @@ type Product = {
   priceBdt: number
   images?: { imageUrl?: string }[]
   category?: { id: number; name: string }
+  vendor?: { id: number }
 }
 
 type Review = {
@@ -26,6 +28,7 @@ const tabs = [
 type TabKey = (typeof tabs)[number]['key']
 
 export default function HotProducts() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<TabKey>('latest')
   const [lightbox, setLightbox] = useState<{ images: { url: string }[]; index: number } | null>(null)
 
@@ -66,9 +69,10 @@ export default function HotProducts() {
   })
 
   const isLoading = activeTab === 'latest' ? latestLoading : topRatedLoading
-  const displayProducts = activeTab === 'latest'
-    ? latestProducts
-    : topRatedProducts
+  const displayProducts = useMemo(() => {
+    const list = activeTab === 'latest' ? latestProducts : topRatedProducts
+    return list.filter((p: Product) => !user || p.vendor?.id !== user.id)
+  }, [activeTab, latestProducts, topRatedProducts, user])
 
   return (
     <section className="bg-white px-6 py-14 lg:px-8 lg:py-16">

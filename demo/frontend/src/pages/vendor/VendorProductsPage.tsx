@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import apiClient from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import MediaUploader from '../../components/MediaUploader'
 import ImageLightbox from '../../components/ImageLightbox'
 import { useConfirmAction } from '../../hooks/useConfirmAction'
@@ -27,11 +27,23 @@ export default function VendorProductsPage() {
   const { user, hasRole } = useAuth()
   const queryClient = useQueryClient()
   const { askConfirm, showResult, Dialogs } = useConfirmAction()
+  const { shopId: shopIdParam } = useParams<{ shopId: string }>()
   const [showForm, setShowForm] = useState(false)
   const [editProductId, setEditProductId] = useState<number | null>(null)
   
-  // Filter state
-  const [selectedShopId, setSelectedShopId] = useState<number | null>(null)
+  // Filter state — auto-set from route param if present
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(
+    shopIdParam ? Number(shopIdParam) : null
+  )
+
+  const isScopedToShop = !!shopIdParam
+
+  // Auto-set form.shopId when scoped to a shop
+  useEffect(() => {
+    if (isScopedToShop && selectedShopId) {
+      setForm(prev => ({ ...prev, shopId: String(selectedShopId) }))
+    }
+  }, [isScopedToShop, selectedShopId])
 
   // Form states
   const [form, setForm] = useState({ name: '', description: '', priceBdt: '', categoryId: '', shopId: '' })
@@ -165,6 +177,16 @@ export default function VendorProductsPage() {
     }, 400)
   }
 
+  const toggleStatus = useMutation({
+    mutationFn: async ({ productId, status }: { productId: number; status: string }) => {
+      await apiClient.put(`/api/vendor/products/${productId}/status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-products'] })
+    },
+    onError: (err: any) => showResult(err.response?.data?.error ?? 'Failed to update status', 'error'),
+  })
+
   const updateShipping = useMutation({
     mutationFn: async ({ productId, shippingType }: { productId: number; shippingType: string }) => {
       await apiClient.put(`/api/vendor/products/${productId}/shipping`, { shippingType })
@@ -260,19 +282,28 @@ export default function VendorProductsPage() {
         <div className="mx-auto max-w-6xl px-6 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="font-[Fraunces] text-3xl tracking-tight text-[#221b16]">Products</h1>
+              <h1 className="font-[Fraunces] text-3xl tracking-tight text-[#221b16]">
+                {isScopedToShop && shops.length > 0
+                  ? `${shops.find(s => s.id === selectedShopId)?.name || 'Shop'} Products`
+                  : 'Products'}
+              </h1>
               <p className="mt-1 text-sm text-[#8c7564]">Manage your inventory, stock levels, and listings</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
-              {/* Shop filter */}
-              {shops.length > 0 && (
-                <div className="flex items-center gap-2 bg-[#faf6f2] border border-[#e4d6c8] px-3 py-2 rounded-xl shadow-sm text-xs">
-                  <span className="font-semibold text-[#8c7564]">Shop:</span>
+              {/* Shop filter — hidden when scoped to a specific shop */}
+              {!isScopedToShop && shops.length > 0 && (
+                <div className="flex items-center gap-3 bg-gradient-to-r from-[#f9f0e6] to-[#faf6f2] border-2 border-[#c4956a]/40 px-4 py-2.5 rounded-xl shadow-[0_2px_8px_rgba(196,149,106,0.15)] text-xs transition-all duration-200 hover:border-[#c4956a]/80 hover:shadow-[0_4px_14px_rgba(196,149,106,0.25)]">
+                  <span className="flex items-center gap-1.5 font-semibold text-[#8c7564] tracking-wide uppercase text-[10px]">
+                    <svg className="w-3.5 h-3.5 text-[#c4956a]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 21v-6a2 2 0 012-2h3a2 2 0 012 2v6M5 21V9l7-5 7 5v12M3 21h18"/></svg>
+                    Shop
+                  </span>
+                  <div className="w-px h-5 bg-[#e4d6c8]" />
                   <select
                     value={selectedShopId || ''}
                     onChange={(e) => setSelectedShopId(e.target.value ? Number(e.target.value) : null)}
-                    className="font-bold text-[#221b16] bg-transparent focus:outline-none cursor-pointer"
+                    className="font-bold text-[#221b16] bg-transparent focus:outline-none cursor-pointer pr-4 appearance-none"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%238c7564'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right center" }}
                   >
                     <option value="">All Shops</option>
                     {shops.map(s => (
@@ -325,9 +356,9 @@ export default function VendorProductsPage() {
               <div>
                 <label className="text-xs font-semibold text-[#6c5b4f] uppercase tracking-wider">Target Shop / Outlet</label>
                 <select 
-                  value={form.shopId} 
+                  value={isScopedToShop ? String(selectedShopId) : form.shopId} 
                   onChange={e => setForm({ ...form, shopId: e.target.value })}
-                  disabled={!!editProductId}
+                  disabled={!!editProductId || isScopedToShop}
                   className="mt-1.5 w-full rounded-xl border border-[#e4d6c8] bg-[#f9f5f0] px-4 py-2.5 text-sm text-[#221b16] outline-none transition focus:border-[#221b16] focus:bg-white focus:ring-1 focus:ring-[#221b16]/10 disabled:opacity-50"
                 >
                   <option value="">Select Target Shop</option>
@@ -408,15 +439,44 @@ export default function VendorProductsPage() {
               const s = stockFor(p)
               const level = stockLevel(p)
               return (
-                <div key={p.id} className="group relative rounded-2xl bg-white shadow-sm ring-1 ring-[#e4d6c8]/60 transition-all hover:shadow-md hover:ring-[#e4d6c8]">
-                  {/* Status badge */}
-                  <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                      p.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
-                      p.status === 'DRAFT' ? 'bg-gray-100 text-gray-600' :
-                      'bg-[#f9f5f0] text-[#6c5b4f]'
-                    }`}>{p.status}</span>
-                    {p.shop && (
+                  <div key={p.id} className="group relative cursor-pointer rounded-2xl bg-white shadow-sm ring-1 ring-[#e4d6c8]/60 transition-all hover:shadow-md hover:ring-[#e4d6c8]">
+                    {/* Status toggle */}
+                    <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
+                      <button
+                        onClick={() => toggleStatus.mutate({
+                          productId: p.id,
+                          status: p.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE',
+                        })}
+                        disabled={toggleStatus.isPending}
+                        className={`relative inline-flex h-5 w-9 cursor-pointer items-center rounded-full transition-all duration-300 ${
+                          p.status === 'ACTIVE'
+                            ? s.stockQty === 0
+                              ? 'bg-red-500'
+                              : s.stockQty <= s.lowStockThreshold
+                                ? 'bg-amber-500'
+                                : 'bg-emerald-500'
+                            : 'bg-gray-400'
+                        }`}
+                      >
+                        <span
+                          className={`inline-flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-300 ${
+                            p.status === 'ACTIVE' ? 'translate-x-[18px]' : 'translate-x-[2px]'
+                          }`}
+                        >
+                          <span className={`text-[6px] font-black uppercase leading-none ${
+                            p.status === 'ACTIVE'
+                              ? s.stockQty === 0
+                                ? 'text-red-600'
+                                : s.stockQty <= s.lowStockThreshold
+                                  ? 'text-amber-600'
+                                  : 'text-emerald-600'
+                              : 'text-gray-500'
+                          }`}>
+                            {p.status === 'ACTIVE' ? 'ON' : 'OF'}
+                          </span>
+                        </span>
+                      </button>
+                      {p.shop && (
                       <span className="rounded-full bg-slate-800 text-white px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider flex items-center gap-1">
                         <Store className="h-3 w-3" /> {p.shop.name}
                       </span>

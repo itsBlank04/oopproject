@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { useEffect, useLayoutEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import AuthModal from './components/AuthModal'
 import SiteLayout from './components/SiteLayout'
 import { useAuthModal } from './contexts/AuthModalContext'
@@ -41,6 +41,18 @@ import RepairJobsPage from './pages/repair/RepairJobsPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  useEffect(() => {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+    return () => { if ('scrollRestoration' in history) history.scrollRestoration = 'auto' }
+  }, [])
+  return null
+}
+
 function AuthRedirect({ tab }: { tab: 'signin' | 'register' }) {
   const { openModal } = useAuthModal()
   const navigate = useNavigate()
@@ -58,6 +70,7 @@ export default function App() {
   return (
     <>
       <AuthModal />
+      <ScrollToTop />
       <Routes>
         <Route path="/auth/login" element={<AuthRedirect tab="signin" />} />
         <Route path="/auth/register" element={<AuthRedirect tab="register" />} />
@@ -107,6 +120,7 @@ export default function App() {
         <Route path="/vendor/subscription" element={<SiteLayout><VendorSubscriptionsPage /></SiteLayout>} />
         <Route path="/vendor/shops" element={<SiteLayout><VendorShopManagerPage /></SiteLayout>} />
         <Route path="/vendor/shops/setup" element={<SiteLayout><VendorShopSetupPage /></SiteLayout>} />
+        <Route path="/vendor/shops/:shopId/products" element={<SiteLayout><VendorProductsPage /></SiteLayout>} />
         <Route path="/vendor/financials" element={<SiteLayout><VendorFinancialPage /></SiteLayout>} />
         <Route path="/vendor/reviews" element={<SiteLayout><VendorReviewsPage /></SiteLayout>} />
 

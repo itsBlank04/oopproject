@@ -25,6 +25,7 @@ const SLIDES: Slide[] = [
     icon: 'shopping_bag',
     gradient: 'from-[#f9f5f0] via-[#f0e8df] to-[#e4d6c8]',
     ringColor: 'ring-[#c4956a]/20',
+    image: '/marketplace-hero.png',
   },
   {
     id: 2,
@@ -48,6 +49,7 @@ const SLIDES: Slide[] = [
     icon: 'handyman',
     gradient: 'from-[#f9f5f0] via-[#f0e8df] to-[#e4d6c8]',
     ringColor: 'ring-[#c4956a]/20',
+    image: '/repair-hero.png',
   },
   {
     id: 4,
@@ -59,6 +61,7 @@ const SLIDES: Slide[] = [
     icon: 'inventory_2',
     gradient: 'from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2]',
     ringColor: 'ring-[#c4956a]/20',
+    image: '/used-hero.png',
   },
 ]
 
@@ -174,15 +177,18 @@ export default function HeroSection() {
         <div className="flex w-full items-center justify-center md:w-1/2" key={`visual-${current}`}>
           <div className="animate-hero-fade-scale flex flex-col items-center" style={{ animationDelay: '0.15s' }}>
             {slide.image ? (
-              <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2] ring-1 ring-[#c4956a]/20" />
-                <div className="absolute inset-3 rounded-full bg-white/30 backdrop-blur-xl" />
+              <Link
+                to={slide.cta.to}
+                className="group relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px] transition-all duration-500 hover:scale-[1.04]"
+              >
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#f5ede4] via-[#e8ddd0] to-[#dccfc2] ring-1 ring-[#c4956a]/20 transition-all duration-500 group-hover:ring-[#c4956a]/60 group-hover:shadow-[0_0_40px_rgba(196,149,106,0.3)]" />
+                <div className="absolute inset-3 rounded-full bg-white/30 backdrop-blur-xl transition-all duration-500 group-hover:bg-white/20" />
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="relative z-10 h-[85%] w-[85%] rounded-full object-cover shadow-lg"
+                  className="relative z-10 h-[85%] w-[85%] rounded-full object-cover shadow-lg transition-all duration-500 hover:shadow-2xl hover:brightness-105"
                 />
-              </div>
+              </Link>
             ) : (
               <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[360px] sm:w-[360px] lg:h-[440px] lg:w-[440px]">
                 <div
