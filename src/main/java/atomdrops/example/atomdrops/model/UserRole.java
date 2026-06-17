@@ -1,10 +1,6 @@
 package atomdrops.example.atomdrops.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -14,56 +10,41 @@ import java.util.Objects;
 public class UserRole {
 
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Id
-    @Column(name = "role_id")
-    private Long roleId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
-    public Long getUserId() {
-        return userId;
-    }
+    public UserRole() {}
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Long getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(Long roleId) {
-        this.roleId = roleId;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
     public static class UserRoleId implements Serializable {
-        private Long userId;
-        private Long roleId;
+        private Long user;
+        private Long role;
 
         public UserRoleId() {}
-
-        public UserRoleId(Long userId, Long roleId) {
-            this.userId = userId;
-            this.roleId = roleId;
+        public UserRoleId(Long user, Long role) {
+            this.user = user;
+            this.role = role;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
             UserRoleId that = (UserRoleId) o;
-            return Objects.equals(userId, that.userId)
-                    && Objects.equals(roleId, that.roleId);
+            return Objects.equals(user, that.user) && Objects.equals(role, that.role);
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(userId, roleId);
-        }
+        public int hashCode() { return Objects.hash(user, role); }
     }
 }

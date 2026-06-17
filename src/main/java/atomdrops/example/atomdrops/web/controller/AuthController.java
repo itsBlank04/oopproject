@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping
@@ -37,10 +38,23 @@ public class AuthController {
     public String register(
             @Valid RegisterRequest registerRequest,
             BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
             Model model
     ) {
+        if ("admin".equalsIgnoreCase(registerRequest.getRole())) {
+            String email = registerRequest.getEmail() == null ? "" : registerRequest.getEmail().trim();
+            String name = registerRequest.getDisplayName() == null ? "" : registerRequest.getDisplayName().trim();
+            String phone = registerRequest.getPhone() == null ? "" : registerRequest.getPhone().trim();
+            return "redirect:/admin/setup?email=" + email + "&displayName=" + name + "&phone=" + phone;
+        }
         if (bindingResult.hasErrors()) {
             return "register";
+        }
+
+        if ("admin".equalsIgnoreCase(registerRequest.getRole())) {
+            redirectAttributes.addFlashAttribute("registerRequest", registerRequest);
+            redirectAttributes.addAttribute("role", "admin");
+            return "redirect:/admin/setup";
         }
 
         try {
@@ -76,7 +90,6 @@ public class AuthController {
 
         User user = userOpt.get();
         session.setAttribute(SESSION_USER_ID, user.getId());
-
         session.setAttribute(SESSION_ROLE, authService.resolveUserRole(user.getId()));
 
         return "redirect:/dashboard";
@@ -115,5 +128,44 @@ public class AuthController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    @GetMapping("/admin/setup")
+    public String adminSetupForm(
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "displayName", required = false) String displayName,
+            @RequestParam(name = "phone", required = false) String phone,
+            Model model
+    ) {
+        RegisterRequest request = new RegisterRequest();
+        if (email != null) {
+            request.setEmail(email);
+        }
+        if (displayName != null) {
+            request.setDisplayName(displayName);
+        }
+        if (phone != null) {
+            request.setPhone(phone);
+        }
+        model.addAttribute("registerRequest", request);
+        return "admin-setup";
+    }
+
+    @PostMapping("/admin/setup")
+    public String createAdmin(
+            @Valid RegisterRequest registerRequest,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "admin-setup";
+        }
+        try {
+            authService.registerAsAdmin(registerRequest);
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "admin-setup";
+        }
+        return "redirect:/login?registered=1";
     }
 }
